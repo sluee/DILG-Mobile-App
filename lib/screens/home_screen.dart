@@ -3,6 +3,8 @@ import 'search_screen.dart';
 import 'library_screen.dart';
 import 'sidebar.dart';
 import 'latest_issuances.dart';
+import 'edit_user.dart';
+import 'bottom_navigation.dart'; // Import the BottomNavigation widget
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -17,76 +19,74 @@ class _HomeScreenState extends State<HomeScreen> {
     'Home',
     'Search',
     'Library',
-    'Latest Issuances'
+    'View Profile',
   ];
+
+  DateTime? currentBackPressTime;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _drawerMenuItems[_currentIndex.clamp(0, _drawerMenuItems.length - 1)],
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        leading: _currentIndex == 0
-            ? Builder(
-                builder: (context) => IconButton(
-                  icon: Icon(Icons.menu, color: Colors.blue[900]),
-                  onPressed: () => Scaffold.of(context).openDrawer(),
-                ),
-              )
-            : null,
-        automaticallyImplyLeading: true,
-      ),
-      body: _buildBody(),
-      drawer: Sidebar(
-        currentIndex: _currentIndex,
-        onItemSelected: (index) {
-          _navigateToSelectedPage(context, index);
-        },
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (int index) {
+    return WillPopScope(
+      onWillPop: () async {
+        if (_currentIndex != 0) {
           setState(() {
-            _currentIndex = index.clamp(0, _drawerMenuItems.length - 1);
+            _currentIndex = 0;
           });
-        },
-        backgroundColor: Colors.blue[900],
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white.withOpacity(0.5),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
+          return false;
+        } else if (currentBackPressTime == null ||
+            DateTime.now().difference(currentBackPressTime!) >
+                Duration(seconds: 2)) {
+          // Show a toast or snackbar indicating to press back again to exit
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Press back again to exit'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          currentBackPressTime = DateTime.now();
+          return false; // Do not exit
+        } else {
+          return true; // Exit the app
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            _drawerMenuItems[
+                _currentIndex.clamp(0, _drawerMenuItems.length - 1)],
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Search',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.library_books),
-            label: 'Library',
-          ),
-          
-        ],
+          leading: _currentIndex == 0
+              ? Builder(
+                  builder: (context) => IconButton(
+                    icon: Icon(Icons.menu, color: Colors.blue[900]),
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                  ),
+                )
+              : null,
+          automaticallyImplyLeading: true,
+        ),
+        body: _buildBody(),
+        drawer: Sidebar(
+          currentIndex: _currentIndex,
+          onItemSelected: (index) {
+            setState(() {
+              _currentIndex = index.clamp(0, _drawerMenuItems.length - 1);
+            });
+          },
+        ),
+        bottomNavigationBar: BottomNavigation(
+          currentIndex: _currentIndex,
+          onTabTapped: (index) {
+            setState(() {
+              _currentIndex = index.clamp(0, _drawerMenuItems.length - 1);
+            });
+          },
+        ),
       ),
     );
-  }
-
-  bool _handleBackButton() {
-    // Handle back button press logic here
-    // You can check conditions and navigate accordingly
-    // For example, if you are on a specific screen, navigate to the home screen
-    if (_currentIndex != 0) {
-      setState(() {
-        _currentIndex = 0;
-      });
-      return false; // Prevent back navigation
-    }
-    return true; // Allow back navigation
   }
 
   Widget _buildBody() {
@@ -97,6 +97,13 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.all(16.0),
           children: [
             // Recently Opened Issuances
+            const Text(
+              'Recently Opened Issuances',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             Container(
               padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
@@ -106,20 +113,12 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Recently Opened Issuances',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
                   _buildRecentIssuances(),
                 ],
               ),
             ),
             const SizedBox(height: 16.0),
             // Recently Downloaded Issuances
-            
           ],
         );
       case 1:
@@ -129,37 +128,65 @@ class _HomeScreenState extends State<HomeScreen> {
         // Library Screen
         return LibraryScreen();
       case 3:
-        return LatestIssuances();
+        return EditUser();
       default:
         return Container();
     }
   }
 
   Widget _buildRecentIssuances() {
-    return SizedBox(
-      height: 200.0,
-      child: ListView.builder(
-        itemCount: 5,
-        itemBuilder: (context, index) {
-          return Card(
-            child: ListTile(
-              title: Text('Opened Issuance $index'),
+    List<Map<String, String>> recentIssuances = [
+      {'title': 'Issuance 1', 'subtitle': 'Subtitle for Issuance 1'},
+      {'title': 'Issuance 2', 'subtitle': 'Subtitle for Issuance 2'},
+      {'title': 'Issuance 3', 'subtitle': 'Subtitle for Issuance 3'},
+      {'title': 'Issuance 4', 'subtitle': 'Subtitle for Issuance 4'},
+      {'title': 'Issuance 5', 'subtitle': 'Subtitle for Issuance 5'},
+      {'title': 'Issuance 6', 'subtitle': 'Subtitle for Issuance 6'},
+      {'title': 'Issuance 7', 'subtitle': 'Subtitle for Issuance 7'},
+      {'title': 'Issuance 8', 'subtitle': 'Subtitle for Issuance 8'},
+      {'title': 'Issuance 9', 'subtitle': 'Subtitle for Issuance 9'},
+      {'title': 'Issuance 10', 'subtitle': 'Subtitle for Issuance 10'},
+      // Add more issuances as needed
+    ];
+
+    return Column(
+      children: recentIssuances
+          .take(10) // Display a maximum of 10 recent issuances
+          .map((issuance) {
+        return Column(
+          children: [
+            ListTile(
+              title: Text(issuance['title']!),
+              subtitle: Text(issuance['subtitle']!),
+              trailing: ElevatedButton(
+                onPressed: () {
+                  // Handle button press
+                },
+                child: Text('View'),
+              ),
             ),
-          );
-        },
-      ),
+            const Divider(),
+          ],
+        );
+      }).toList(),
     );
   }
 
-  
-  void _navigateToSelectedPage(BuildContext context, int index) {
-    switch (index) {
-      case 1:
-        _navigateToLatestIssuances(context);
-        break;
-      // Add conditions for other pages if needed
-    }
-  }
+  // Widget _buildRecentlyDownloadedIssuances() {
+  //   return SizedBox(
+  //     height: 300.0,
+  //     child: ListView.builder(
+  //       itemCount: 1,
+  //       itemBuilder: (context, index) {
+  //         return const Card(
+  //           child: ListTile(
+  //             title: Text('Issuance 1'),
+  //           ),
+  //         );
+  //       },
+  //     ),
+  //   );
+  // }
 
   void _navigateToLatestIssuances(BuildContext context) {
     Navigator.of(context).push(

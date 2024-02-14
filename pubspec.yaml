@@ -39,6 +39,7 @@ dependencies:
   webview_flutter: ^3.0.0
   flutter_pdfview: ^1.0.2
   shared_preferences: ^2.0.8
+  anim_search_bar: ^2.0.3
   
 
 

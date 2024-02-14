@@ -15,6 +15,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
   TextEditingController _searchController = TextEditingController();
   List<String> downloadedFiles = [];
   List<String> filteredFiles = [];
+  bool isSearching = false;
+  String _selectedSortOption = 'Date'; // Initialize with default sorting option
+List<String> _sortOptions = ['Date', 'Name']; // Define sorting options
+
 
 
 
@@ -79,33 +83,83 @@ Future<void> loadDownloadedFiles(Directory directory) async {
     );
   }
 
-  Widget _buildSearchAndFilterRow() {
-    return Row(
+Widget _buildSearchAndFilterRow() {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SizedBox(width: 16),
-        Expanded(
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextField(
-              controller: _searchController,
-              onChanged: (value) {
-                _filterFiles(value);
-              },
-              decoration: InputDecoration(
-                hintText: 'Search',
-                border: InputBorder.none,
-                icon: Icon(Icons.search),
+        Row(
+          children: [
+            Expanded(
+              child: AnimatedContainer(
+                duration: Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                width: isSearching ? MediaQuery.of(context).size.width - 96 : 48,
+                decoration: BoxDecoration(
+                  color: isSearching ? Colors.grey[200] : null,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Visibility(
+                        visible: isSearching,
+                        child: TextField(
+                          controller: _searchController,
+                          onChanged: (value) {
+                            _filterFiles(value);
+                          },
+                          decoration: InputDecoration(
+                            hintText: 'Search...',
+                            border: InputBorder.none,
+                            prefixIcon: Icon(Icons.search),
+                          ),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(isSearching ? Icons.clear : Icons.search),
+                      color: isSearching ? Colors.blue : null,
+                      onPressed: () {
+                        setState(() {
+                          isSearching = !isSearching;
+                          if (!isSearching) {
+                            _searchController.clear();
+                            _filterFiles('');
+                          }
+                        });
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
+            SizedBox(width: 8),
+            DropdownButton<String>(
+              value: _selectedSortOption,
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedSortOption = newValue!;
+                  _sortFiles(newValue);
+                });
+              },
+              items: _sortOptions.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+          ],
         ),
+        SizedBox(height: 10),
       ],
-    );
-  }
+    ),
+  );
+}
+
+
 
   Widget _buildPdf(BuildContext context) {
     return Column(
@@ -168,6 +222,49 @@ Future<void> loadDownloadedFiles(Directory directory) async {
     );
   }
 
+
+void _sortFiles(String option) {
+  if (option == 'Date') {
+    _showDateRangePicker();
+  } else {
+    setState(() {
+      // Implement sorting logic based on the selected option
+      if (option == 'Latest to Oldest') {
+        // Sort files by date in descending order
+        downloadedFiles.sort((a, b) => File(b).lastModifiedSync().compareTo(File(a).lastModifiedSync()));
+      } else if (option == 'Oldest to Latest') {
+        // Sort files by date in ascending order
+        downloadedFiles.sort((a, b) => File(a).lastModifiedSync().compareTo(File(b).lastModifiedSync()));
+      } else if (option == 'Name A-Z') {
+        // Sort files by name in ascending order
+        downloadedFiles.sort((a, b) => a.compareTo(b));
+      } else if (option == 'Name Z-A') {
+        // Sort files by name in descending order
+        downloadedFiles.sort((a, b) => b.compareTo(a));
+      }
+      // Update filtered files accordingly
+      _filterFiles(_searchController.text);
+    });
+  }
+}
+Future<void> _showDateRangePicker() async {
+  DateTimeRange? pickedRange = await showDateRangePicker(
+    context: context,
+    firstDate: DateTime(2010),
+    lastDate: DateTime.now(),
+  );
+
+  if (pickedRange != null) {
+    setState(() {
+      // Filter files based on the selected date range
+      filteredFiles = downloadedFiles.where((filePath) {
+        File file = File(filePath);
+        DateTime lastModified = file.lastModifiedSync();
+        return pickedRange.start.isBefore(lastModified) && pickedRange.end.isAfter(lastModified);
+      }).toList();
+    });
+  }
+}
 
 
   void _filterFiles(String query) {
