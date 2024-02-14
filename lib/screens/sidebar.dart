@@ -53,10 +53,10 @@ class Sidebar extends StatelessWidget {
                 Icons.compare_arrows, 'Joint Circulars', 2, context),
             _buildSidebarItem(Icons.note, 'Memo Circulars', 3, context),
             _buildSidebarItem(
-                Icons.gavel, 'Presidential Directives', 4, context),
+                Icons.account_balance, 'Presidential Directives', 4, context),
             _buildSidebarItem(Icons.drafts, 'Draft Issuances', 5, context),
             _buildSidebarItem(
-                Icons.account_balance, 'Republic Acts', 6, context),
+                Icons.gavel, 'Republic Acts', 6, context),
             _buildSidebarItem(
                 Icons.library_books, 'Legal Opinions', 7, context),
             Divider(color: Colors.white),

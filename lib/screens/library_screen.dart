@@ -21,7 +21,6 @@ List<String> _sortOptions = ['Date', 'Name']; // Define sorting options
 
 
 
-
 //For Latest Issuances
  @override
 void initState() {
@@ -224,48 +223,19 @@ Widget _buildSearchAndFilterRow() {
 
 
 void _sortFiles(String option) {
-  if (option == 'Date') {
-    _showDateRangePicker();
-  } else {
-    setState(() {
-      // Implement sorting logic based on the selected option
-      if (option == 'Latest to Oldest') {
-        // Sort files by date in descending order
-        downloadedFiles.sort((a, b) => File(b).lastModifiedSync().compareTo(File(a).lastModifiedSync()));
-      } else if (option == 'Oldest to Latest') {
-        // Sort files by date in ascending order
-        downloadedFiles.sort((a, b) => File(a).lastModifiedSync().compareTo(File(b).lastModifiedSync()));
-      } else if (option == 'Name A-Z') {
-        // Sort files by name in ascending order
-        downloadedFiles.sort((a, b) => a.compareTo(b));
-      } else if (option == 'Name Z-A') {
-        // Sort files by name in descending order
-        downloadedFiles.sort((a, b) => b.compareTo(a));
-      }
-      // Update filtered files accordingly
-      _filterFiles(_searchController.text);
-    });
-  }
+  setState(() {
+    // Implement sorting logic based on the selected option
+    if (option == 'Date') {
+      // Sort files by date
+      downloadedFiles.sort((a, b) => File(a).lastModifiedSync().compareTo(File(b).lastModifiedSync()));
+    } else if (option == 'Name') {
+      // Sort files by name
+      downloadedFiles.sort((a, b) => a.compareTo(b));
+    }
+    // Update filtered files accordingly
+    _filterFiles(_searchController.text);
+  });
 }
-Future<void> _showDateRangePicker() async {
-  DateTimeRange? pickedRange = await showDateRangePicker(
-    context: context,
-    firstDate: DateTime(2010),
-    lastDate: DateTime.now(),
-  );
-
-  if (pickedRange != null) {
-    setState(() {
-      // Filter files based on the selected date range
-      filteredFiles = downloadedFiles.where((filePath) {
-        File file = File(filePath);
-        DateTime lastModified = file.lastModifiedSync();
-        return pickedRange.start.isBefore(lastModified) && pickedRange.end.isAfter(lastModified);
-      }).toList();
-    });
-  }
-}
-
 
   void _filterFiles(String query) {
     setState(() {

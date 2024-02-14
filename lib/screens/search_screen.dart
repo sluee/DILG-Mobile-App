@@ -1,5 +1,7 @@
+import 'package:DILGDOCS/utils/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:anim_search_bar/anim_search_bar.dart';
+import 'dart:math';
 
 class SearchScreen extends StatefulWidget {
   @override
@@ -9,118 +11,117 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   TextEditingController _searchController = TextEditingController();
   List<String> _recentSearches = [""];
+  
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              AnimSearchBar(
-                width: 400,
-                onSubmitted: (query) {
-                  // Handle the submitted search query
-                  print('Search submitted: $query');
-                },
-                onSuffixTap: () {
-                  setState(() {
-                    _searchController.clear();
-                  });
-                },
-                color: Colors.blue[400]!,
-                helpText: "Search...",
-                autoFocus: true,
-                closeSearchOnSuffixTap: true,
-                animationDurationInMilli: 750,
-                rtl: true,
-                textController: _searchController,
-              ),
-              _buildRecentSearchesContainer(),
-            ],
+  return Scaffold(
+    body: SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search',
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.search),
+                  onPressed: () {
+                    _handleSearch();
+                  },
+                ),
+              ],
+            ),
+            SizedBox(height: 20), // Add some space between the search bar and recent searches
+            _buildRecentSearchesContainer(),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+
+  Widget _buildRecentSearchesContainer() {
+  // Define a list of container names, routes, colors, and icons
+  List<Map<String, dynamic>> containerInfo = [
+    {'name': 'Latest Issuances', 'route': Routes.latestIssuances, 'color': Colors.blue, 'icon': Icons.book},
+    {'name': 'Joint Circulars', 'route': Routes.jointCirculars, 'color': Colors.red, 'icon': Icons.compare_arrows},
+    {'name': 'Memo Circulars', 'route': Routes.memoCirculars, 'color': Colors.green, 'icon': Icons.note},
+    {'name': 'Presidential Directives', 'route': Routes.presidentialDirectives, 'color': Colors.pink, 'icon': Icons.account_balance},
+    {'name': 'Draft Issuances', 'route': Routes.draftIssuances, 'color': Colors.purple, 'icon': Icons.drafts},
+    {'name': 'Republic Acts', 'route': Routes.republicActs, 'color': Colors.teal, 'icon': Icons.gavel},
+    {'name': 'Legal Opinions', 'route': Routes.legalOpinions, 'color': Colors.orange, 'icon': Icons.library_add_check_outlined},
+  ];
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Text(
+          'Browse All',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
-    );
-  }
-
-  // Method to build the search input with rounded border
-  // Widget _buildSearchInput() {
-  //   return Container(
-  //     padding: EdgeInsets.symmetric(horizontal: 16),
-  //     decoration: BoxDecoration(
-  //       color: Colors.white,
-  //       borderRadius: BorderRadius.circular(10),
-  //       boxShadow: [
-  //         BoxShadow(
-  //           color: Colors.grey.withOpacity(0.5),
-  //           spreadRadius: 1,
-  //           blurRadius: 3,
-  //           offset: Offset(0, 2),
-  //         ),
-  //       ],
-  //     ),
-
-  //   );
-  // }
-
-  // Method to build the recent searches container or card
-  Widget _buildRecentSearchesContainer() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            'Recent Searches',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.grey[200], // Gray background
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Display Recent Searches as Faded Color Dropdown
-              if (_recentSearches.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'No recent searches',
-                    style: TextStyle(color: Colors.black),
-                  ),
-                )
-              else
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
+      GridView.count(
+        shrinkWrap: true,
+        physics: NeverScrollableScrollPhysics(), // Disable GridView scrolling
+        crossAxisCount: 2, // Adjust the cross axis count as needed
+        children: List.generate(containerInfo.length, (index) {
+          Map<String, dynamic> item = containerInfo[index];
+          return Card(
+            elevation: 3,
+            margin: EdgeInsets.all(8),
+            child: InkWell(
+              onTap: () {
+                _handleContainerTap(context, item['route']); // Pass the route of the tapped container
+              },
+              child: AspectRatio(
+                aspectRatio: 1, // Set the aspect ratio as needed
+                child: Center(
                   child: Column(
-                    children: _recentSearches.map((String value) {
-                      return ListTile(
-                        title: Text(
-                          value,
-                          style: TextStyle(color: Colors.black),
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        item['icon'], // Use the predefined icon
+                        color: Colors.white, // Set icon color to white
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        item['name'], // Use the predefined name
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white, // Set text color to white
                         ),
-                        onTap: () {
-                          _handleRecentSearchTap(value);
-                        },
-                      );
-                    }).toList(),
+                        textAlign: TextAlign.center, // Center align the text horizontally
+                      ),
+                    ],
                   ),
                 ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
+              ),
+            ),
+            color: item['color'], // Use the predefined color
+          );
+        }),
+      ),
+    ],
+  );
+}
+
 
   // Method to handle the search button press
   void _handleSearch() {
@@ -145,5 +146,10 @@ class _SearchScreenState extends State<SearchScreen> {
       _recentSearches.remove(value);
       _recentSearches.insert(0, value);
     });
+  }
+
+  void _handleContainerTap(context, String route) {
+    // Use Navigator to navigate to the desired route
+    Navigator.pushNamed(context, route);
   }
 }

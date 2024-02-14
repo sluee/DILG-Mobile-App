@@ -5,7 +5,7 @@ import '../utils/routes.dart';
 import 'sidebar.dart';
 import 'details_screen.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:anim_search_bar/anim_search_bar.dart';
 class LatestIssuances extends StatefulWidget {
   @override
   _LatestIssuancesState createState() => _LatestIssuancesState();
@@ -14,6 +14,7 @@ class LatestIssuances extends StatefulWidget {
 class _LatestIssuancesState extends State<LatestIssuances> {
   List<LatestIssuance> _latestIssuances = [];
   List<LatestIssuance> get latestIssuances => _latestIssuances;
+  TextEditingController _searchController = TextEditingController();
    List<String> categories = [
     'All Outcome Area',
     'ACCOUNTABLE, TRANSPARENT, PARTICIPATIVE',
@@ -92,52 +93,81 @@ class _LatestIssuancesState extends State<LatestIssuances> {
       child: Column(
         children: [
           // Filter Category Dropdown
-         Container(
-            padding: EdgeInsets.all(16.0),
-            child: DropdownButton<String>(
-              value: selectedCategory,
-              onChanged: (String? newValue) {
-                if (newValue != null) {
-                  setState(() {
-                    selectedCategory = newValue;
-                  });
-                }
-              },
-              items: categories.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: selectedCategory == value
-                      ? Text(
-                          _truncateText(value, 30), // Adjust the maxLength as needed
-                          style: TextStyle(
-                            overflow: TextOverflow.ellipsis,
+         Row(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Expanded(
+      child: Container(
+        margin: EdgeInsets.only(bottom: 5.0, right: 5.0),
+        padding: EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            
+            SizedBox(height: 8.0),
+            Container(
+              margin: EdgeInsets.only(top: 0.1, bottom: 0.1),
+              padding: EdgeInsets.symmetric(horizontal: 1.0),
+              child: DropdownButton<String>(
+                value: selectedCategory,
+                onChanged: (String? newValue) {
+                  if (newValue != null) {
+                    setState(() {
+                      selectedCategory = newValue;
+                    });
+                  }
+                },
+                items: categories
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.8,
+                      child: Row(
+                        children: [
+                          Icon(Icons.arrow_downward, color: Colors.blue[900]),
+                          SizedBox(width: 10.0),
+                          Expanded(
+                            child: Text(
+                              value,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
                           ),
-                        )
-                      : Text(value),
-                );
-              }).toList(),
-            ),
-          ),
-
-          // Search Input
-          Container(
-            // margin: EdgeInsets.only(top: 4.0),
-            padding: EdgeInsets.all(12.0),
-            child: TextField(
-              controller: searchController,
-              decoration: InputDecoration(
-                hintText: 'Search...',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey[400]!),
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
-              onChanged: (value) {
-                // Handle search input changes
-              },
             ),
-          ), // Adjust the spacing as needed
+          ],
+        ),
+      ),
+    ),
+    Expanded(
+      child: AnimSearchBar(
+        width: 400,
+        onSubmitted: (query) {
+          print('Search submitted: $query');
+        },
+        onSuffixTap: () {
+          setState(() {
+            _searchController.clear();
+          });
+        },
+        color: Colors.blue[400]!,
+        helpText: "Search...",
+        autoFocus: true,
+        closeSearchOnSuffixTap: true,
+        animationDurationInMilli: 1000,
+        rtl: true,
+        textController: _searchController,
+      ),
+    ),
+  ],
+),
+// Adjust the spacing as needed
 
           // Sample Table Section
           Container(
