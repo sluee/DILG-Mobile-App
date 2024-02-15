@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:DILGDOCS/screens/search_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:http/http.dart' as http;
@@ -26,16 +27,6 @@ class Issuance {
   }
 }
 
-Future<List<Issuance>> fetchIssuances() async {
-  final response = await http
-      .get(Uri.parse('https://issuances.dilgbohol.com/api/latest_issuances'));
-  if (response.statusCode == 200) {
-    List<dynamic> data = jsonDecode(response.body);
-    return data.map((json) => Issuance.fromJson(json)).toList();
-  } else {
-    throw Exception('Failed to load issuances');
-  }
-}
 
 class DetailsScreen extends StatelessWidget {
   final String title;
@@ -47,7 +38,8 @@ class DetailsScreen extends StatelessWidget {
     required this.title,
     required this.content,
     required this.pdfUrl,
-    required this.type, // Add this line
+    required this.type,
+     // Add this line
   });
 
   @override
@@ -82,7 +74,7 @@ class DetailsScreen extends StatelessWidget {
                         title,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                          fontSize: 12,
                           color: Colors.black,
                         ),
                         textAlign: TextAlign.center,
@@ -105,9 +97,9 @@ class DetailsScreen extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 20),
             PdfPreview(url: pdfUrl),
-            SizedBox(height: 10),
+            SizedBox(height: 40),
             ElevatedButton(
               onPressed: () {
                 downloadAndSavePdf(context, pdfUrl, title);
@@ -228,7 +220,7 @@ class PdfPreview extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CircularProgressIndicator(),
-                SizedBox(height: 16),
+                SizedBox(height: 40),
                 Text(
                   'Previewing PDF...',
                   style: TextStyle(fontSize: 16),

@@ -21,11 +21,11 @@ class _JointCircularsState extends State<JointCirculars> {
 @override
   void initState() {
     super.initState();
-    fetchLatestIssuances();
+    fetchJointCirculars();
   }
 
 
- Future<void> fetchLatestIssuances() async {
+ Future<void> fetchJointCirculars() async {
     final response = await http.get(
       Uri.parse('https://issuances.dilgbohol.com/api/joint_circulars'),
       headers: {

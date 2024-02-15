@@ -16,8 +16,9 @@ class MemoCirculars extends StatefulWidget {
 }
 
 class _MemoCircularsState extends State<MemoCirculars> {
-      List<MemoCircular> _memoCirculars = [];
-      List<MemoCircular> get memoCirculars => _memoCirculars;
+    List<MemoCircular> _memoCirculars = [];
+    List<MemoCircular> get memoCirculars => _memoCirculars;
+      
  
 @override
   void initState() {
