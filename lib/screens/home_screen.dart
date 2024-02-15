@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'search_screen.dart';
-import 'library_screen.dart';
 import 'sidebar.dart';
-import 'latest_issuances.dart';
 import 'edit_user.dart';
-import 'bottom_navigation.dart'; // Import the BottomNavigation widget
+import 'bottom_navigation.dart';
+import 'issuance_pdf_screen.dart';
+import 'library_screen.dart';
+
+class Issuance {
+  final String title;
+
+  Issuance({required this.title});
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -24,6 +31,48 @@ class _HomeScreenState extends State<HomeScreen> {
 
   DateTime? currentBackPressTime;
 
+  List<Issuance> _recentlyOpenedIssuances = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRecentIssuances();
+  }
+
+  void _loadRecentIssuances() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      List<String>? recentIssuances = prefs.getStringList('recentIssuances');
+      if (recentIssuances != null) {
+        setState(() {
+          _recentlyOpenedIssuances =
+              recentIssuances.map((title) => Issuance(title: title)).toList();
+        });
+      }
+    } catch (e) {
+      // Handle error while loading recent issuances
+      print('Error loading recent issuances: $e');
+    }
+  }
+
+  void _saveRecentIssuances() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      List<String> titles =
+          _recentlyOpenedIssuances.map((issuance) => issuance.title).toList();
+      await prefs.setStringList('recentIssuances', titles);
+    } catch (e) {
+      // Handle error while saving recent issuances
+      print('Error saving recent issuances: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _saveRecentIssuances();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -36,7 +85,6 @@ class _HomeScreenState extends State<HomeScreen> {
         } else if (currentBackPressTime == null ||
             DateTime.now().difference(currentBackPressTime!) >
                 Duration(seconds: 2)) {
-          // Show a toast or snackbar indicating to press back again to exit
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Press back again to exit'),
@@ -44,9 +92,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           );
           currentBackPressTime = DateTime.now();
-          return false; // Do not exit
+          return false;
         } else {
-          return true; // Exit the app
+          return true;
         }
       },
       child: Scaffold(
@@ -92,41 +140,26 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildBody() {
     switch (_currentIndex) {
       case 0:
-        // Home Screen
         return ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
-            // Recently Opened Issuances
-            const Text(
-              'Recently Opened Issuances',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildRecentIssuances(),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16.0),
-            // Recently Downloaded Issuances
+            _buildRecentIssuances(),
           ],
         );
       case 1:
-        // Search Screen
         return SearchScreen();
       case 2:
-        // Library Screen
-        return LibraryScreen();
+        return LibraryScreen(
+          onFileOpened: (title, subtitle) {
+            // Add the opened file to recently opened issuances
+            setState(() {
+              _recentlyOpenedIssuances.insert(
+                0,
+                Issuance(title: title),
+              );
+            });
+          },
+        );
       case 3:
         return EditUser();
       default:
@@ -135,64 +168,118 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildRecentIssuances() {
-    List<Map<String, String>> recentIssuances = [
-      {'title': 'Issuance 1', 'subtitle': 'Subtitle for Issuance 1'},
-      {'title': 'Issuance 2', 'subtitle': 'Subtitle for Issuance 2'},
-      {'title': 'Issuance 3', 'subtitle': 'Subtitle for Issuance 3'},
-      {'title': 'Issuance 4', 'subtitle': 'Subtitle for Issuance 4'},
-      {'title': 'Issuance 5', 'subtitle': 'Subtitle for Issuance 5'},
-      {'title': 'Issuance 6', 'subtitle': 'Subtitle for Issuance 6'},
-      {'title': 'Issuance 7', 'subtitle': 'Subtitle for Issuance 7'},
-      {'title': 'Issuance 8', 'subtitle': 'Subtitle for Issuance 8'},
-      {'title': 'Issuance 9', 'subtitle': 'Subtitle for Issuance 9'},
-      {'title': 'Issuance 10', 'subtitle': 'Subtitle for Issuance 10'},
-      // Add more issuances as needed
-    ];
+    // Map to keep track of seen titles
+    Map<String, Issuance> seenTitles = {};
 
-    return Column(
-      children: recentIssuances
-          .take(10) // Display a maximum of 10 recent issuances
-          .map((issuance) {
-        return Column(
-          children: [
-            ListTile(
-              title: Text(issuance['title']!),
-              subtitle: Text(issuance['subtitle']!),
-              trailing: ElevatedButton(
-                onPressed: () {
-                  // Handle button press
+    // Get the first 5 recently opened issuances
+    List<Issuance> recentIssuances = _recentlyOpenedIssuances.take(5).toList();
+
+    Widget seeMoreLink = Container(); // Initially, don't show the link
+
+    // Show the "See more" link only if there are more than 5 recent issuances
+    if (_recentlyOpenedIssuances.length > 5) {
+      seeMoreLink = GestureDetector(
+        onTap: () {
+          // Navigate to the Library screen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => LibraryScreen(
+                onFileOpened: (title, subtitle) {
+                  // Add the opened file to recently opened issuances
+                  setState(() {
+                    _recentlyOpenedIssuances.insert(
+                      0,
+                      Issuance(title: title),
+                    );
+                  });
                 },
-                child: Text('View'),
               ),
             ),
-            const Divider(),
-          ],
-        );
-      }).toList(),
-    );
-  }
+          );
+        },
+        child: Text(
+          'See more',
+          style: TextStyle(
+            color: Colors.blue, // Set the color to blue
+            decoration: TextDecoration.none, // Remove underline
+          ),
+        ),
+      );
+    }
 
-  // Widget _buildRecentlyDownloadedIssuances() {
-  //   return SizedBox(
-  //     height: 300.0,
-  //     child: ListView.builder(
-  //       itemCount: 1,
-  //       itemBuilder: (context, index) {
-  //         return const Card(
-  //           child: ListTile(
-  //             title: Text('Issuance 1'),
-  //           ),
-  //         );
-  //       },
-  //     ),
-  //   );
-  // }
-
-  void _navigateToLatestIssuances(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => LatestIssuances(),
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            'Recently Opened Issuances',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16.0),
+        if (_recentlyOpenedIssuances.isEmpty)
+          Center(
+            child: Text(
+              'No recently opened Issuance/s',
+              style: TextStyle(
+                fontSize: 16,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+        if (_recentlyOpenedIssuances.isNotEmpty) ...[
+          ...recentIssuances.map((issuance) {
+            // Check if the title has already been seen
+            if (seenTitles.containsKey(issuance.title)) {
+              // If yes, skip displaying this issuance
+              return Container();
+            } else {
+              // Otherwise, add it to seen titles and display it
+              seenTitles[issuance.title] = issuance;
+              return Column(
+                children: [
+                  ListTile(
+                    title: Text(
+                      issuance.title.length > 25
+                          ? '${issuance.title.substring(0, 25)}...' // Display only the first 25 characters
+                          : issuance.title,
+                    ),
+                    trailing: ElevatedButton(
+                      onPressed: () {
+                        // Remove the current issuance from the list
+                        setState(() {
+                          _recentlyOpenedIssuances.remove(issuance);
+                        });
+                        // Add the current issuance to the top of the list
+                        setState(() {
+                          _recentlyOpenedIssuances.insert(0, issuance);
+                        });
+                        // Navigate to the PDF screen when the button is pressed
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => IssuancePDFScreen(
+                              title: issuance.title,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Text('View'),
+                    ),
+                  ),
+                  const Divider(),
+                ],
+              );
+            }
+          }).toList(),
+          seeMoreLink, // Show the "See more" link
+        ],
+      ],
     );
   }
 }

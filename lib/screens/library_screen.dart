@@ -7,8 +7,14 @@ import 'package:path_provider/path_provider.dart'; // Import 'package:path_provi
 
 
 class LibraryScreen extends StatefulWidget {
+   final Function(String, String) onFileOpened;
+
+  LibraryScreen ({required this.onFileOpened});
+  
+
   @override
   _LibraryScreenState createState() => _LibraryScreenState();
+ 
 }
 
 class _LibraryScreenState extends State<LibraryScreen> {
@@ -176,15 +182,7 @@ Widget _buildSearchAndFilterRow() {
           ),
         if (filteredFiles.isNotEmpty)
           Column(
-            children: [
-              Text(
-                'Downloaded Files:',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
+            children: [  
               SizedBox(height: 10),
               Column(
                 children: filteredFiles.map((file) {
@@ -196,7 +194,7 @@ Widget _buildSearchAndFilterRow() {
                     ),
                     child: ElevatedButton(
                       onPressed: () {
-                        openPdfViewer(context, file);
+                        openPdfViewer(context, file, widget.onFileOpened);
                       },
                       style: ElevatedButton.styleFrom(
                         shape: RoundedRectangleBorder(
@@ -245,27 +243,27 @@ void _sortFiles(String option) {
     });
   }
 }
-Future<void> openPdfViewer(BuildContext context, String filePath) async {
-  Navigator.push(
+
+Future<void> openPdfViewer(BuildContext context, String filePath,
+    Function(String, String) onFileOpened) async {
+  await Navigator.push(
     context,
     MaterialPageRoute(
       builder: (context) => PDFView(
         filePath: filePath,
-        // Implement additional options if needed
         enableSwipe: true,
         swipeHorizontal: true,
         autoSpacing: true,
         pageSnap: true,
-        onViewCreated: (PDFViewController controller) {
-          // You can use the controller to interact with the PDFView
-        },
-        // onPageChanged: (int page, int total) {
-        //   // Handle page changes if needed
-        // },
+        onViewCreated: (PDFViewController controller) {},
       ),
     ),
   );
+
+  String fileName = filePath.split('/').last;
+  onFileOpened(fileName, filePath);
 }
+
 
 String getFolderName(String path) {
   List<String> parts = path.split('/');

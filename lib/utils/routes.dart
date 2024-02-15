@@ -30,7 +30,12 @@ class Routes {
     return {
       home: (context) => const HomeScreen(),
       search: (context) => SearchScreen(),
-      library: (context) => LibraryScreen(),
+      library: (context) => LibraryScreen(
+            onFileOpened: (fileName, filePath) {
+              // Implement your logic when file is opened
+              print('File opened: $fileName');
+            },
+          ),
       introsection: (context) => IntroSection(),
       latestIssuances: (context) => LatestIssuances(),
       jointCirculars: (context) => JointCirculars(),

@@ -14,8 +14,8 @@ class DraftIssuances extends StatefulWidget {
 }
 
 class _DraftIssuancesState extends State<DraftIssuances> {
-   List<DraftIssuance> _draftIssuances = [];
-    List<DraftIssuance> get draftIssuances => _draftIssuances;
+  List<DraftIssuance> _draftIssuances = [];
+  List<DraftIssuance> get draftIssuances => _draftIssuances;
       
 
 @override
