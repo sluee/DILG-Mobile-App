@@ -107,9 +107,7 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
                 // Handle search input changes
               },
             ),
-          ), // Adjust the spacing as needed
-
-          // Sample Table Section
+          ), 
           Container(
             // padding: EdgeInsets.all(16.0),
             child: Column(
@@ -206,7 +204,7 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
     MaterialPageRoute(
       builder: (context) => DetailsScreen(
         title: issuance.issuance.title,
-        content: 'Ref #${issuance.issuance.referenceNo}\n${DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date))} \n \n ${issuance.responsible_office}',
+        content: 'Ref #: ${issuance.issuance.referenceNo}\n${DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date))} \n \n ${issuance.responsible_office}',
         pdfUrl: issuance.issuance.urlLink,
          type: getTypeForDownload(issuance.issuance.type),
       ),

@@ -9,7 +9,6 @@ import 'library_screen.dart';
 
 class Issuance {
   final String title;
-
   Issuance({required this.title});
 }
 

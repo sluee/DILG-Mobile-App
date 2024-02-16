@@ -226,37 +226,75 @@ Widget build(BuildContext context) {
             Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: 'Search',
-                      border: InputBorder.none,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20), // Adjust the border radius as needed
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
                     ),
-                    onChanged: (value) {
-                      _handleSearch(); // Call the search function whenever the text changes
-                    },
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: TextField(
+                              controller: _searchController,
+                              decoration: InputDecoration(
+                                hintText: 'Search',
+                                border: InputBorder.none,
+                              ),
+                              onChanged: (value) {
+                                _handleSearch(); // Call the search function whenever the text changes
+                              },
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.search),
+                          onPressed: () {
+                            _handleSearch(); // You can remove this line if you want to rely only on text input for searching
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                IconButton(
-                  icon: Icon(Icons.search),
-                  onPressed: () {
-                    _handleSearch(); // You can remove this line if you want to rely only on text input for searching
-                  },
                 ),
               ],
             ),
             SizedBox(height: 20),
-            SingleChildScrollView( // Wrap _buildSearchResults with SingleChildScrollView
-              child: _buildSearchResults(searchResults, searchInput), // Display search results if available
-            ),
-            SizedBox(height: 20), // Add some space between search results and recent searches
-            _buildRecentSearchesContainer(),
+            _buildSearchResultsContainer(), // Updated to manage search results container
           ],
         ),
       ),
     ),
   );
 }
+
+Widget _buildSearchResultsContainer() {
+  // Check if search results are available
+  if (searchResults.isNotEmpty) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          _buildSearchResults(searchResults, searchInput),
+          SizedBox(height: 20), // Add space between search results and recent searches
+          // _buildRecentSearchesContainer(),
+        ],
+      ),
+    );
+  } else {
+    // Return only recent searches container if no search results
+    return _buildRecentSearchesContainer();
+  }
+}
+
 
 
 
@@ -330,54 +368,61 @@ Widget build(BuildContext context) {
     ],
   );
 }
-Widget _buildSearchResults(List<SearchResult> searchResults, String searchInput) {
+     Widget _buildSearchResults(List<SearchResult> searchResults, String searchInput) {
   if (searchInput.isEmpty) {
-    return SizedBox.shrink(); // Return an empty SizedBox if there's no search input
+    return SizedBox.shrink();
   }
 
   return searchResults.isNotEmpty
-      ? ListView.builder(
-          shrinkWrap: true,
-          itemCount: searchResults.length,
-          itemBuilder: (context, index) {
-            final SearchResult result = searchResults[index];
-            return GestureDetector(
- onTap: () {
-  Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => DetailsScreen(
-      searchResult: result, // Pass the SearchResult object
-    )),
-  );
-},
-
-
-  child: Container(
-    margin: EdgeInsets.symmetric(vertical: 8),
-    padding: EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(8),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.withOpacity(0.5),
-          spreadRadius: 2,
-          blurRadius: 5,
-          offset: Offset(0, 3),
-        ),
-      ],
-    ),
-    child: Text(
-      result.title,
-      style: TextStyle(fontSize: 12),
-    ),
-  ),
-);
-
-          },
+      ? SingleChildScrollView(
+          child: Column(
+            children: [
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: searchResults.length,
+                itemBuilder: (context, index) {
+                  final SearchResult result = searchResults[index];
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DetailsScreen(
+                            searchResult: result,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      margin: EdgeInsets.symmetric(vertical: 8),
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        result.title,
+                        style: TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         )
-      : Center(child: Text('No results found')); // Display a message if there are no search results
+      : Center(child: Text('No results found'));
 }
+
 
 
 
