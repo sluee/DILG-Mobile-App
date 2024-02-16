@@ -12,9 +12,9 @@ class RepublicActs extends StatefulWidget {
 }
 
 class _RepublicActsState extends State<RepublicActs> {
+  TextEditingController _searchController = TextEditingController();
   List<RepublicAct> _republicActs = [];
-  List<RepublicAct> get republicActs => _republicActs;
-// Default selection
+  List<RepublicAct> _filteredRepublicActs = [];
 
   @override
   void initState() {
@@ -34,6 +34,7 @@ class _RepublicActsState extends State<RepublicActs> {
 
       setState(() {
         _republicActs = data.map((item) => RepublicAct.fromJson(item)).toList();
+        _filteredRepublicActs = _republicActs;
       });
     } else {
       // Handle error
@@ -78,24 +79,28 @@ class _RepublicActsState extends State<RepublicActs> {
         children: [
           // Search Input
           Container(
-            margin: EdgeInsets.only(bottom: 8.0),
-            padding: EdgeInsets.all(12.0),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey[400]!),
-              borderRadius: BorderRadius.circular(10),
-            ),
+            margin: EdgeInsets.only(top: 16.0),
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
             child: TextField(
-              controller: searchController,
+              controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search...',
-                border: InputBorder.none,
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: Icon(Icons.search, color: Colors.grey),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: EdgeInsets.symmetric(vertical: 16.0),
               ),
+              style: TextStyle(fontSize: 16.0),
               onChanged: (value) {
-                // Handle search input changes
+                // Call the function to filter the list based on the search query
+                _filterRepublicActs(value);
               },
             ),
-          ),
+          ), 
           SizedBox(height: 16.0),
 
           // Sample Table Section
@@ -105,10 +110,10 @@ class _RepublicActsState extends State<RepublicActs> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(height: 16.0),
-                for (int index = 0; index < _republicActs.length; index++)
+                for (int index = 0; index < _filteredRepublicActs.length; index++)
                   InkWell(
                     onTap: () {
-                      _navigateToDetailsPage(context, _republicActs[index]);
+                      _navigateToDetailsPage(context, _filteredRepublicActs[index]);
                     },
                     child: Container(
                     decoration: BoxDecoration(
@@ -131,7 +136,7 @@ class _RepublicActsState extends State<RepublicActs> {
                             SizedBox(width: 16.0),
                             Expanded(
                               child: Text(
-                                _republicActs[index].issuance.title,
+                                _filteredRepublicActs[index].issuance.title,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
@@ -142,7 +147,7 @@ class _RepublicActsState extends State<RepublicActs> {
                             SizedBox(width: 16.0),
                             Text(
                               DateFormat('MMMM dd, yyyy').format(
-                                DateTime.parse(_republicActs[index].issuance.date),
+                                DateTime.parse(_filteredRepublicActs[index].issuance.date),
                               ),
                               style: TextStyle(
                                 fontSize: 10,
@@ -164,20 +169,32 @@ class _RepublicActsState extends State<RepublicActs> {
   }
 
   void _navigateToDetailsPage(BuildContext context, RepublicAct issuance) {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => DetailsScreen(
-        title: issuance.issuance.title,
-        content: 'Ref #: ${issuance.issuance.referenceNo}\n${DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date))}',
-        pdfUrl: issuance.issuance.urlLink, 
-        type: getTypeForDownload(issuance.issuance.type),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailsScreen(
+          title: issuance.issuance.title,
+          content: 'Ref #: ${issuance.issuance.referenceNo}\n${DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date))}',
+          pdfUrl: issuance.issuance.urlLink, 
+          type: getTypeForDownload(issuance.issuance.type),
       
+        ),
       ),
-    ),
-  );
+    );
+  }
+
+  void _filterRepublicActs(String query) {
+    setState(() {
+      // Filter the republic acts based on the search query
+      _filteredRepublicActs = _republicActs.where((act) {
+        final title = act.issuance.title.toLowerCase();
+        final referenceNo = act.issuance.referenceNo.toLowerCase();
+        return title.contains(query.toLowerCase()) || referenceNo.contains(query.toLowerCase());
+      }).toList();
+    });
+  }
 }
-}
+
 
 //for Latest getters and setters
 class RepublicAct{

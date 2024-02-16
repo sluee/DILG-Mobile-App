@@ -192,12 +192,35 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     },
                     onDismissed: (direction) {},
                     child: ListTile(
-                      title: Text(
-                        file.split('/').last,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.picture_as_pdf,
+                                color: Colors.blue,
+                              ),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  file.split('/').last,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 2,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 4),
+                          Container(
+                            height: 0.5, // Adjust thickness here
+                            color: Colors.black,
+                          ),
+                        ],
                       ),
-                      leading: Icon(Icons.picture_as_pdf),
                       onTap: () {
                         openPdfViewer(context, file, widget.onFileOpened);
                       },

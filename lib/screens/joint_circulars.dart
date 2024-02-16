@@ -1,31 +1,30 @@
 import 'dart:convert';
-import 'package:DILGDOCS/screens/draft_issuances.dart';
 import 'package:DILGDOCS/screens/file_utils.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import '../utils/routes.dart';
-import 'sidebar.dart';
-import 'details_screen.dart';
+import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 
-class JointCirculars extends StatefulWidget {  
+// Import other necessary files
+import 'sidebar.dart';
+import 'details_screen.dart';
+
+class JointCirculars extends StatefulWidget {
   @override
   State<JointCirculars> createState() => _JointCircularsState();
 }
 
 class _JointCircularsState extends State<JointCirculars> {
-   List<JointCircular> _jointCirculars = [];
-   List<JointCircular> get jointCirculars => _jointCirculars;
+  TextEditingController _searchController = TextEditingController();
+  List<JointCircular> _jointCirculars = [];
+  List<JointCircular> _filteredJointCirculars = [];
 
- 
-@override
+  @override
   void initState() {
     super.initState();
     fetchJointCirculars();
   }
 
-
- Future<void> fetchJointCirculars() async {
+  Future<void> fetchJointCirculars() async {
     final response = await http.get(
       Uri.parse('https://issuances.dilgbohol.com/api/joint_circulars'),
       headers: {
@@ -37,10 +36,11 @@ class _JointCircularsState extends State<JointCirculars> {
 
       setState(() {
         _jointCirculars = data.map((item) => JointCircular.fromJson(item)).toList();
+        _filteredJointCirculars = _jointCirculars;
       });
     } else {
       // Handle error
-      print('Failed to load latest issuances');     
+      print('Failed to load latest issuances');
       print('Response status code: ${response.statusCode}');
       print('Response body: ${response.body}');
     }
@@ -76,160 +76,164 @@ class _JointCircularsState extends State<JointCirculars> {
   }
 
   Widget _buildBody() {
-    TextEditingController searchController = TextEditingController();
-
     return SingleChildScrollView(
       child: Column(
         children: [
-          // Filter Category Dropdown
-         
-          // Search Input
           Container(
-            // margin: EdgeInsets.only(top: 4.0),
-            padding: EdgeInsets.all(12.0),
+            margin: EdgeInsets.only(top: 16.0),
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
             child: TextField(
-              controller: searchController,
+              controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search...',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: Icon(Icons.search, color: Colors.grey),
+                filled: true,
+                fillColor: Colors.white,
                 border: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey[400]!),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: BorderSide.none,
                 ),
+                contentPadding: EdgeInsets.symmetric(vertical: 16.0),
               ),
+              style: TextStyle(fontSize: 16.0),
               onChanged: (value) {
-                // Handle search input changes
+                // Call the function to filter the list based on the search query
+                _filterJointCirculars(value);
               },
             ),
-          ), // Adjust the spacing as needed
+          ), 
 
-          // Sample Table Section
-          Container(
-            // padding: EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-               
-                SizedBox(height: 16.0),
-                for (int index = 0; index < _jointCirculars.length; index++)
-              InkWell(
-               onTap: () {
-                  _navigateToDetailsPage(context, _jointCirculars[index]);
-                },
-                 child: Container(
+          // Display the filtered joint circulars
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 16.0),
+              for (int index = 0; index < _filteredJointCirculars.length; index++)
+                InkWell(
+                  onTap: () {
+                    _navigateToDetailsPage(context, _filteredJointCirculars[index]);
+                  },
+                  child: Container(
                     decoration: BoxDecoration(
                       border: Border(
-                        bottom:
-                            BorderSide(color: const Color.fromARGB(255, 203, 201, 201), width: 1.0),
+                        bottom: BorderSide(color: const Color.fromARGB(255, 203, 201, 201), width: 1.0),
                       ),
                     ),
-                
-                child: Card(
-                  elevation: 0,
-                 
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      children: [
-                        Icon(Icons.article, color: Colors.blue[900]),
-                        SizedBox(width: 16.0),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _jointCirculars[index].issuance.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
+                    child: Card(
+                      elevation: 0,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          children: [
+                            Icon(Icons.article, color: Colors.blue[900]),
+                            SizedBox(width: 16.0),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _filteredJointCirculars[index].issuance.title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4.0),
+                                  Text(
+                                    'Ref #: ${_filteredJointCirculars[index].issuance.referenceNo}',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  Text(
+                                    _filteredJointCirculars[index].responsible_office != 'N/A'
+                                        ? 'Responsible Office: ${_filteredJointCirculars[index].responsible_office}'
+                                        : '',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.grey,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              SizedBox(height: 4.0),
-                              Text(
-                                'Ref #: ${_jointCirculars[index].issuance.referenceNo}',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              Text(
-                              _jointCirculars[index].responsible_office != 'N/A' ? 
-                              'Responsible Office: ${_jointCirculars[index].responsible_office}' : 
-                              '',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: Colors.grey,
-                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                            ],
-                          ),
+                            SizedBox(width: 16.0),
+                            Text(
+                              DateFormat('MMMM dd, yyyy').format(
+                                DateTime.parse(_filteredJointCirculars[index].issuance.date),
+                              ),
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
                         ),
-                        SizedBox(width: 16.0),
-                        Text(
-                          DateFormat('MMMM dd, yyyy').format(
-                            DateTime.parse(_jointCirculars[index].issuance.date),
-                          ),
-                          style: TextStyle(
-                            fontSize: 10,
-                             fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                        
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              ),
-              ],
-            ),
+            ],
           ),
         ],
       ),
     );
   }
 
- void _navigateToDetailsPage(BuildContext context, JointCircular issuance) {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => DetailsScreen(
-        title: issuance.issuance.title,
-        content: 'Ref #${issuance.issuance.referenceNo}\n${DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date))}',
-         pdfUrl: issuance.issuance.urlLink, 
-          type: getTypeForDownload(issuance.issuance.type),
-          
-      ),
-    ),
-  );
-}
+  void _filterJointCirculars(String query) {
+    setState(() {
+      // Filter the joint circulars based on the search query
+      _filteredJointCirculars = _jointCirculars.where((joint) {
+        final title = joint.issuance.title.toLowerCase();
+        final referenceNo = joint.issuance.referenceNo.toLowerCase();
+        final responsibleOffice = joint.responsible_office.toLowerCase();
+        final searchLower = query.toLowerCase();
 
+        return title.contains(searchLower) ||
+            referenceNo.contains(searchLower) ||
+            responsibleOffice.contains(searchLower);
+      }).toList();
+    });
+  }
+
+  void _navigateToDetailsPage(BuildContext context, JointCircular issuance) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailsScreen(
+          title: issuance.issuance.title,
+          content: 'Ref #: ${issuance.issuance.referenceNo}\n${DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date))}',
+          pdfUrl: issuance.issuance.urlLink,
+          type: getTypeForDownload(issuance.issuance.type),
+        ),
+      ),
+    );
+  }
 
   void _navigateToSelectedPage(BuildContext context, int index) {
     // Handle navigation if needed
   }
 }
+
 class JointCircular {
   final int id;
   final String responsible_office;
-   final Issuance issuance;
+  final Issuance issuance;
 
   JointCircular({
     required this.id,
     required this.responsible_office,
-   required this.issuance,
-   
+    required this.issuance,
   });
 
   factory JointCircular.fromJson(Map<String, dynamic> json) {
     return JointCircular(
       id: json['id'],
       responsible_office: json['responsible_office'],
-      // title: json['issuance']['title'],
-     
       issuance: Issuance.fromJson(json['issuance']),
     );
   }
@@ -241,8 +245,8 @@ class Issuance {
   final String title;
   final String referenceNo;
   final String keyword;
-  final String urlLink; 
-  final String type; 
+  final String urlLink;
+  final String type;
 
   Issuance({
     required this.id,
@@ -251,7 +255,7 @@ class Issuance {
     required this.referenceNo,
     required this.keyword,
     required this.urlLink,
-    required this.type
+    required this.type,
   });
 
   factory Issuance.fromJson(Map<String, dynamic> json) {
@@ -262,8 +266,7 @@ class Issuance {
       referenceNo: json['reference_no'],
       keyword: json['keyword'],
       urlLink: json['url_link'],
-      type: json['type']
+      type: json['type'],
     );
   }
 }
-

@@ -285,7 +285,6 @@ Widget _buildSearchResultsContainer() {
         children: [
           _buildSearchResults(searchResults, searchInput),
           SizedBox(height: 20), // Add space between search results and recent searches
-          // _buildRecentSearchesContainer(),
         ],
       ),
     );
@@ -295,79 +294,76 @@ Widget _buildSearchResultsContainer() {
   }
 }
 
-
-
-
   Widget _buildRecentSearchesContainer() {
   // Define a list of container names, routes, colors, and icons
-  List<Map<String, dynamic>> containerInfo = [
-    {'name': 'Latest Issuances', 'route': Routes.latestIssuances, 'color': Colors.blue, 'icon': Icons.book},
-    {'name': 'Joint Circulars', 'route': Routes.jointCirculars, 'color': Colors.red, 'icon': Icons.compare_arrows},
-    {'name': 'Memo Circulars', 'route': Routes.memoCirculars, 'color': Colors.green, 'icon': Icons.note},
-    {'name': 'Presidential Directives', 'route': Routes.presidentialDirectives, 'color': Colors.pink, 'icon': Icons.account_balance},
-    {'name': 'Draft Issuances', 'route': Routes.draftIssuances, 'color': Colors.purple, 'icon': Icons.drafts},
-    {'name': 'Republic Acts', 'route': Routes.republicActs, 'color': Colors.teal, 'icon': Icons.gavel},
-    {'name': 'Legal Opinions', 'route': Routes.legalOpinions, 'color': Colors.orange, 'icon': Icons.library_add_check_outlined},
-  ];
+    List<Map<String, dynamic>> containerInfo = [
+      {'name': 'Latest Issuances', 'route': Routes.latestIssuances, 'color': Colors.blue, 'icon': Icons.book},
+      {'name': 'Joint Circulars', 'route': Routes.jointCirculars, 'color': Colors.red, 'icon': Icons.compare_arrows},
+      {'name': 'Memo Circulars', 'route': Routes.memoCirculars, 'color': Colors.green, 'icon': Icons.note},
+      {'name': 'Presidential Directives', 'route': Routes.presidentialDirectives, 'color': Colors.pink, 'icon': Icons.account_balance},
+      {'name': 'Draft Issuances', 'route': Routes.draftIssuances, 'color': Colors.purple, 'icon': Icons.drafts},
+      {'name': 'Republic Acts', 'route': Routes.republicActs, 'color': Colors.teal, 'icon': Icons.gavel},
+      {'name': 'Legal Opinions', 'route': Routes.legalOpinions, 'color': Colors.orange, 'icon': Icons.library_add_check_outlined},
+    ];
 
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Text(
-          'Browse All',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-      GridView.count(
-        shrinkWrap: true,
-        physics: NeverScrollableScrollPhysics(), // Disable GridView scrolling
-        crossAxisCount: 2, // Adjust the cross axis count as needed
-        children: List.generate(containerInfo.length, (index) {
-          Map<String, dynamic> item = containerInfo[index];
-          return Card(
-            elevation: 3,
-            margin: EdgeInsets.all(8),
-            child: InkWell(
-              onTap: () {
-                _handleContainerTap(context, item['route']); // Pass the route of the tapped container
-              },
-              child: AspectRatio(
-                aspectRatio: 1, // Set the aspect ratio as needed
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        item['icon'], // Use the predefined icon
-                        color: Colors.white, // Set icon color to white
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        item['name'], // Use the predefined name
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white, // Set text color to white
-                        ),
-                        textAlign: TextAlign.center, // Center align the text horizontally
-                      ),
-                    ],
-                  ),
-                ),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'Browse All',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            color: item['color'], // Use the predefined color
-          );
-        }),
-      ),
-    ],
-  );
-}
+          ),
+          GridView.count(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(), // Disable GridView scrolling
+            crossAxisCount: 2, // Adjust the cross axis count as needed
+            children: List.generate(containerInfo.length, (index) {
+              Map<String, dynamic> item = containerInfo[index];
+              return Card(
+                elevation: 3,
+                margin: EdgeInsets.all(8),
+                child: InkWell(
+                  onTap: () {
+                    _handleContainerTap(context, item['route']); // Pass the route of the tapped container
+                  },
+                  child: AspectRatio(
+                    aspectRatio: 1, // Set the aspect ratio as needed
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            item['icon'], // Use the predefined icon
+                            color: Colors.white, // Set icon color to white
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            item['name'], // Use the predefined name
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white, // Set text color to white
+                            ),
+                            textAlign: TextAlign.center, // Center align the text horizontally
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                color: item['color'], // Use the predefined color
+              );
+            }),
+          ),
+        ],
+      ); 
+  }
      Widget _buildSearchResults(List<SearchResult> searchResults, String searchInput) {
   if (searchInput.isEmpty) {
     return SizedBox.shrink();
@@ -451,19 +447,19 @@ void _handleSearch() {
     List<SearchResult> searchResults = allData.where((data) {
     
       if (data is MemoCircular) {
-        return data.issuance.title.toLowerCase().contains(searchInput);
+        return data.issuance.title.toLowerCase().contains(searchInput) || data.issuance.keyword.toLowerCase().contains(searchInput);
       } else if (data is PresidentialDirective) {
-        return data.issuance.title.toLowerCase().contains(searchInput);
+        return data.issuance.title.toLowerCase().contains(searchInput) || data.issuance.keyword.toLowerCase().contains(searchInput);
       } else if (data is RepublicAct) {
-        return data.issuance.title.toLowerCase().contains(searchInput);
+        return data.issuance.title.toLowerCase().contains(searchInput) || data.issuance.keyword.toLowerCase().contains(searchInput);
       } else if (data is LegalOpinion) {
-        return data.issuance.title.toLowerCase().contains(searchInput);
+        return data.issuance.title.toLowerCase().contains(searchInput) || data.issuance.keyword.toLowerCase().contains(searchInput);
       } else if (data is JointCircular) {
-        return data.issuance.title.toLowerCase().contains(searchInput);
+        return data.issuance.title.toLowerCase().contains(searchInput) || data.issuance.keyword.toLowerCase().contains(searchInput);
       } else if (data is DraftIssuance) {
-        return data.issuance.title.toLowerCase().contains(searchInput);
+        return data.issuance.title.toLowerCase().contains(searchInput) || data.issuance.keyword.toLowerCase().contains(searchInput);
       } else if (data is LatestIssuance) {
-        return data.issuance.title.toLowerCase().contains(searchInput);
+        return data.issuance.title.toLowerCase().contains(searchInput) || data.issuance.keyword.toLowerCase().contains(searchInput);
       }
       return false;
     }).map((data) {
