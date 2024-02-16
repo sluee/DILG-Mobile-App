@@ -96,10 +96,6 @@ class _RepublicActsState extends State<RepublicActs> {
               },
             ),
           ),
-
-          // Category Dropdown
-          
-
           SizedBox(height: 16.0),
 
           // Sample Table Section
@@ -108,13 +104,6 @@ class _RepublicActsState extends State<RepublicActs> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Republic Acts',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
                 SizedBox(height: 16.0),
                 for (int index = 0; index < _republicActs.length; index++)
                   InkWell(
@@ -146,7 +135,7 @@ class _RepublicActsState extends State<RepublicActs> {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                                  fontSize: 12,
                                 ),
                               ),
                             ),
@@ -156,7 +145,8 @@ class _RepublicActsState extends State<RepublicActs> {
                                 DateTime.parse(_republicActs[index].issuance.date),
                               ),
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 10,
+                                fontStyle: FontStyle.italic,
                               ),
                             ),
                           ],
@@ -179,7 +169,7 @@ class _RepublicActsState extends State<RepublicActs> {
     MaterialPageRoute(
       builder: (context) => DetailsScreen(
         title: issuance.issuance.title,
-        content: 'Ref #${issuance.issuance.referenceNo}\n${DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date))}',
+        content: 'Ref #: ${issuance.issuance.referenceNo}\n${DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date))}',
         pdfUrl: issuance.issuance.urlLink, 
         type: getTypeForDownload(issuance.issuance.type),
       

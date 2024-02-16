@@ -115,18 +115,7 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Presidential Directives',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  // Add margin to the left
-                  textAlign: TextAlign.left,
-                  // Use the EdgeInsets.only to specify margin for specific sides
-                  // In this case, only the left margin is set to 3.0
-                  // margin: EdgeInsets.only(left: 3.0),
-                ),
+               
 
                 SizedBox(height: 16.0),
                 for (int index = 0; index < _presidentialDirectives.length; index++)
@@ -160,24 +149,27 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 13,
+                                  fontSize: 12,
                                 ),
                               ),
                               SizedBox(height: 4.0),
                               Text(
-                                'Ref #${_presidentialDirectives[index].issuance.referenceNo}',
+                                'Ref #: ${_presidentialDirectives[index].issuance.referenceNo}',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 10,
                                   color: Colors.grey,
                                 ),
                               ),
-                              Text(
-                                'Ref #${_presidentialDirectives[index].responsible_office}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                ),
-                              ),
+                               Text(
+                            _presidentialDirectives[index].responsible_office != 'N/A' ? 
+                              'Responsible Office: ${_presidentialDirectives[index].responsible_office}' : 
+                              '',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                             ],
                           ),
                         ),
@@ -187,7 +179,8 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
                             DateTime.parse(_presidentialDirectives[index].issuance.date),
                           ),
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 10,
+                             fontStyle: FontStyle.italic,
                           ),
                         ),
                         

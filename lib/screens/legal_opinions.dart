@@ -112,13 +112,7 @@ class _LegalOpinionsState extends State<LegalOpinions> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Legal Opinions',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+               
                 SizedBox(height: 16.0),
                 for (int index = 0; index < _legalOpinions.length; index++)
                   InkWell(
@@ -152,16 +146,16 @@ class _LegalOpinionsState extends State<LegalOpinions> {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 13,
+                                  fontSize: 12,
                                 ),
                               ),
                             ),
                             SizedBox(height: 4.0),
 
                             Text(
-                              'Ref #${_legalOpinions[index].issuance.referenceNo}',
+                              'Ref #: ${_legalOpinions[index].issuance.referenceNo}',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 10,
                                 color: Colors.grey,
                               ),
                             ),
@@ -172,7 +166,8 @@ class _LegalOpinionsState extends State<LegalOpinions> {
                                     _legalOpinions[index].issuance.date),
                               ),
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 10,
+                                 fontStyle: FontStyle.italic,
                               ),
                             ),
                           ],

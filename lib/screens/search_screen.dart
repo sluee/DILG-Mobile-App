@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:DILGDOCS/screens/draft_issuances.dart';
 import 'package:DILGDOCS/screens/joint_circulars.dart';
 import 'package:DILGDOCS/screens/latest_issuances.dart';
@@ -370,7 +369,7 @@ Widget _buildSearchResults(List<SearchResult> searchResults, String searchInput)
     ),
     child: Text(
       result.title,
-      style: TextStyle(fontSize: 16),
+      style: TextStyle(fontSize: 12),
     ),
   ),
 );
@@ -405,9 +404,7 @@ void _handleSearch() {
 
     // Filter the data based on search input and convert to SearchResult objects
     List<SearchResult> searchResults = allData.where((data) {
-      // Implement your search logic here
-      // For example, you can search for a specific property in each data item
-      // You can customize this logic based on your data structure
+    
       if (data is MemoCircular) {
         return data.issuance.title.toLowerCase().contains(searchInput);
       } else if (data is PresidentialDirective) {
@@ -457,8 +454,6 @@ void _handleSearch() {
     });
   }
 }
-
-
 
   // Method to handle the tapped recent search item
 void _handleRecentSearchTap(String value) {

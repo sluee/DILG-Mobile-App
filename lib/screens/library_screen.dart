@@ -174,9 +174,10 @@ Widget _buildSearchAndFilterRow() {
         if (filteredFiles.isEmpty)
           Center(
             child: Text(
-              'No downloaded issuances',
+              'No downloaded issuance/s',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 16,
+                fontStyle: FontStyle.italic,
               ),
             ),
           ),
