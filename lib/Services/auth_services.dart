@@ -1,9 +1,12 @@
 import 'dart:convert';
-import '../Services/globals.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class AuthServices {
+  
+  static final _storage = FlutterSecureStorage();
+
   static Future<http.Response> login(String email, String password) async {
     try {
       Map data = {
@@ -11,14 +14,11 @@ class AuthServices {
         'password': password,
       };
       var body = json.encode(data);
-      var url = Uri.parse('${baseURL}auth/login');
+      var url = Uri.parse('https://issuances.dilgbohol.com/api/auth/login');
 
-      var token;
       http.Response response = await http.post(
         url,
         headers: {
-          'Authorization': 'Bearer $token',
-          // Other headers if needed
           'Content-Type': 'application/json',
         },
         body: body,
@@ -27,7 +27,10 @@ class AuthServices {
       print(response.body);
 
       if (response.statusCode == 200) {
-        print("Hello World");
+        var responseData = jsonDecode(response.body);
+        var token = responseData['token']; // Retrieve token from response
+        await storeToken(token); // Store token locally
+        print('Login successful');
         return response;
       } else {
         print('Login failed with status code: ${response.statusCode}');
@@ -39,25 +42,27 @@ class AuthServices {
     }
   }
 
-  static Future<void> logout() async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('token');
+  static Future<void> storeToken(String token) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
+  }
 
-  final url = Uri.parse('${baseURL}logout');
-  final response = await http.post(
-    url,
-    headers: {
-      'Authorization': 'Bearer $token',
-      'Content-Type': 'application/json',
-    },
+  static Future<String?> getToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
+  }
+
+  static Future<void> logout() async {
+    // Clear the authentication token from secure storage
+    await _storage.delete(key: 'authToken');
+  }
+
+ static Future<bool> validateToken(String authToken) async {
+  final response = await http.get(
+    Uri.parse('https://issuances.dilgbohol.com/auth/validate-token'),
+    headers: {'Authorization': 'Bearer $authToken'},
   );
 
-  if (response.statusCode == 200) {
-    // Successfully logged out
-    // Clear local storage or perform other necessary tasks
-  } else {
-    print('Logout failed with status code: ${response.statusCode}');
-  }
+  return response.statusCode == 200;
 }
-
 }

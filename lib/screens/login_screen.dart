@@ -1,10 +1,9 @@
 import 'dart:convert';
-import 'package:DILGDOCS/Services/globals.dart';
-import 'package:DILGDOCS/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:DILGDOCS/screens/home_screen.dart';
 import '../Services/auth_services.dart';
-import 'package:http/http.dart' as http; // Make sure to import your HomeScreen widget
+import 'package:http/http.dart' as http;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key, required this.title});
@@ -16,7 +15,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-   bool rememberMe = false;
+  bool rememberMe = false;
   String emailError = '';
   String passwordError = '';
   TextEditingController _emailController = TextEditingController();
@@ -33,11 +32,20 @@ class _LoginScreenState extends State<LoginScreen> {
     String? authToken = prefs.getString('authToken');
 
     if (authToken != null) {
-      // If authToken exists, navigate to HomeScreen directly
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
+      // If authToken exists, check if it's valid
+      try {
+        bool isValid = await AuthServices.validateToken(authToken);
+        if (isValid) {
+          // Token is valid, navigate to HomeScreen
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+          );
+        }
+      } catch (error) {
+        print('Error validating token: $error');
+        // Handle token validation error
+      }
     }
   }
 
@@ -94,7 +102,6 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -134,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: 8),
-                  TextFormField(
+                    TextFormField(
                       controller: _emailController,
                       decoration: InputDecoration(labelText: 'Email'),
                       validator: (_emailController) {
@@ -153,10 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         labelText: 'Password',
                         errorText:
                             passwordError.isNotEmpty ? passwordError : null,
-                        
                       ),
-                    
-                     
                     ),
                     SizedBox(height: 8),
                     Row(
@@ -171,11 +175,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         Text('Remember Me'),
                         Spacer(),
-                        
-                           ElevatedButton(
-                           onPressed: (){
-                            loginPressed();
-                          }, // Directly pass the function reference
+                        ElevatedButton(
+                          onPressed: loginPressed,
                           child: Text('Log in'),
                         ),
                       ],
@@ -197,5 +198,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-
 }
