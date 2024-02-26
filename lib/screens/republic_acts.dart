@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:DILGDOCS/Services/globals.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import '../models/republic_acts.dart';
 import '../screens/sidebar.dart';
 import '../screens/details_screen.dart';
 import 'package:http/http.dart' as http;
@@ -24,7 +26,7 @@ class _RepublicActsState extends State<RepublicActs> {
 
   Future<void> fetchRepublicActs() async {
     final response = await http.get(
-      Uri.parse('https://issuances.dilgbohol.com/api/republic_acts'),
+      Uri.parse('$baseURL/republic_acts'),
       headers: {
         'Accept': 'application/json',
       },
@@ -71,9 +73,7 @@ class _RepublicActsState extends State<RepublicActs> {
     );
   }
 
-  Widget _buildBody() {
-    TextEditingController searchController = TextEditingController();
-
+   Widget _buildBody() {
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -100,48 +100,58 @@ class _RepublicActsState extends State<RepublicActs> {
                 _filterRepublicActs(value);
               },
             ),
-          ), 
-          SizedBox(height: 16.0),
+          ),
 
-          // Sample Table Section
-          Container(
-            padding: EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 16.0),
-                for (int index = 0; index < _filteredRepublicActs.length; index++)
-                  InkWell(
-                    onTap: () {
-                      _navigateToDetailsPage(context, _filteredRepublicActs[index]);
-                    },
-                    child: Container(
+          // Display the filtered presidential directives
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 16.0),
+              for (int index = 0; index < _filteredRepublicActs.length; index++)
+                InkWell(
+                  onTap: () {
+                    _navigateToDetailsPage(context, _filteredRepublicActs[index]);
+                  },
+                  child: Container(
                     decoration: BoxDecoration(
                       border: Border(
-                        bottom:
-                            BorderSide(color: const Color.fromARGB(255, 203, 201, 201), width: 1.0),
+                        bottom: BorderSide(color: const Color.fromARGB(255, 203, 201, 201), width: 1.0),
                       ),
                     ),
                     child: Card(
                       elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Row(
                           children: [
-                            Icon(Icons.article,
-                                color: Colors.blue[900]), // Replace with your desired icon
+                            Icon(Icons.article, color: Colors.blue[900]),
                             SizedBox(width: 16.0),
                             Expanded(
-                              child: Text(
-                                _filteredRepublicActs[index].issuance.title,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _filteredRepublicActs[index].issuance.title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4.0),
+                                  
+                                  Text(
+                                    _filteredRepublicActs[index].responsibleOffice != 'N/A'
+                                        ? 'Responsible Office: ${_filteredRepublicActs[index].responsibleOffice}'
+                                        : '',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             SizedBox(width: 16.0),
@@ -150,7 +160,7 @@ class _RepublicActsState extends State<RepublicActs> {
                                 DateTime.parse(_filteredRepublicActs[index].issuance.date),
                               ),
                               style: TextStyle(
-                                fontSize: 10,
+                                fontSize: 12,
                                 fontStyle: FontStyle.italic,
                               ),
                             ),
@@ -159,15 +169,13 @@ class _RepublicActsState extends State<RepublicActs> {
                       ),
                     ),
                   ),
-                  ),
-              ],
-            ),
+                ),
+            ],
           ),
         ],
       ),
     );
   }
-
   void _navigateToDetailsPage(BuildContext context, RepublicAct issuance) {
     Navigator.push(
       context,
@@ -195,83 +203,4 @@ class _RepublicActsState extends State<RepublicActs> {
   }
 }
 
-
-//for Latest getters and setters
-class RepublicAct{
-  final int id;
-  final String responsible_office;
-  
-  final Issuance issuance;
-
-  RepublicAct({
-    required this.id,
-    required this.responsible_office,
-
-    required this.issuance,
-  });
-
-  factory RepublicAct.fromJson(Map<String, dynamic> json) {
-    return RepublicAct(
-      id: json['id'],
-      responsible_office: json['responsible_office'],
-      issuance: Issuance.fromJson(json['issuance']),
-    );
-  }
-}
-
-//for Issuance
-class Issuance {
-  final int id;
-  final String date;
-  final String title;
-  final String referenceNo;
-  final String keyword;
-  final String urlLink;
-  final String type;
-
-  Issuance({
-    required this.id,
-    required this.date,
-    required this.title,
-    required this.referenceNo,
-    required this.keyword,
-    required this.urlLink,
-    required this.type,
-  });
-
-  factory Issuance.fromJson(Map<String, dynamic> json) {
-    return Issuance(
-      id: json['id'],
-      date: json['date'],
-      title: json['title'],
-      referenceNo: json['reference_no'],
-      keyword: json['keyword'],
-      urlLink: json['url_link'],
-      type: json['type'],
-    );
-  }
-}
-
-String getTypeForDownload(String issuanceType) {
-  // Map issuance types to corresponding download types
-  switch (issuanceType) {
-    case 'Latest Issuance':
-      return 'Latest Issuance';
-    case 'Joint Circulars':
-      return 'Joint Circulars';
-    case 'Memo Circulars':
-      return 'Memo Circulars';
-     case 'Presidential Directives':
-      return 'Presidential Directives';  
-     case 'Draft Issuances':
-      return 'Draft Issuances';  
-     case 'Republic Acts':
-      return 'Republic Acts';  
-     case 'Legal Opinions':
-      return 'Legal Opinions';  
-  
-    default:
-      return 'Other';
-  }
-}
 

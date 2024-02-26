@@ -13,7 +13,9 @@ class Issuance {
 }
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  final Map<String, dynamic> userData;
+
+  const HomeScreen({Key? key, required this.userData}) : super(key: key);
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -160,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         );
       case 3:
-        return EditUser();
+        return EditUser(userData: widget.userData); // Pass userData here
       default:
         return Container();
     }
@@ -282,3 +284,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+

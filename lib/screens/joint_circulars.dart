@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'package:DILGDOCS/Services/globals.dart';
 import 'package:DILGDOCS/screens/file_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 
 // Import other necessary files
+import '../models/joint_circulars.dart';
 import 'sidebar.dart';
 import 'details_screen.dart';
 
@@ -26,7 +28,7 @@ class _JointCircularsState extends State<JointCirculars> {
 
   Future<void> fetchJointCirculars() async {
     final response = await http.get(
-      Uri.parse('https://issuances.dilgbohol.com/api/joint_circulars'),
+      Uri.parse('$baseURL/joint_circulars'),
       headers: {
         'Accept': 'application/json',
       },
@@ -137,14 +139,16 @@ class _JointCircularsState extends State<JointCirculars> {
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 12,
+                                      fontSize: 15,
                                     ),
                                   ),
                                   SizedBox(height: 4.0),
                                   Text(
-                                    'Ref #: ${_filteredJointCirculars[index].issuance.referenceNo}',
+                                    _filteredJointCirculars[index].issuance.referenceNo != 'N/A'
+                                        ? 'Ref # : ${_filteredJointCirculars[index].issuance.referenceNo}'
+                                        : '',
                                     style: TextStyle(
-                                      fontSize: 10,
+                                      fontSize: 12,
                                       color: Colors.grey,
                                     ),
                                   ),
@@ -153,7 +157,7 @@ class _JointCircularsState extends State<JointCirculars> {
                                         ? 'Responsible Office: ${_filteredJointCirculars[index].responsible_office}'
                                         : '',
                                     style: TextStyle(
-                                      fontSize: 10,
+                                      fontSize: 12,
                                       color: Colors.grey,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -167,7 +171,7 @@ class _JointCircularsState extends State<JointCirculars> {
                                 DateTime.parse(_filteredJointCirculars[index].issuance.date),
                               ),
                               style: TextStyle(
-                                fontSize: 10,
+                                fontSize: 12,
                                 fontStyle: FontStyle.italic,
                               ),
                             ),
@@ -219,54 +223,3 @@ class _JointCircularsState extends State<JointCirculars> {
   }
 }
 
-class JointCircular {
-  final int id;
-  final String responsible_office;
-  final Issuance issuance;
-
-  JointCircular({
-    required this.id,
-    required this.responsible_office,
-    required this.issuance,
-  });
-
-  factory JointCircular.fromJson(Map<String, dynamic> json) {
-    return JointCircular(
-      id: json['id'],
-      responsible_office: json['responsible_office'],
-      issuance: Issuance.fromJson(json['issuance']),
-    );
-  }
-}
-
-class Issuance {
-  final int id;
-  final String date;
-  final String title;
-  final String referenceNo;
-  final String keyword;
-  final String urlLink;
-  final String type;
-
-  Issuance({
-    required this.id,
-    required this.date,
-    required this.title,
-    required this.referenceNo,
-    required this.keyword,
-    required this.urlLink,
-    required this.type,
-  });
-
-  factory Issuance.fromJson(Map<String, dynamic> json) {
-    return Issuance(
-      id: json['id'],
-      date: json['date'],
-      title: json['title'],
-      referenceNo: json['reference_no'],
-      keyword: json['keyword'],
-      urlLink: json['url_link'],
-      type: json['type'],
-    );
-  }
-}

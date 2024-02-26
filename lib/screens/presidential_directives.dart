@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:DILGDOCS/Services/globals.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import '../models/presidential_directives.dart';
 import '../utils/routes.dart';
 import 'sidebar.dart';
 import 'details_screen.dart';
@@ -25,7 +27,7 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
 
   Future<void> fetchPresidentialCirculars() async {
     final response = await http.get(
-      Uri.parse('https://issuances.dilgbohol.com/api/presidential_directives'),
+      Uri.parse('$baseURL/presidential_directives'),
       headers: {
         'Accept': 'application/json',
       },
@@ -35,8 +37,7 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
 
       if (data != null) {
         setState(() {
-          _presidentialDirectives =
-              data.map((item) => PresidentialDirective.fromJson(item)).toList();
+          _presidentialDirectives = data.map((item) => PresidentialDirective.fromJson(item)).toList();
           _filteredPresidentialDirectives = _presidentialDirectives;
         });
       }
@@ -140,14 +141,16 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 12,
+                                      fontSize: 15,
                                     ),
                                   ),
                                   SizedBox(height: 4.0),
                                   Text(
-                                    'Ref #: ${_filteredPresidentialDirectives[index].issuance.referenceNo}',
+                                    _filteredPresidentialDirectives[index].issuance.referenceNo != 'N/A'
+                                    ? 'Ref #: ${_filteredPresidentialDirectives[index].issuance.referenceNo}'
+                                    : '',
                                     style: TextStyle(
-                                      fontSize: 10,
+                                      fontSize: 12,
                                       color: Colors.grey,
                                     ),
                                   ),
@@ -156,7 +159,7 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
                                         ? 'Responsible Office: ${_filteredPresidentialDirectives[index].responsible_office}'
                                         : '',
                                     style: TextStyle(
-                                      fontSize: 10,
+                                      fontSize: 12,
                                       color: Colors.grey,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -170,7 +173,7 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
                                 DateTime.parse(_filteredPresidentialDirectives[index].issuance.date),
                               ),
                               style: TextStyle(
-                                fontSize: 10,
+                                fontSize: 12,
                                 fontStyle: FontStyle.italic,
                               ),
                             ),
@@ -221,53 +224,4 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
   }
 }
 
-class PresidentialDirective {
-  final int id;
-  final String responsible_office;
-  final Issuance issuance;
 
-  PresidentialDirective({
-    required this.id,
-    required this.responsible_office,
-    required this.issuance,
-  });
-
-  factory PresidentialDirective.fromJson(Map<String, dynamic> json) {
-    return PresidentialDirective(
-      id: json['id'],
-      responsible_office: json['responsible_office'] ?? 'N/A',
-      issuance: Issuance.fromJson(json['issuance']),
-    );
-  }
-}
-
-class Issuance {
-  final int id;
-  final String date;
-  final String title;
-  final String referenceNo;
-  final String keyword;
-  final String urlLink;
-  final String type;
-
-  Issuance({
-    required this.id,
-    required this.date,
-    required this.title,
-    required this.referenceNo,
-    required this.keyword,
-    required this.urlLink,
-    required this.type,
-  });
-
-  factory Issuance.fromJson(Map<String, dynamic> json) {
-    return Issuance(
-        id: json['id'],
-        date: json['date'],
-        title: json['title'],
-        referenceNo: json['reference_no'],
-        keyword: json['keyword'],
-        urlLink: json['url_link'],
-        type: json['type']);
-  }
-}

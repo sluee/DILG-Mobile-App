@@ -1,140 +1,98 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'sidebar.dart';
+import 'package:http/http.dart' as http;
 
 class EditUser extends StatefulWidget {
+  final Map<String, dynamic> userData;
+
+  const EditUser({Key? key, required this.userData}) : super(key: key);
+
   @override
   _EditUserState createState() => _EditUserState();
 }
 
 class _EditUserState extends State<EditUser> {
-  // Controllers for text fields
-  TextEditingController _nameController = TextEditingController();
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
+  late TextEditingController _nameController;
+  late TextEditingController _emailController;
+  late TextEditingController _passwordController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.userData['name']);
+    _emailController = TextEditingController(text: widget.userData['email']);
+    _passwordController = TextEditingController();
+  }
 
   @override
   void dispose() {
-    // Dispose controllers to avoid memory leaks
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
+  Future<void> _updateProfile() async {
+    var userData = {
+      'name': _nameController.text,
+      'email': _emailController.text,
+      'password': _passwordController.text, // Assuming password is editable
+    };
+
+    var url = 'https://issuances.dilgbohol.com/api/user/update';
+    var headers = {'Content-Type': 'application/json'};
+    var body = jsonEncode(userData);
+
+    try {
+      var response = await http.put(Uri.parse(url), headers: headers, body: body);
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Profile Updated')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update profile')),
+        );
+      }
+    } catch (error) {
+      print('Error updating profile: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error updating profile')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: Text(
-      //     'View Profile',
-      //     style: TextStyle(
-      //       fontWeight: FontWeight.bold,
-      //       color: Colors.white,
-      //     ),
-      //   ),
-      //   leading: Builder(
-      //     builder: (context) => IconButton(
-      //       icon: Icon(Icons.menu, color: Colors.white),
-      //       onPressed: () => Scaffold.of(context).openDrawer(),
-      //     ),
-      //   ),
-      //   backgroundColor: Colors.blue[900],
-      // ),
-      drawer: Sidebar(
-        currentIndex: 1,
-        onItemSelected: (index) {
-          // Handle item selection if needed
-          _navigateToSelectedPage(context, index);
-        },
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              SizedBox(height: 16),
-
-              // Default container for an image
-              Container(
-                width: 130,
-                height: 130,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.blue[900],
-                ),
-                child: Icon(
-                  Icons.person,
-                  color: Colors.white,
-                  size: 110,
-                ),
-              ),
-
-              SizedBox(height: 16),
-
-              // Name input field
-              _buildTextField('Name', Icons.person, _nameController),
-              SizedBox(height: 16),
-
-              // Email input field
-              _buildTextField('Email', Icons.email, _emailController),
-              SizedBox(height: 16),
-
-              // Password input field
-              _buildTextField('Password', Icons.lock, _passwordController,
-                  isPassword: true),
-              SizedBox(height: 32),
-
-              // Submit button
-              ElevatedButton(
-                onPressed: () {
-                  // Handle form submission
-
-                  // Clear input fields
-                  _nameController.clear();
-                  _emailController.clear();
-                  _passwordController.clear();
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Profile Updated'),
-                      duration:
-                          Duration(seconds: 3), // You can adjust the duration
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.blue[900],
-                ),
-                child: Text(
-                  'Save Changes',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ],
-          ),
+      appBar: AppBar(title: Text('Edit Profile')),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(labelText: 'Name'),
+            ),
+            TextField(
+              controller: _emailController,
+              decoration: InputDecoration(labelText: 'Email'),
+            ),
+            TextField(
+              controller: _passwordController,
+              decoration: InputDecoration(labelText: 'Password'),
+              obscureText: true,
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => _updateProfile(),
+              child: Text('Save Changes'),
+            ),
+          ],
         ),
       ),
     );
-  }
-
-  Widget _buildTextField(
-      String label, IconData icon, TextEditingController controller,
-      {bool isPassword = false}) {
-    return TextFormField(
-      controller: controller,
-      obscureText: isPassword,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
-    );
-  }
-
-  void _navigateToSelectedPage(BuildContext context, int index) {
-    // Handle navigation if needed
   }
 }

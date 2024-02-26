@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:DILGDOCS/Services/globals.dart';
+import 'package:DILGDOCS/models/republic_acts.dart';
 import 'package:DILGDOCS/screens/draft_issuances.dart';
 import 'package:DILGDOCS/screens/joint_circulars.dart';
+// import 'package:DILGDOCS/screens/joint_circulars.dart';
 import 'package:DILGDOCS/screens/latest_issuances.dart';
 import 'package:DILGDOCS/screens/legal_opinions.dart';
 import 'package:DILGDOCS/screens/memo_circulars.dart';
@@ -13,11 +16,16 @@ import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
-// import 'package:anim_search_bar/anim_search_bar.dart';
-// import 'dart:math';
 import 'package:http/http.dart' as http;
 
-import 'details_screen.dart';
+// import '../models/republic_acts.dart';
+import '../models/draft_issuances.dart';
+import '../models/joint_circulars.dart';
+import '../models/latest_issuances.dart';
+import '../models/legal_opinions.dart';
+import '../models/memo_circulars.dart';
+import '../models/presidential_directives.dart';
+
 
 class SearchScreen extends StatefulWidget {
   @override
@@ -29,7 +37,6 @@ class _SearchScreenState extends State<SearchScreen> {
   String searchInput = ''; // Add this line to declare and initialize searchInput
   List<String> _recentSearches = [""];
   List<SearchResult> searchResults = [];
-
   List<MemoCircular> _memoCirculars = [];
   List<MemoCircular> get memoCirculars => _memoCirculars;
   List<PresidentialDirective> _presidentialDirectives = [];
@@ -60,7 +67,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
 Future<void> fetchDraftIssuances() async {
     final response = await http.get(
-      Uri.parse('https://issuances.dilgbohol.com/api/draft_issuances'),
+      Uri.parse('$baseURL/draft_issuances'),
       headers: {
         'Accept': 'application/json',
       },
@@ -81,7 +88,7 @@ Future<void> fetchDraftIssuances() async {
 
  Future<void> fetchJointCirculars() async {
     final response = await http.get(
-      Uri.parse('https://issuances.dilgbohol.com/api/joint_circulars'),
+      Uri.parse('$baseURL/joint_circulars'),
       headers: {
         'Accept': 'application/json',
       },
@@ -102,7 +109,7 @@ Future<void> fetchDraftIssuances() async {
 //Presidential Directives
     Future<void> fetchPresidentialCirculars() async {
     final response = await http.get(
-      Uri.parse('https://issuances.dilgbohol.com/api/presidential_directives'),
+      Uri.parse('$baseURL/presidential_directives'),
       headers: {
         'Accept': 'application/json',
       },
@@ -131,7 +138,7 @@ Future<void> fetchDraftIssuances() async {
 //Republic Acts
   Future<void> fetchRepublicActs() async {
     final response = await http.get(
-      Uri.parse('https://issuances.dilgbohol.com/api/republic_acts'),
+      Uri.parse('$baseURL/republic_acts'),
       headers: {
         'Accept': 'application/json',
       },
@@ -153,7 +160,7 @@ Future<void> fetchDraftIssuances() async {
 //Memo Circularsss 
 Future<void> fetchMemoCirculars() async {
     final response = await http.get(
-      Uri.parse('https://issuances.dilgbohol.com/api/memo_circulars'),
+      Uri.parse('$baseURL/memo_circulars'),
       headers: {
         'Accept': 'application/json',
       },
@@ -175,7 +182,7 @@ Future<void> fetchMemoCirculars() async {
   //legal Opinions
   Future<void> fetchLegalOpinions() async {
     final response = await http.get(
-        Uri.parse('https://issuances.dilgbohol.com/api/legal_opinions'),
+        Uri.parse('$baseURL/legal_opinions'),
         headers: {
           'Accept': 'application/json',
         });
@@ -195,7 +202,7 @@ Future<void> fetchMemoCirculars() async {
   }
   Future<void> fetchLatestIssuances() async {
     final response = await http.get(
-      Uri.parse('https://issuances.dilgbohol.com/api/latest_issuances'),
+      Uri.parse('$baseURL/latest_issuances'),
       headers: {
         'Accept': 'application/json',
       },

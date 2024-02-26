@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'package:DILGDOCS/Services/globals.dart';
 import 'package:DILGDOCS/screens/file_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
 // Import other necessary files
+import '../models/memo_circulars.dart';
 import 'sidebar.dart';
 import 'details_screen.dart';
 
@@ -26,7 +28,7 @@ class _MemoCircularsState extends State<MemoCirculars> {
 
   Future<void> fetchMemoCirculars() async {
     final response = await http.get(
-      Uri.parse('https://issuances.dilgbohol.com/api/memo_circulars'),
+      Uri.parse('$baseURL/memo_circulars'),
       headers: {
         'Accept': 'application/json',
       },
@@ -124,16 +126,18 @@ class _MemoCircularsState extends State<MemoCirculars> {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                              fontSize: 15,
                             ),
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Ref #: ${_filteredMemoCirculars[index].issuance.referenceNo}',
+                                _filteredMemoCirculars[index].issuance.referenceNo != 'N/A'
+                                    ? 'Ref #: ${_filteredMemoCirculars[index].issuance.referenceNo}'
+                                    : '',
                                 style: TextStyle(
-                                  fontSize: 10,
+                                  fontSize: 12,
                                   color: Colors.grey,
                                 ),
                               ),
@@ -142,7 +146,7 @@ class _MemoCircularsState extends State<MemoCirculars> {
                                     ? 'Responsible Office: ${_filteredMemoCirculars[index].responsible_office}'
                                     : '',
                                 style: TextStyle(
-                                  fontSize: 10,
+                                  fontSize: 12,
                                   color: Colors.grey,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -154,7 +158,7 @@ class _MemoCircularsState extends State<MemoCirculars> {
                               DateTime.parse(_filteredMemoCirculars[index].issuance.date),
                             ),
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: 12,
                               fontStyle: FontStyle.italic,
                             ),
                           ),
@@ -211,53 +215,6 @@ class _MemoCircularsState extends State<MemoCirculars> {
   }
 }
 
-class MemoCircular {
-  final int id;
-  final String responsible_office;
-  final Issuance issuance;
 
-  MemoCircular({
-    required this.id,
-    required this.responsible_office,
-    required this.issuance,
-  });
 
-  factory MemoCircular.fromJson(Map<String, dynamic> json) {
-    return MemoCircular(
-      id: json['id'],
-      responsible_office: json['responsible_office'],
-      issuance: Issuance.fromJson(json['issuance']),
-    );
-  }
-}
 
-class Issuance {
-  final int id;
-  final String date;
-  final String title;
-  final String referenceNo;
-  final String keyword;
-  final String urlLink;
-  final String type;
-
-  Issuance({
-    required this.id,
-    required this.date,
-    required this.title,
-    required this.referenceNo,
-    required this.keyword,
-    required this.urlLink,
-    required this.type,
-  });
-
-  factory Issuance.fromJson(Map<String, dynamic> json) {
-    return Issuance(
-        id: json['id'],
-        date: json['date'],
-        title: json['title'],
-        referenceNo: json['reference_no'],
-        keyword: json['keyword'],
-        urlLink: json['url_link'],
-        type: json['type']);
-  }
-}

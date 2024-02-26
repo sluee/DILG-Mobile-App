@@ -71,7 +71,7 @@ class DetailsScreen extends StatelessWidget {
                         title,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                          fontSize: 15,
                           color: Colors.black,
                         ),
                         textAlign: TextAlign.center,

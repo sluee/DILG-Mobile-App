@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'package:DILGDOCS/screens/file_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import '../Services/globals.dart';
+import '../models/latest_issuances.dart';
 import '../utils/routes.dart';
 import 'sidebar.dart';
 import 'details_screen.dart';
@@ -38,7 +41,7 @@ class _LatestIssuancesState extends State<LatestIssuances> {
 
  Future<void> fetchLatestIssuances() async {
     final response = await http.get(
-      Uri.parse('https://issuances.dilgbohol.com/api/latest_issuances'),
+      Uri.parse('$baseURL/latest_issuances'),
       headers: {
         'Accept': 'application/json',
       },
@@ -205,23 +208,31 @@ class _LatestIssuancesState extends State<LatestIssuances> {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 12,
+                                  fontSize: 15,
                                 ),
                               ),
                               SizedBox(height: 4.0),
                               Text(
                                 'Ref #: ${_latestIssuances[index].issuance.referenceNo}',
                                 style: TextStyle(
-                                  fontSize: 10,
+                                  fontSize: 12,
                                   color: Colors.grey,
                                 ),
                               ),
                                Text(
                                 'Outcome Area: ${_latestIssuances[index].outcome}',
                                 style: TextStyle(
-                                  fontSize: 10,
+                                  fontSize: 12,
                                   color: Colors.grey,
                                    overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                               Text(
+                                _latestIssuances[index].category !='N/A' ? 'Category: ${_latestIssuances[index].category}' : '',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
@@ -258,7 +269,7 @@ class _LatestIssuancesState extends State<LatestIssuances> {
     MaterialPageRoute(
       builder: (context) => DetailsScreen(
         title: issuance.issuance.title,
-        content: 'Ref #${issuance.issuance.referenceNo}\n${DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date))}',
+        content: 'Ref #${issuance.issuance.referenceNo}\n${DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date))}\br Category: ${issuance.category}',
         pdfUrl: issuance.issuance.urlLink,
          type: getTypeForDownload(issuance.issuance.type),
         
@@ -282,84 +293,3 @@ class _LatestIssuancesState extends State<LatestIssuances> {
     }
   }
 
-
-//for Latest getters and setters
-class LatestIssuance {
-  final int id;
-  final String category;
-  final String outcome;
-  final Issuance issuance;
-
-  LatestIssuance({
-    required this.id,
-    required this.category,
-    required this.outcome,
-    required this.issuance,
-  });
-
-  factory LatestIssuance.fromJson(Map<String, dynamic> json) {
-    return LatestIssuance(
-      id: json['id'],
-      category: json['category'],
-      // title: json['issuance']['title'],
-      outcome: json['outcome'],
-      issuance: Issuance.fromJson(json['issuance']),
-    );
-  }
-}
-
-//for Issuance
-class Issuance {
-  final int id;
-  final String date;
-  final String title;
-  final String referenceNo;
-  final String keyword;
-  final String urlLink; 
-  final String type; 
-
-  Issuance({
-    required this.id,
-    required this.date,
-    required this.title,
-    required this.referenceNo,
-    required this.keyword,
-    required this.urlLink,
-    required this.type
-  });
-
-  factory Issuance.fromJson(Map<String, dynamic> json) {
-    return Issuance(
-      id: json['id'],
-      date: json['date'],
-      title: json['title'],
-      referenceNo: json['reference_no'],
-      keyword: json['keyword'],
-      urlLink: json['url_link'],
-      type: json['type']
-    );
-  }
-}
-
-String getTypeForDownload(String issuanceType) {
-  // Map issuance types to corresponding download types
-  switch (issuanceType) {
-    case 'Latest Issuance':
-      return 'Latest Issuance';
-    case 'Joint Circulars':
-      return 'Joint Circulars';
-    case 'Memo Circulars':
-      return 'Memo Circulars';
-     case 'Presidential Directives':
-      return 'Presidential Directives';  
-     case 'Draft Issuances':
-      return 'Draft Issuances';  
-     case 'Republic Acts':
-      return 'Republic Acts';  
-     case 'Legal Opinions':
-      return 'Legal Opinions';  
-  
-    default:
-      return 'Other';
-  }
-}

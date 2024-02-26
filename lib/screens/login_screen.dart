@@ -6,16 +6,16 @@ import '../Services/auth_services.dart';
 import 'package:http/http.dart' as http;
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key, required this.title});
+  const LoginScreen({Key? key, required this.title,});
+
   final String title;
+
   @override
   State<LoginScreen> createState() => _LoginScreenState();
-  
 }
 
 class _LoginScreenState extends State<LoginScreen> {
   bool rememberMe = false;
-   bool _isLoading = false; 
   String emailError = '';
   String passwordError = '';
   TextEditingController _emailController = TextEditingController();
@@ -27,48 +27,43 @@ class _LoginScreenState extends State<LoginScreen> {
     checkLoggedIn(); // Check if user is already logged in when screen initializes
   }
 
+  // checkLoggedIn() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   String? authToken = prefs.getString('authToken');
 
+  //   if (authToken != null) {
+  //     // If authToken exists, check if it's valid
+  //     try {
+  //       bool isValid = await AuthServices.validateToken(authToken);
+  //       if (isValid) {
+  //         // Token is valid, navigate to HomeScreen
+  //         Navigator.pushReplacement(
+  //           context,
+  //           MaterialPageRoute(builder: (context) => const HomeScreen()),
+  //         );
+  //       }
+  //     } catch (error) {
+  //       print('Error validating token: $error');
+  //       // Handle token validation error
+  //     }
+  //   }
+  // }
   checkLoggedIn() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? authToken = prefs.getString('authToken');
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? authToken = prefs.getString('authToken');
 
-    if (authToken != null) {
-      // If authToken exists, check if it's valid
-      try {
-        bool isValid = await AuthServices.validateToken(authToken);
-        if (isValid) {
-          // Token is valid, navigate to HomeScreen
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
-          );
-        }
-      } catch (error) {
-        print('Error validating token: $error');
-        
-      }
-    }
+  if (authToken != null) {
+    // If authToken exists, navigate to HomeScreen
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const HomeScreen(userData: {},)),
+    );
   }
+}
 
   loginPressed() async {
-    if (_isLoading) {
-      // If already loading, do nothing
-      return;
-    }
-
-    setState(() {
-      // Set loading state to true when login process starts
-      _isLoading = true;
-      // Reset any previous error messages
-      emailError = '';
-      passwordError = '';
-    });
-
     if (_emailController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
       try {
-        // Simulate a minimum 2-second loading time before actual login process
-        await Future.delayed(Duration(seconds: 2));
-
         http.Response response = await AuthServices.login(
           _emailController.text,
           _passwordController.text,
@@ -88,10 +83,11 @@ class _LoginScreenState extends State<LoginScreen> {
           // Navigate to HomeScreen
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
+            MaterialPageRoute(builder: (context) => const HomeScreen(userData: {},)),
           );
         } else {
           setState(() {
+            emailError = '';
             passwordError = responseMap['message'] ?? 'Login failed';
           });
         }
@@ -99,24 +95,17 @@ class _LoginScreenState extends State<LoginScreen> {
         print("Error during login: $error");
         print("Stack trace: $stackTrace");
         setState(() {
+          emailError = '';
           passwordError = 'An error occurred during login';
-        });
-      } finally {
-        setState(() {
-          // Set loading state back to false regardless of success or failure
-          _isLoading = false;
         });
       }
     } else {
       setState(() {
         emailError = 'Enter your email';
         passwordError = 'Enter your password';
-        _isLoading = false; // Set loading state to false if inputs are empty
       });
     }
   }
-
-
 
   @override
   void dispose() {
@@ -125,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  @override
+@override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
@@ -166,20 +155,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(height: 8),
                     TextFormField(
                       controller: _emailController,
-                      decoration: InputDecoration(
-                        labelText: 'Email',
-                         errorText:
-                            emailError.isNotEmpty ? emailError : null,
-                      ),
-                      
+                      decoration: InputDecoration(labelText: 'Email'),
                       validator: (_emailController) {
                         if (_emailController == null || _emailController.isEmpty) {
                           return 'Please enter your email';
                         }
-                       
+                        // Add more complex email validation if needed
                         return null;
                       },
-                      
                     ),
                     SizedBox(height: 8),
                     TextField(
@@ -205,19 +188,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         Text('Remember Me'),
                         Spacer(),
                         ElevatedButton(
-                          onPressed: _isLoading ? null : loginPressed, // Disable button if loading
-                          child: _isLoading
-                              ? SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 3,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-                                  ),
-                                )
-                              : Text('Log in'),
+                          onPressed: loginPressed,
+                          child: Text('Log in'),
                         ),
-
                       ],
                     ),
                   ],

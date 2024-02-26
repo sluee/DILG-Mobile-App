@@ -28,7 +28,7 @@ class Routes {
 
   static Map<String, WidgetBuilder> getRoutes(BuildContext context) {
     return {
-      home: (context) => const HomeScreen(),
+      home: (context) => const HomeScreen(userData: {},),
       search: (context) => SearchScreen(),
       library: (context) => LibraryScreen(
             onFileOpened: (fileName, filePath) {
@@ -36,7 +36,7 @@ class Routes {
               print('File opened: $fileName');
             },
           ),
-      introsection: (context) => IntroSection(),
+      // introsection: (context) => IntroSection(),
       latestIssuances: (context) => LatestIssuances(),
       jointCirculars: (context) => JointCirculars(),
       memoCirculars: (context) => MemoCirculars(),
@@ -44,9 +44,9 @@ class Routes {
       draftIssuances: (context) => DraftIssuances(),
       republicActs: (context) => RepublicActs(),
       legalOpinions: (context) => LegalOpinions(),
-      login: (context) => LoginScreen(
-            title: 'login',
-          ),
+      login: (context) => LoginScreen(title: '',
+         
+      ),
     };
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:DILGDOCS/models/draft_issuances.dart';
 import 'package:DILGDOCS/screens/file_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
@@ -135,14 +136,16 @@ class _DraftIssuancesState extends State<DraftIssuances> {
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 12,
+                                      fontSize: 15,
                                     ),
                                   ),
                                   SizedBox(height: 4.0),
                                   Text(
-                                    'Ref #${_filteredDraftIssuances[index].issuance.referenceNo}',
+                                      _filteredDraftIssuances[index].issuance.referenceNo != 'N/A'
+                                    ? 'Ref #: ${_filteredDraftIssuances[index].issuance.referenceNo}'
+                                    : '',
                                     style: TextStyle(
-                                      fontSize: 10,
+                                      fontSize: 12,
                                       color: Colors.grey,
                                     ),
                                   ),
@@ -151,7 +154,7 @@ class _DraftIssuancesState extends State<DraftIssuances> {
                                         ? 'Responsible Office: ${_filteredDraftIssuances[index].responsible_office}'
                                         : '',
                                     style: TextStyle(
-                                      fontSize: 10,
+                                      fontSize: 12,
                                       color: Colors.grey,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -165,7 +168,7 @@ class _DraftIssuancesState extends State<DraftIssuances> {
                                 DateTime.parse(_filteredDraftIssuances[index].issuance.date),
                               ),
                               style: TextStyle(
-                                fontSize: 10,
+                                fontSize: 12,
                                 fontStyle: FontStyle.italic,
                               ),
                             ),
@@ -211,53 +214,4 @@ class _DraftIssuancesState extends State<DraftIssuances> {
   }
 }
 
-class DraftIssuance {
-  final int id;
-  final String responsible_office;
-  final Issuance issuance;
 
-  DraftIssuance({
-    required this.id,
-    required this.responsible_office,
-    required this.issuance,
-  });
-
-  factory DraftIssuance.fromJson(Map<String, dynamic> json) {
-    return DraftIssuance(
-      id: json['id'],
-      responsible_office: json['responsible_office'],
-      issuance: Issuance.fromJson(json['issuance']),
-    );
-  }
-}
-
-class Issuance {
-  final int id;
-  final String date;
-  final String title;
-  final String referenceNo;
-  final String keyword;
-  final String urlLink;
-  final String type;
-
-  Issuance({
-    required this.id,
-    required this.date,
-    required this.title,
-    required this.referenceNo,
-    required this.keyword,
-    required this.urlLink,
-    required this.type,
-  });
-
-  factory Issuance.fromJson(Map<String, dynamic> json) {
-    return Issuance(
-        id: json['id'],
-        date: json['date'],
-        title: json['title'],
-        referenceNo: json['reference_no'],
-        keyword: json['keyword'],
-        urlLink: json['url_link'],
-        type: json['type']);
-  }
-}
