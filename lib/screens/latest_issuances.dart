@@ -125,7 +125,7 @@ class _LatestIssuancesState extends State<LatestIssuances> {
                                 width: MediaQuery.of(context).size.width * 0.8,
                                 child: Row(
                                   children: [
-                                    Icon(Icons.arrow_downward, color: Colors.blue[900]),
+                                    Icon(Icons.arrow_downward, color: Colors.blue[900]), 
                                     SizedBox(width: 6.0),
                                     Expanded(
                                       child: Text(
@@ -214,6 +214,14 @@ class _LatestIssuancesState extends State<LatestIssuances> {
                                 style: TextStyle(
                                   fontSize: 10,
                                   color: Colors.grey,
+                                ),
+                              ),
+                               Text(
+                                'Outcome Area: ${_latestIssuances[index].outcome}',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.grey,
+                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
