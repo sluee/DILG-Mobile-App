@@ -153,15 +153,15 @@ class _MemoCircularsState extends State<MemoCirculars> {
                               ),
                             ],
                           ),
-                          trailing: Text(
-                            DateFormat('MMMM dd, yyyy').format(
-                              DateTime.parse(_filteredMemoCirculars[index].issuance.date),
-                            ),
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontStyle: FontStyle.italic,
-                            ),
+                          trailing:  Text(
+                          _filteredMemoCirculars[index].issuance.date != 'N/A' 
+                            ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(_filteredMemoCirculars[index].issuance.date))
+                            : '',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
                           ),
+                        ),
                         ),
                         Divider(
                           color: Colors.grey[400],

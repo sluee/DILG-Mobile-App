@@ -155,10 +155,10 @@ class _RepublicActsState extends State<RepublicActs> {
                               ),
                             ),
                             SizedBox(width: 16.0),
-                            Text(
-                              DateFormat('MMMM dd, yyyy').format(
-                                DateTime.parse(_filteredRepublicActs[index].issuance.date),
-                              ),
+                             Text(
+                              _filteredRepublicActs[index].issuance.date != 'N/A' 
+                                ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(_filteredRepublicActs[index].issuance.date))
+                                : '',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontStyle: FontStyle.italic,

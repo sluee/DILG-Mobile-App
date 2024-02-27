@@ -168,10 +168,10 @@ class _LegalOpinionsState extends State<LegalOpinions> {
                               ),
                             ),
                             SizedBox(width: 16.0),
-                            Text(
-                              DateFormat('MMMM dd, yyyy').format(
-                                DateTime.parse(_filteredLegalOpinions[index].issuance.date),
-                              ),
+                             Text(
+                              _filteredLegalOpinions[index].issuance.date != 'N/A' 
+                                ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(_filteredLegalOpinions[index].issuance.date))
+                                : '',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontStyle: FontStyle.italic,

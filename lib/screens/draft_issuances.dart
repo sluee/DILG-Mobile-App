@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:DILGDOCS/Services/globals.dart';
 import 'package:DILGDOCS/models/draft_issuances.dart';
 import 'package:DILGDOCS/screens/file_utils.dart';
 import 'package:intl/intl.dart';
@@ -25,7 +26,7 @@ class _DraftIssuancesState extends State<DraftIssuances> {
 
   Future<void> fetchDraftIssuances() async {
     final response = await http.get(
-      Uri.parse('https://issuances.dilgbohol.com/api/draft_issuances'),
+      Uri.parse('$baseURL/draft_issuances'),
       headers: {
         'Accept': 'application/json',
       },
@@ -163,10 +164,10 @@ class _DraftIssuancesState extends State<DraftIssuances> {
                               ),
                             ),
                             SizedBox(width: 16.0),
-                            Text(
-                              DateFormat('MMMM dd, yyyy').format(
-                                DateTime.parse(_filteredDraftIssuances[index].issuance.date),
-                              ),
+                             Text(
+                              _filteredDraftIssuances[index].issuance.date != 'N/A' 
+                                ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(_filteredDraftIssuances[index].issuance.date))
+                                : '',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontStyle: FontStyle.italic,

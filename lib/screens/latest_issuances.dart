@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:DILGDOCS/models/latest_issuances.dart';
 import 'package:DILGDOCS/screens/file_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
@@ -213,7 +214,7 @@ class _LatestIssuancesState extends State<LatestIssuances> {
                               ),
                               SizedBox(height: 4.0),
                               Text(
-                                'Ref #: ${_latestIssuances[index].issuance.referenceNo}',
+                                _latestIssuances[index].issuance.referenceNo !='N/A' ? 'Ref #: ${_latestIssuances[index].issuance.referenceNo}' : '',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey,
@@ -240,14 +241,15 @@ class _LatestIssuancesState extends State<LatestIssuances> {
                         ),
                         SizedBox(width: 16.0),
                         Text(
-                          DateFormat('MMMM dd, yyyy').format(
-                            DateTime.parse(_latestIssuances[index].issuance.date),
-                          ),
+                          _latestIssuances[index].issuance.date != 'N/A' 
+                            ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(_latestIssuances[index].issuance.date))
+                            : '',
                           style: TextStyle(
-                            fontSize: 10,
+                            fontSize: 12,
                             fontStyle: FontStyle.italic,
                           ),
-                        ),   
+                        ),
+  
                       ],
                     ),
                   ),
@@ -269,9 +271,9 @@ class _LatestIssuancesState extends State<LatestIssuances> {
     MaterialPageRoute(
       builder: (context) => DetailsScreen(
         title: issuance.issuance.title,
-        content: 'Ref #${issuance.issuance.referenceNo}\n${DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date))}\br Category: ${issuance.category}',
+        content: 'Ref #${issuance.issuance.referenceNo}\n${DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date))}\n Category: ${issuance.category}',
         pdfUrl: issuance.issuance.urlLink,
-         type: getTypeForDownload(issuance.issuance.type),
+        type: getTypeForDownload(issuance.issuance.type),
         
       ),
     ),

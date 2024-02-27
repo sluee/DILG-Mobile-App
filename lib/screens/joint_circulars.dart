@@ -166,10 +166,10 @@ class _JointCircularsState extends State<JointCirculars> {
                               ),
                             ),
                             SizedBox(width: 16.0),
-                            Text(
-                              DateFormat('MMMM dd, yyyy').format(
-                                DateTime.parse(_filteredJointCirculars[index].issuance.date),
-                              ),
+                             Text(
+                              _filteredJointCirculars[index].issuance.date != 'N/A' 
+                                ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(_filteredJointCirculars[index].issuance.date))
+                                : '',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontStyle: FontStyle.italic,
@@ -207,14 +207,16 @@ class _JointCircularsState extends State<JointCirculars> {
   void _navigateToDetailsPage(BuildContext context, JointCircular issuance) {
     Navigator.push(
       context,
-      MaterialPageRoute(
+     MaterialPageRoute(
         builder: (context) => DetailsScreen(
           title: issuance.issuance.title,
           content: 'Ref #: ${issuance.issuance.referenceNo}\n${DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date))}',
-          pdfUrl: issuance.issuance.urlLink,
+          pdfUrl: issuance.issuance.urlLink ?? '', // Provide a default value if urlLink is null
           type: getTypeForDownload(issuance.issuance.type),
         ),
       ),
+
+
     );
   }
 
