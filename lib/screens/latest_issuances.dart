@@ -271,15 +271,35 @@ class _LatestIssuancesState extends State<LatestIssuances> {
     MaterialPageRoute(
       builder: (context) => DetailsScreen(
         title: issuance.issuance.title,
-        content: 'Ref #${issuance.issuance.referenceNo}\n${DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date))}\n Category: ${issuance.category}',
+        content: 'Ref #: ${issuance.issuance.referenceNo != 'N/A' ? issuance.issuance.referenceNo + '\n' : ''}'
+                '${issuance.issuance.date != 'N/A' ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date)) + '\n' : ''}'
+                '${issuance.category != 'N/A' ? 'Category: ${issuance.category}\n' : ''}',
         pdfUrl: issuance.issuance.urlLink,
         type: getTypeForDownload(issuance.issuance.type),
-        
       ),
-    ),
+    )
   );
 }
+Widget buildContent(LatestIssuance issuance) {
+  List<InlineSpan> spans = [];
 
+  if (issuance.issuance.referenceNo != 'N/A') {
+    spans.add(TextSpan(text: 'Ref #${issuance.issuance.referenceNo}\n'));
+  }
+
+  if (issuance.issuance.date != 'N/A') {
+    spans.add(TextSpan(text: '${DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date))}\n'));
+  }
+
+  if (issuance.category != 'N/A') {
+    spans.add(TextSpan(text: 'Category: ${issuance.category}\n'));
+  }
+
+  return RichText(
+    text: TextSpan(children: spans),
+    textAlign: TextAlign.start,
+  );
+}
 
 
   void _navigateToSelectedPage(BuildContext context, int index) {

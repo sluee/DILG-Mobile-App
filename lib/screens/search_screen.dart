@@ -2,12 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:DILGDOCS/Services/globals.dart';
 import 'package:DILGDOCS/models/republic_acts.dart';
+import 'package:DILGDOCS/screens/details.dart';
 import 'package:DILGDOCS/screens/draft_issuances.dart';
 import 'package:DILGDOCS/screens/joint_circulars.dart';
-// import 'package:DILGDOCS/screens/joint_circulars.dart';
 import 'package:DILGDOCS/screens/latest_issuances.dart';
 import 'package:DILGDOCS/screens/legal_opinions.dart';
 import 'package:DILGDOCS/screens/memo_circulars.dart';
+import 'package:DILGDOCS/screens/pdf_preview.dart';
 import 'package:DILGDOCS/screens/presidential_directives.dart';
 import 'package:DILGDOCS/screens/republic_acts.dart';
 import 'package:DILGDOCS/utils/routes.dart';
@@ -15,10 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
-
 import 'package:http/http.dart' as http;
-
-// import '../models/republic_acts.dart';
 import '../models/draft_issuances.dart';
 import '../models/joint_circulars.dart';
 import '../models/latest_issuances.dart';
@@ -266,7 +264,7 @@ Widget build(BuildContext context) {
                         IconButton(
                           icon: Icon(Icons.search),
                           onPressed: () {
-                            _handleSearch(); // You can remove this line if you want to rely only on text input for searching
+                            _handleSearch(); 
                           },
                         ),
                       ],
@@ -371,67 +369,94 @@ Widget _buildSearchResultsContainer() {
         ],
       ); 
   }
-     Widget _buildSearchResults(List<SearchResult> searchResults, String searchInput) {
-  if (searchInput.isEmpty) {
-    return SizedBox.shrink();
+  Widget _buildSearchResults(List<SearchResult> searchResults, String searchInput) {
+    if (searchInput.isEmpty) {
+      return SizedBox.shrink();
+    }
+    return searchResults.isNotEmpty
+        ? SingleChildScrollView(
+            child: Column(
+              children: [
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: searchResults.length,
+                  itemBuilder: (context, index) {
+                    final SearchResult result = searchResults[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DetailsScreen(
+                              searchResult: result,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        margin: EdgeInsets.symmetric(vertical: 8),
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.5),
+                              spreadRadius: 2,
+                              blurRadius: 5,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: RichText(
+                          text: highlightTextWithOriginalTitle(result.title, searchInput),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          )
+        : Center(child: Text('No results found'));
   }
 
-  return searchResults.isNotEmpty
-      ? SingleChildScrollView(
-          child: Column(
-            children: [
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: searchResults.length,
-                itemBuilder: (context, index) {
-                  final SearchResult result = searchResults[index];
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DetailsScreen(
-                            searchResult: result,
-                          ),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      margin: EdgeInsets.symmetric(vertical: 8),
-                      padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
-                            spreadRadius: 2,
-                            blurRadius: 5,
-                            offset: Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        result.title,
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        )
-      : Center(child: Text('No results found'));
-}
+    TextSpan highlightTextWithOriginalTitle(String text, String highlight) {
+    List<TextSpan> spans = [];
 
+    // Find indices of matches
+    List<int> matches = [];
+    int index = text.toLowerCase().indexOf(highlight.toLowerCase());
+    while (index != -1) {
+      matches.add(index);
+      index = text.toLowerCase().indexOf(highlight.toLowerCase(), index + 1);
+    }
 
+    // Create text spans with highlighting
+    int prevIndex = 0;
+    for (int match in matches) {
+      // Add the original text before the match
+      spans.add(TextSpan(
+        text: text.substring(prevIndex, match),
+        style: TextStyle(color: Colors.black, fontSize: 15), // Set original text color and font size
+      ));
+      // Highlight the matching characters
+      spans.add(TextSpan(
+        text: text.substring(match, match + highlight.length),
+        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 15), // Customize highlighting style and font size
+      ));
+      prevIndex = match + highlight.length;
+    }
+    // Add the remaining original text
+    spans.add(TextSpan(
+      text: text.substring(prevIndex),
+      style: TextStyle(color: Colors.black, fontSize: 15), // Set original text color and font size
+    ));
 
+    return TextSpan(children: spans);
+  }
 
-  // Method to handle the search button press
- // Method to handle the search button press
-// Method to handle the search button press
 void _handleSearch() {
   String searchInput = _searchController.text.toLowerCase();
 
@@ -527,251 +552,7 @@ class SearchResult {
   );
 
 }
-class DetailsScreen extends StatelessWidget {
-  final SearchResult searchResult;
-
-  const DetailsScreen({required this.searchResult});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(searchResult.title),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Display any details you want about the search result
-            // Display PDF preview
-            PdfPreview(url: searchResult.pdfUrl),
-            SizedBox(height: 50),
-            // Button to download PDF
-            ElevatedButton(
-              onPressed: () {
-                downloadAndSavePdf(context, searchResult.pdfUrl, searchResult.title);
-              },
-              child: Text('Download PDF'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-Widget _buildSearchResults(List<SearchResult> searchResults, String searchInput) {
-  if (searchInput.isEmpty) {
-    return SizedBox.shrink();
-  }
-
-  return searchResults.isNotEmpty
-      ? SingleChildScrollView(
-          child: Column(
-            children: [
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: searchResults.length,
-                itemBuilder: (context, index) {
-                  final SearchResult result = searchResults[index];
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DetailsScreen(
-                            searchResult: result,
-                          ),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      margin: EdgeInsets.symmetric(vertical: 8),
-                      padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
-                            spreadRadius: 2,
-                            blurRadius: 5,
-                            offset: Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        result.title,
-                        style: TextStyle(fontSize: 12),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        )
-      : Center(child: Text('No results found'));
-}
 
 
 
-  
-Future<void> downloadAndSavePdf(
-      BuildContext context, String url, String title) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Downloading PDF...'),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-
-    try {
-      final appDir = await getExternalStorageDirectory();
-      final directoryPath = '${appDir!.path}/PDFs';
-      final filePath = '$directoryPath/$title.pdf';
-
-      final file = File(filePath);
-      if (await file.exists()) {
-        Navigator.of(context).pop(); // Close the loading dialog
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('File Already Downloaded'),
-              content: Text(
-                  'The PDF has already been downloaded and saved locally.'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('OK'),
-                ),
-              ],
-            );
-          },
-        );
-        return;
-      }
-
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        final directory = Directory(directoryPath);
-        if (!await directory.exists()) {
-          await directory.create(recursive: true);
-        }
-
-        await file.writeAsBytes(response.bodyBytes);
-
-        print('PDF downloaded and saved at: $filePath');
-
-        Navigator.of(context).pop(); // Close the loading dialog
-
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Download Complete'),
-              content: Text('The PDF has been downloaded and saved locally.'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('OK'),
-                ),
-              ],
-            );
-          },
-        );
-      } else {
-        throw Exception('Failed to load PDF: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error downloading PDF: $e');
-      Navigator.of(context).pop(); // Close the loading dialog
-    }
-  }
-}
-
-class PdfPreview extends StatelessWidget {
-  final String url;
-
-  const PdfPreview({Key? key, required this.url}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<File>(
-      future: _loadPdfFromUrl(url),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text(
-                  'Previewing PDF...',
-                  style: TextStyle(fontSize: 16),
-                ),
-              ],
-            ),
-          );
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error loading PDF: ${snapshot.error}'));
-        } else if (snapshot.hasData) {
-          return Expanded(
-            child: PDFView(
-              filePath: snapshot.data!.path,
-              pageSnap: true,
-              swipeHorizontal: true,
-              autoSpacing: true,
-              pageFling: true,
-              onError: (error) {
-                print('Error loading PDF: $error');
-              },
-            ),
-          );
-        } else {
-          return Center(child: Text('Unknown error occurred'));
-        }
-      },
-    );
-  }
-
-  Future<File> _loadPdfFromUrl(String url) async {
-    final filename = url.split('/').last;
-    final directory = await getApplicationDocumentsDirectory();
-    final filePath = '${directory.path}/$filename';
-    final file = File(filePath);
-
-    if (await file.exists()) {
-      return file;
-    } else {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        await file.writeAsBytes(response.bodyBytes);
-        return file;
-      } else {
-        throw Exception('Failed to load PDF: ${response.statusCode}');
-      }
-    }
-  }
-}
 

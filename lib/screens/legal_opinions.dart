@@ -196,7 +196,8 @@ class _LegalOpinionsState extends State<LegalOpinions> {
       MaterialPageRoute(
         builder: (context) => DetailsScreen(
           title: issuance.issuance.title,
-          content: 'Ref #${issuance.issuance.referenceNo}\n${DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date))}',
+          content: 'Ref #: ${issuance.issuance.referenceNo != 'N/A' ? issuance.issuance.referenceNo + '\n' : ''}'
+                '${issuance.issuance.date != 'N/A' ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date)) + '\n' : ''}',
           pdfUrl: issuance.issuance.urlLink,
           type: getTypeForDownload(issuance.issuance.type),
         ),

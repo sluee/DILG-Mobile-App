@@ -210,8 +210,9 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
       MaterialPageRoute(
         builder: (context) => DetailsScreen(
           title: directive.issuance.title,
-          content:
-              'Ref #: ${directive.issuance.referenceNo}\n${DateFormat('MMMM dd, yyyy').format(DateTime.parse(directive.issuance.date))} \n \n ${directive.responsible_office}',
+           content: 'Ref #: ${directive.issuance.referenceNo != 'N/A' ? directive.issuance.referenceNo + '\n' : ''}'
+                '${directive.issuance.date != 'N/A' ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(directive.issuance.date)) + '\n' : ''}'
+                '${directive.responsible_office != 'N/A' ? 'Category: ${directive.responsible_office}\n' : ''}',
           pdfUrl: directive.issuance.urlLink,
           type: getTypeForDownload(directive.issuance.type),
         ),

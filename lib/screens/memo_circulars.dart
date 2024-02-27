@@ -201,8 +201,9 @@ class _MemoCircularsState extends State<MemoCirculars> {
       MaterialPageRoute(
         builder: (context) => DetailsScreen(
           title: issuance.issuance.title,
-          content:
-              'Ref #${issuance.issuance.referenceNo}\n${DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date))} \br \br ${issuance.responsible_office}',
+         content: 'Ref #: ${issuance.issuance.referenceNo != 'N/A' ? issuance.issuance.referenceNo + '\n' : ''}'
+                '${issuance.issuance.date != 'N/A' ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date)) + '\n' : ''}'
+                '${issuance.responsible_office != 'N/A' ? 'Category: ${issuance.responsible_office}\n' : ''}',
           pdfUrl: issuance.issuance.urlLink,
           type: getTypeForDownload(issuance.issuance.type),
         ),
