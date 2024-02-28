@@ -6,7 +6,7 @@ import '../Services/auth_services.dart';
 import 'package:http/http.dart' as http;
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key, required this.title,});
+  const LoginScreen({Key? key, required this.title});
 
   final String title;
 
@@ -20,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String passwordError = '';
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
+   bool _isLoggingIn = false;
 
   @override
   void initState() {
@@ -27,41 +28,32 @@ class _LoginScreenState extends State<LoginScreen> {
     checkLoggedIn(); // Check if user is already logged in when screen initializes
   }
 
-  // checkLoggedIn() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   String? authToken = prefs.getString('authToken');
-
-  //   if (authToken != null) {
-  //     // If authToken exists, check if it's valid
-  //     try {
-  //       bool isValid = await AuthServices.validateToken(authToken);
-  //       if (isValid) {
-  //         // Token is valid, navigate to HomeScreen
-  //         Navigator.pushReplacement(
-  //           context,
-  //           MaterialPageRoute(builder: (context) => const HomeScreen()),
-  //         );
-  //       }
-  //     } catch (error) {
-  //       print('Error validating token: $error');
-  //       // Handle token validation error
-  //     }
-  //   }
-  // }
   checkLoggedIn() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? authToken = prefs.getString('authToken');
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? authToken = prefs.getString('authToken');
 
-  if (authToken != null) {
-    // If authToken exists, navigate to HomeScreen
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
-    );
+    if (authToken != null) {
+      // If authToken exists, check if it's valid
+      try {
+        bool isValid = await AuthServices.validateToken(authToken);
+        if (isValid) {
+          // Token is valid, navigate to HomeScreen
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+          );
+        }
+      } catch (error) {
+        print('Error validating token: $error');
+        // Handle token validation error
+      }
+    }
   }
-}
 
   loginPressed() async {
+     setState(() {
+      _isLoggingIn = true;
+    });
     if (_emailController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
       try {
         http.Response response = await AuthServices.login(
@@ -96,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
         print("Stack trace: $stackTrace");
         setState(() {
           emailError = '';
-          passwordError = 'An error occurred during login';
+          passwordError = 'Incorrect email or password';
         });
       }
     } else {
@@ -105,6 +97,9 @@ class _LoginScreenState extends State<LoginScreen> {
         passwordError = 'Enter your password';
       });
     }
+     setState(() {
+      _isLoggingIn = false;
+    });
   }
 
   @override
@@ -114,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-@override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
@@ -155,9 +150,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(height: 8),
                     TextFormField(
                       controller: _emailController,
-                      decoration: InputDecoration(labelText: 'Email'),
-                      validator: (_emailController) {
-                        if (_emailController == null || _emailController.isEmpty) {
+                      decoration: InputDecoration(labelText: 'Email',
+                       errorText:
+                        emailError.isNotEmpty ? emailError : null,
+                      ),
+                      
+                     validator: (value) {
+                        if (value == null || value.isEmpty) {
                           return 'Please enter your email';
                         }
                         // Add more complex email validation if needed
@@ -186,10 +185,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                         ),
                         Text('Remember Me'),
-                        Spacer(),
+                         Spacer(),
                         ElevatedButton(
-                          onPressed: loginPressed,
-                          child: Text('Log in'),
+                          onPressed: _isLoggingIn ? null : loginPressed, // Disable button when logging in
+                          child: _isLoggingIn
+                              ? CircularProgressIndicator() // Show spinner while logging in
+                              : Text('Log in'),
                         ),
                       ],
                     ),

@@ -43,7 +43,7 @@ class _LegalOpinionsState extends State<LegalOpinions> {
         _filteredLegalOpinions = _legalOpinions;
       });
     } else {
-      print('Failed to load latest legal opinions');
+      print('Failed to load latest opinions');
       print('Response status code: ${response.statusCode}');
       print('Response body: ${response.body}');
     }
@@ -145,7 +145,9 @@ class _LegalOpinionsState extends State<LegalOpinions> {
                                   SizedBox(height: 4.0),
                                   
                                    Text.rich(
-                                  highlightMatches('Ref #: ${_filteredLegalOpinions[index].issuance.referenceNo}', _searchController.text),
+                                  _filteredLegalOpinions[index].issuance.referenceNo != 'N/A'
+                                    ? highlightMatches('Ref #: ${_filteredLegalOpinions[index].issuance.referenceNo}', _searchController.text)
+                                    : TextSpan(text: 'Ref #: N/A'),
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey,

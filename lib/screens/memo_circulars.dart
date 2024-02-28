@@ -143,18 +143,21 @@ class _MemoCircularsState extends State<MemoCirculars> {
                                   ),
                                 SizedBox(height: 4.0),
                                  Text.rich(
-                                  highlightMatches('Ref #: ${_filteredMemoCirculars[index].issuance.referenceNo}', _searchController.text),
+                                  _filteredMemoCirculars[index].issuance.referenceNo != 'N/A'
+                                    ? highlightMatches('Ref #: ${_filteredMemoCirculars[index].issuance.referenceNo}', _searchController.text)
+                                    : TextSpan(text: 'Ref #: N/A'),
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey,
                                   ),
                                 ),
                                 Text.rich(
-                                  highlightMatches('Responsible Office: ${_filteredMemoCirculars[index].responsible_office}', _searchController.text),
+                                  _filteredMemoCirculars[index].issuance.referenceNo != 'N/A'
+                                    ? highlightMatches('Responsible Office: ${_filteredMemoCirculars[index].responsible_office}', _searchController.text)
+                                    : TextSpan(text: 'Responsible Office: N/A'),
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],

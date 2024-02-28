@@ -258,6 +258,7 @@ Widget build(BuildContext context) {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            SizedBox(height: 20), // Add margin-top here
             Row(
               children: [
                 Expanded(
@@ -303,7 +304,7 @@ Widget build(BuildContext context) {
                 ),
               ],
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 20), // Add margin-bottom here
             _buildSearchResultsContainer(), // Updated to manage search results container
           ],
         ),
@@ -311,6 +312,7 @@ Widget build(BuildContext context) {
     ),
   );
 }
+
 
 Widget _buildSearchResultsContainer() {
   // Check if search results are available

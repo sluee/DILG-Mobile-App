@@ -131,29 +131,25 @@ class _DraftIssuancesState extends State<DraftIssuances> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    _filteredDraftIssuances[index].issuance.title,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
+                                 Text.rich(
+                                      highlightMatches(_filteredDraftIssuances[index].issuance.title, _searchController.text),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                      ),
                                     ),
-                                  ),
                                   SizedBox(height: 4.0),
-                                  Text(
-                                      _filteredDraftIssuances[index].issuance.referenceNo != 'N/A'
-                                    ? 'Ref #: ${_filteredDraftIssuances[index].issuance.referenceNo}'
-                                    : '',
+                                    Text.rich(
+                                    highlightMatches('Ref #: ${_filteredDraftIssuances[index].issuance.referenceNo}', _searchController.text),
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey,
                                     ),
                                   ),
-                                  Text(
-                                    _filteredDraftIssuances[index].responsible_office != 'N/A'
-                                        ? 'Responsible Office: ${_filteredDraftIssuances[index].responsible_office}'
-                                        : '',
+                                  Text.rich(
+                                    highlightMatches('Responsible Office: ${_filteredDraftIssuances[index].responsible_office}', _searchController.text),
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey,
@@ -216,4 +212,43 @@ class _DraftIssuancesState extends State<DraftIssuances> {
   }
 }
 
+TextSpan highlightMatches(String text, String query) {
+  if (query.isEmpty) {
+    return TextSpan(text: text);
+  }
+
+  List<TextSpan> textSpans = [];
+
+  // Create a regular expression pattern with case-insensitive matching
+  RegExp regex = RegExp(query, caseSensitive: false);
+
+  // Find all matches of the query in the text
+  Iterable<Match> matches = regex.allMatches(text);
+
+  // Start index for slicing the text
+  int startIndex = 0;
+
+  // Add text segments with and without highlighting
+  for (Match match in matches) {
+    // Add text segment before the match
+    textSpans.add(TextSpan(text: text.substring(startIndex, match.start)));
+
+    // Add the matching segment with highlighting
+    textSpans.add(TextSpan(
+      text: text.substring(match.start, match.end),
+      style: TextStyle(
+        color: Colors.blue, 
+        fontWeight: FontWeight.bold, 
+      ),
+    ));
+
+    // Update the start index for the next segment
+    startIndex = match.end;
+  }
+
+  // Add the remaining text segment
+  textSpans.add(TextSpan(text: text.substring(startIndex)));
+
+  return TextSpan(children: textSpans);
+}
 

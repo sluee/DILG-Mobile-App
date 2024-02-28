@@ -92,94 +92,87 @@ Widget build(BuildContext context) {
       },
     ),
     body: SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildSearchAndFilterRow(),
-          _buildPdf(context),
-        ],
+  child: Container(
+    margin: EdgeInsets.only(top: 16.0), // Add margin top here
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildSearchAndFilterRow(),
+        _buildPdf(context),
+      ],
+    ),
+  ),
+),
+  );
+}
+
+Widget _buildSearchBar() {
+  return Container(
+
+    child: Expanded(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: Offset(0, 3), // changes position of shadow
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Search...',
+                    border: InputBorder.none,
+                  ),
+                  onChanged: (value) {
+                    _filterFiles(value);
+                  },
+                ),
+              ),
+            ),
+            IconButton(
+              icon: Icon(Icons.search),
+              onPressed: () {
+                _filterFiles(_searchController.text);
+              },
+            ),
+          ],
+        ),
       ),
     ),
   );
 }
 
-  Widget _buildSearchAndFilterRow() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: AnimatedContainer(
-                  duration: Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                  width:
-                      isSearching ? MediaQuery.of(context).size.width - 96 : 48,
-                  decoration: BoxDecoration(
-                    color: isSearching ? Colors.grey[200] : null,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Visibility(
-                          visible: isSearching,
-                          child: TextField(
-                            controller: _searchController,
-                            onChanged: (value) {
-                              _filterFiles(value);
-                            },
-                            decoration: InputDecoration(
-                              hintText: 'Search...',
-                              border: InputBorder.none,
-                              prefixIcon: Icon(Icons.search),
-                            ),
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(isSearching ? Icons.clear : Icons.search),
-                        color: isSearching ? Colors.blue : null,
-                        onPressed: () {
-                          setState(() {
-                            isSearching = !isSearching;
-                            if (!isSearching) {
-                              _searchController.clear();
-                              _filterFiles('');
-                            }
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(width: 10),
-              DropdownButton<String>(
-                value: _selectedSortOption,
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedSortOption = newValue!;
-                    _sortFiles(newValue);
-                  });
-                },
-                items:
-                    _sortOptions.map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
-          SizedBox(height: 10),
-        ],
-      ),
-    );
-  }
+
+Widget _buildSearchAndFilterRow() {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            _buildSearchBar(),
+            SizedBox(width: 10), // Add spacing between search bar and other widgets
+            // Add other widgets here
+          ],
+        ),
+        // Add other rows or widgets as needed
+      ],
+    ),
+  );
+}
+
 
   Widget _buildPdf(BuildContext context) {
     return Column(

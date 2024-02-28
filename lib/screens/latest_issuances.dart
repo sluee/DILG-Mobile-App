@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:DILGDOCS/models/latest_issuances.dart';
 import 'package:DILGDOCS/screens/file_utils.dart';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import '../Services/globals.dart';
@@ -17,49 +18,44 @@ class LatestIssuances extends StatefulWidget {
 
 class _LatestIssuancesState extends State<LatestIssuances> {
   List<LatestIssuance> _latestIssuances = [];
-  List<LatestIssuance> get latestIssuances => _latestIssuances;
+  List<LatestIssuance> _filteredLatestIssuances = []; // Initialize filtered list
   TextEditingController _searchController = TextEditingController();
-   List<String> categories = [
-    'All Outcome Area',
-    'ACCOUNTABLE, TRANSPARENT, PARTICIPATIVE',
-    'AND EFFECTIVE LOCAL GOVERNANCE',
-    'PEACEFUL, ORDERLY AND SAFE LGUS STRATEGIC PRIORITIES',
-    'SOCIALLY PROTECTIVE LGUS',
-    'ENVIRONMENT-PROTECTIVE, CLIMATE CHANGE ADAPTIVE AND DISASTER RESILIENT LGUS',
-    'BUSINESS-FRIENDLY AND COMPETITIVE LGUS',
-    'STRENGTHENING OF INTERNAL GOVERNANCE'
-  ];
 
-  String selectedCategory = 'All Outcome Area';// Default selection
-
-
-@override
+  @override
   void initState() {
     super.initState();
     fetchLatestIssuances();
   }
 
+Future<void> fetchLatestIssuances() async {
+  final response = await http.get(
+    Uri.parse('$baseURL/latest_issuances'),
+    headers: {
+      'Accept': 'application/json',
+    },
+  );
 
- Future<void> fetchLatestIssuances() async {
-    final response = await http.get(
-      Uri.parse('$baseURL/latest_issuances'),
-      headers: {
-        'Accept': 'application/json',
-      },
-    );
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body)['latests'];
+  if (response.statusCode == 200) {
+    final Map<String, dynamic>? responseData = json.decode(response.body);
+
+    if (responseData != null && responseData.containsKey('latests')) {
+      final List<dynamic> data = responseData['latests'];
 
       setState(() {
         _latestIssuances = data.map((item) => LatestIssuance.fromJson(item)).toList();
+        _filteredLatestIssuances = _latestIssuances;
       });
     } else {
-      // Handle error
-      print('Failed to load latest issuances');     
-      print('Response status code: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      print('Failed to load latest opinions: Data format error');
+      print('Response body: ${response.body}'); // Print response body for debugging
     }
+  } else {
+    print('Failed to load latest opinions');
+    print('Response status code: ${response.statusCode}');
+    print('Response body: ${response.body}');
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -69,202 +65,152 @@ class _LatestIssuancesState extends State<LatestIssuances> {
           'Latest Issuances',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.white,
           ),
         ),
         leading: Builder(
           builder: (context) => IconButton(
-            icon: Icon(Icons.menu, color: Colors.white),
+            icon: Icon(Icons.menu, color: Colors.blue[900]),
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
-        backgroundColor: Colors.blue[900],
       ),
       body: _buildBody(),
       drawer: Sidebar(
-        currentIndex: 1,
+        currentIndex: 7,
         onItemSelected: (index) {
-          _navigateToSelectedPage(context, index);
+          Navigator.pop(context);
         },
       ),
     );
   }
 
-  Widget _buildBody() {
-    TextEditingController searchController = TextEditingController();
-
+ Widget _buildBody() {
     return SingleChildScrollView(
       child: Column(
+        
         children: [
-          // Filter Category Dropdown
-         Row(
+          // Search Input
+          Container(
+            margin: EdgeInsets.only(top: 16.0),
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            decoration: BoxDecoration(
+             borderRadius: BorderRadius.circular(10),
+            
+            ),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search...',
+                prefixIcon: Icon(Icons.search, color: Colors.grey),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: EdgeInsets.symmetric(vertical: 16.0),
+              ),
+              style: TextStyle(fontSize: 16.0),
+              onChanged: (value) {
+                // Call the function to filter the list based on the search query
+                _filterLatestIssuances(value); // Corrected method call
+              },
+            ),
+          ),
+
+  // Display the filtered presidential directives
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Container(
-                  margin: EdgeInsets.only(bottom: 5.0, right: 5.0),
-                  padding: EdgeInsets.all(12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      
-                      SizedBox(height: 8.0),
-                      Container(
-                        margin: EdgeInsets.only(top: 0.1, bottom: 0.1),
-                        padding: EdgeInsets.symmetric(horizontal: 1.0),
-                        child: DropdownButton<String>(
-                          value: selectedCategory,
-                          onChanged: (String? newValue) {
-                            if (newValue != null) {
-                              setState(() {
-                                selectedCategory = newValue;
-                              });
-                            }
-                          },
-                          items: categories
-                              .map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Container(
-                                width: MediaQuery.of(context).size.width * 0.8,
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.arrow_downward, color: Colors.blue[900]), 
-                                    SizedBox(width: 6.0),
-                                    Expanded(
-                                      child: Text(
-                                        value,
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                child: AnimSearchBar(
-                  width: 400,
-                  onSubmitted: (query) {
-                    print('Search submitted: $query');
-                  },
-                  onSuffixTap: () {
-                    setState(() {
-                      _searchController.clear();
-                    });
-                  },
-                  color: Colors.blue[400]!,
-                  helpText: "Search...",
-                  autoFocus: true,
-                  closeSearchOnSuffixTap: true,
-                  animationDurationInMilli: 1000,
-                  rtl: true,
-                  textController: _searchController,
-                ),
-              ),
-            ],
-          ),
-          Container(
-            // padding: EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 14.0),
-                for (int index = 0; index < _latestIssuances.length; index++)
+              SizedBox(height: 16.0),
+              for (int index = 0; index < _filteredLatestIssuances.length; index++)
                 InkWell(
                   onTap: () {
-                    _navigateToDetailsPage(context, _latestIssuances[index]);
+                    _navigateToDetailsPage(context, _filteredLatestIssuances[index]);
                   },
                   child: Container(
                     decoration: BoxDecoration(
                       border: Border(
-                        bottom:
-                            BorderSide(color: const Color.fromARGB(255, 203, 201, 201), width: 1.0),
+                        bottom: BorderSide(color: const Color.fromARGB(255, 203, 201, 201), width: 1.0),
                       ),
                     ),
-                child: Card(
-                  elevation: 0,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    
-                    child: Row(
-                      children: [
-                        Icon(Icons.article, color: Colors.blue[900]),
-                        SizedBox(width: 16.0),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            
-                            children: [
-                              Text(
-                                _latestIssuances[index].issuance.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
+                    child: Card(
+                      elevation: 0,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          children: [
+                            Icon(Icons.article, color: Colors.blue[900]),
+                            SizedBox(width: 16.0),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text.rich(
+                                    highlightMatches(_filteredLatestIssuances[index].issuance.title, _searchController.text),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4.0),
+                                Text.rich(
+                                  _filteredLatestIssuances[index].issuance.referenceNo != 'N/A'
+                                    ? highlightMatches('Ref #: ${_filteredLatestIssuances[index].issuance.referenceNo}', _searchController.text)
+                                    : TextSpan(text: ''),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
                                 ),
+                                    Text.rich(
+                                  _filteredLatestIssuances[index].outcome != 'N/A'
+                                    ? highlightMatches('Outcome Area: ${_filteredLatestIssuances[index].outcome}', _searchController.text)
+                                    : TextSpan(text: ''),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                  ),
+                                  Text(
+                                    _filteredLatestIssuances[index].category != 'N/A'
+                                        ? 'Category: ${_filteredLatestIssuances[index].category}'
+                                        : '',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              SizedBox(height: 4.0),
-                              Text(
-                                _latestIssuances[index].issuance.referenceNo !='N/A' ? 'Ref #: ${_latestIssuances[index].issuance.referenceNo}' : '',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                ),
+                            ),
+                            SizedBox(width: 16.0),
+                             Text(
+                              _filteredLatestIssuances[index].issuance.date != 'N/A' 
+                                ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(_filteredLatestIssuances[index].issuance.date))
+                                : '',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontStyle: FontStyle.italic,
                               ),
-                               Text(
-                                'Outcome Area: ${_latestIssuances[index].outcome}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                   overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                               Text(
-                                _latestIssuances[index].category !='N/A' ? 'Category: ${_latestIssuances[index].category}' : '',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                        SizedBox(width: 16.0),
-                        Text(
-                          _latestIssuances[index].issuance.date != 'N/A' 
-                            ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(_latestIssuances[index].issuance.date))
-                            : '',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-  
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              ),
-              ],
-            ),
-          ),  
+            ],
+          ),
         ],
       ),
     );
   }
 
- void _navigateToDetailsPage(BuildContext context, LatestIssuance issuance) {
+  void _navigateToDetailsPage(BuildContext context, LatestIssuance issuance) {
   print('PDF URL: ${issuance.issuance.urlLink}');
   Navigator.push(
     context,
@@ -302,9 +248,57 @@ Widget buildContent(LatestIssuance issuance) {
 }
 
 
-  void _navigateToSelectedPage(BuildContext context, int index) {
-    // Handle navigation if needed
+ void _filterLatestIssuances(String query) {
+  setState(() {
+    // Filter the latest issuances based on the search query
+    _filteredLatestIssuances = _latestIssuances.where((issuance) {
+      final title = issuance.issuance.title.toLowerCase();
+      final referenceNo = issuance.issuance.referenceNo.toLowerCase();
+      final outcome = issuance.outcome.toLowerCase();
+      return title.contains(query.toLowerCase()) || referenceNo.contains(query.toLowerCase());
+    }).toList();
+  });
+}
+
+
+TextSpan highlightMatches(String text, String query) {
+  if (query.isEmpty) {
+    return TextSpan(text: text);
   }
+
+  List<TextSpan> textSpans = [];
+
+  // Create a regular expression pattern with case-insensitive matching
+  RegExp regex = RegExp(query, caseSensitive: false);
+
+  // Find all matches of the query in the text
+  Iterable<Match> matches = regex.allMatches(text);
+
+  // Start index for slicing the text
+  int startIndex = 0;
+
+  // Add text segments with and without highlighting
+  for (Match match in matches) {
+    // Add text segment before the match
+    textSpans.add(TextSpan(text: text.substring(startIndex, match.start)));
+
+    // Add the matching segment with highlighting
+    textSpans.add(TextSpan(
+      text: text.substring(match.start, match.end),
+      style: TextStyle(
+        color: Colors.blue, 
+        fontWeight: FontWeight.bold, 
+      ),
+    ));
+
+    // Update the start index for the next segment
+    startIndex = match.end;
+  }
+
+  // Add the remaining text segment
+  textSpans.add(TextSpan(text: text.substring(startIndex)));
+
+  return TextSpan(children: textSpans);
 }
 
  String _truncateText(String text, int maxLength) {
@@ -313,5 +307,6 @@ Widget buildContent(LatestIssuance issuance) {
     } else {
       return text.substring(0, maxLength) + '...';
     }
-  }
-
+ }
+void _navigateToSelectedPage(BuildContext context, int index) {}
+}

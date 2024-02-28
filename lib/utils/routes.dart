@@ -44,9 +44,7 @@ class Routes {
       draftIssuances: (context) => DraftIssuances(),
       republicActs: (context) => RepublicActs(),
       legalOpinions: (context) => LegalOpinions(),
-      login: (context) => LoginScreen(title: '',
-         
-      ),
+      login: (context) => LoginScreen(title: '',),
     };
   }
 }
