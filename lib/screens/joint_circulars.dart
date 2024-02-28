@@ -105,108 +105,134 @@ Widget _buildBody() {
           ),
         ), 
 
-        // Display the filtered joint circulars
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 16.0),
-            for (int index = 0; index < _filteredJointCirculars.length; index++)
-              InkWell(
-                onTap: () {
-                  _navigateToDetailsPage(context, _filteredJointCirculars[index]);
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: const Color.fromARGB(255, 203, 201, 201), width: 1.0),
-                    ),
+        // Display the filtered joint circulars or "No joint circulars found" message
+        _filteredJointCirculars.isEmpty
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'No joint circulars found',
+                    style: TextStyle(fontSize: 18.0),
                   ),
-                  child: Card(
-                    elevation: 0,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        children: [
-                          Icon(Icons.article, color: Colors.blue[900]),
-                          SizedBox(width: 16.0),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                ),
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 16.0),
+                  for (int index = 0; index < _filteredJointCirculars.length; index++)
+                    InkWell(
+                      onTap: () {
+                        _navigateToDetailsPage(context, _filteredJointCirculars[index]);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: const Color.fromARGB(255, 203, 201, 201), width: 1.0),
+                          ),
+                        ),
+                        child: Card(
+                          elevation: 0,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Row(
                               children: [
-                                RichText(
-                                  text: highlightText(_filteredJointCirculars[index].issuance.title, _searchController.text),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,    
-                                ),
-                                SizedBox(height: 4.0),
-                                Text(
-                                  _filteredJointCirculars[index].issuance.referenceNo != 'N/A'
-                                      ? 'Ref # : ${_filteredJointCirculars[index].issuance.referenceNo}'
-                                      : '',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
+                                Icon(Icons.article, color: Colors.blue[900]),
+                                SizedBox(width: 16.0),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                     Text.rich(
+                                          highlightMatches(_filteredJointCirculars[index].issuance.title, _searchController.text),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                      SizedBox(height: 4.0),
+                                       Text.rich(
+                                        highlightMatches('Ref #: ${_filteredJointCirculars[index].issuance.referenceNo}', _searchController.text),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                      Text.rich(
+                                        highlightMatches('Responsible Office: ${_filteredJointCirculars[index].responsible_office}', _searchController.text),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
+                                SizedBox(width: 16.0),
                                 Text(
-                                  _filteredJointCirculars[index].responsible_office != 'N/A'
-                                      ? 'Responsible Office: ${_filteredJointCirculars[index].responsible_office}'
-                                      : '',
+                                  _filteredJointCirculars[index].issuance.date != 'N/A' 
+                                    ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(_filteredJointCirculars[index].issuance.date))
+                                    : '',
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.grey,
-                                    overflow: TextOverflow.ellipsis,
+                                    fontStyle: FontStyle.italic,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          SizedBox(width: 16.0),
-                          Text(
-                            _filteredJointCirculars[index].issuance.date != 'N/A' 
-                              ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(_filteredJointCirculars[index].issuance.date))
-                              : '',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
+                ],
               ),
-          ],
-        ),
       ],
     ),
   );
 }
 
-TextSpan highlightText(String text, String highlight) {
-  if (highlight.isEmpty) {
-    return TextSpan(text: text, style: TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.bold));
+
+TextSpan highlightMatches(String text, String query) {
+  if (query.isEmpty) {
+    return TextSpan(text: text);
   }
 
-  List<TextSpan> spans = [];
+  List<TextSpan> textSpans = [];
 
-  // Split the text into parts that match and don't match the highlight
-  RegExp exp = RegExp(highlight, caseSensitive: false);
-  Iterable<Match> matches = exp.allMatches(text);
-  int lastMatchEnd = 0;
+  // Create a regular expression pattern with case-insensitive matching
+  RegExp regex = RegExp(query, caseSensitive: false);
+
+  // Find all matches of the query in the text
+  Iterable<Match> matches = regex.allMatches(text);
+
+  // Start index for slicing the text
+  int startIndex = 0;
+
+  // Add text segments with and without highlighting
   for (Match match in matches) {
-    if (match.start > lastMatchEnd) {
-      spans.add(TextSpan(text: text.substring(lastMatchEnd, match.start), style: TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.bold)));
-    }
-    spans.add(TextSpan(text: text.substring(match.start, match.end), style: TextStyle(color: Colors.blue, fontSize: 15, fontWeight: FontWeight.bold)));
-    lastMatchEnd = match.end;
-  }
-  if (lastMatchEnd < text.length) {
-    spans.add(TextSpan(text: text.substring(lastMatchEnd), style: TextStyle(color: Colors.black, fontSize: 15, fontWeight: FontWeight.bold)));
+    // Add text segment before the match
+    textSpans.add(TextSpan(text: text.substring(startIndex, match.start)));
+
+    // Add the matching segment with highlighting
+    textSpans.add(TextSpan(
+      text: text.substring(match.start, match.end),
+      style: TextStyle(
+        color: Colors.blue, 
+        fontWeight: FontWeight.bold, 
+      ),
+    ));
+
+    // Update the start index for the next segment
+    startIndex = match.end;
   }
 
-  return TextSpan(children: spans);
+  // Add the remaining text segment
+  textSpans.add(TextSpan(text: text.substring(startIndex)));
+
+  return TextSpan(children: textSpans);
 }
 
 

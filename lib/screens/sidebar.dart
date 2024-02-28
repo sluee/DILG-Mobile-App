@@ -88,7 +88,7 @@ Future<void> clearToken() async {
   Widget _getPageByIndex(int index) {
     switch (index) {
       case 0:
-        return HomeScreen(userData: {},);
+        return HomeScreen();
       case 1:
         return LatestIssuances();
       case 2:

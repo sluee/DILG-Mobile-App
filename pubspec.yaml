@@ -78,7 +78,19 @@ flutter:
     - assets/lyod.png
     - assets/bruce.png
     - assets/mdc-logo.png
+    - assets/amu1.png
+    - assets/amu2.png
+    - assets/amu3.png
+    - assets/amu4.png
+    - assets/amu5.png
 
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: fonts/Poppins-Regular.otf
+        - asset: fonts/Poppins-Bold.otf
+        - asset: fonts/Poppins-Italic.otf
+        - asset: fonts/Poppins-BoldItalic.otf
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
@@ -106,6 +118,7 @@ flutter:
   #       - asset: fonts/TrajanPro.ttf
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
+ 
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

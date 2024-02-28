@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:DILGDOCS/Services/globals.dart';
+import 'package:flutter/gestures.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import '../models/presidential_directives.dart';
@@ -135,8 +136,8 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    _filteredPresidentialDirectives[index].issuance.title,
+                                 Text.rich(
+                                    highlightMatches(_filteredPresidentialDirectives[index].issuance.title, _searchController.text),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -145,25 +146,22 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
                                     ),
                                   ),
                                   SizedBox(height: 4.0),
-                                  Text(
-                                    _filteredPresidentialDirectives[index].issuance.referenceNo != 'N/A'
-                                    ? 'Ref #: ${_filteredPresidentialDirectives[index].issuance.referenceNo}'
-                                    : '',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
-                                    ),
+                                 Text.rich(
+                                  highlightMatches('Ref #: ${_filteredPresidentialDirectives[index].issuance.referenceNo}', _searchController.text),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
                                   ),
-                                  Text(
-                                    _filteredPresidentialDirectives[index].responsible_office != 'N/A'
-                                        ? 'Responsible Office: ${_filteredPresidentialDirectives[index].responsible_office}'
-                                        : '',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                ),
+                                Text.rich(
+                                  highlightMatches('Responsible Office: ${_filteredPresidentialDirectives[index].responsible_office}', _searchController.text),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
+                                ),
+
                                 ],
                               ),
                             ),
@@ -219,6 +217,48 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
       ),
     );
   }
+
+TextSpan highlightMatches(String text, String query) {
+  if (query.isEmpty) {
+    return TextSpan(text: text);
+  }
+
+  List<TextSpan> textSpans = [];
+
+  // Create a regular expression pattern with case-insensitive matching
+  RegExp regex = RegExp(query, caseSensitive: false);
+
+  // Find all matches of the query in the text
+  Iterable<Match> matches = regex.allMatches(text);
+
+  // Start index for slicing the text
+  int startIndex = 0;
+
+  // Add text segments with and without highlighting
+  for (Match match in matches) {
+    // Add text segment before the match
+    textSpans.add(TextSpan(text: text.substring(startIndex, match.start)));
+
+    // Add the matching segment with highlighting
+    textSpans.add(TextSpan(
+      text: text.substring(match.start, match.end),
+      style: TextStyle(
+        color: Colors.blue, 
+        fontWeight: FontWeight.bold, 
+      ),
+    ));
+
+    // Update the start index for the next segment
+    startIndex = match.end;
+  }
+
+  // Add the remaining text segment
+  textSpans.add(TextSpan(text: text.substring(startIndex)));
+
+  return TextSpan(children: textSpans);
+}
+
+
 
   void _navigateToSelectedPage(BuildContext context, int index) {
     // Handle navigation if needed

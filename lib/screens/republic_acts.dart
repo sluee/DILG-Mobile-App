@@ -130,8 +130,11 @@ class _RepublicActsState extends State<RepublicActs> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    _filteredRepublicActs[index].issuance.title,
+                                 Text.rich(
+                                    highlightMatches(
+                                      _filteredRepublicActs[index].issuance.title,
+                                      _searchController.text,
+                                    ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -139,6 +142,7 @@ class _RepublicActsState extends State<RepublicActs> {
                                       fontSize: 15,
                                     ),
                                   ),
+
                                   SizedBox(height: 4.0),
                                   
                                   Text(
@@ -203,5 +207,46 @@ class _RepublicActsState extends State<RepublicActs> {
     });
   }
 }
+
+TextSpan highlightMatches(String text, String query) {
+  if (query.isEmpty) {
+    return TextSpan(text: text);
+  }
+
+  List<TextSpan> textSpans = [];
+
+  // Create a regular expression pattern with case-insensitive matching
+  RegExp regex = RegExp(query, caseSensitive: false);
+
+  // Find all matches of the query in the text
+  Iterable<Match> matches = regex.allMatches(text);
+
+  // Start index for slicing the text
+  int startIndex = 0;
+
+  // Add text segments with and without highlighting
+  for (Match match in matches) {
+    // Add text segment before the match
+    textSpans.add(TextSpan(text: text.substring(startIndex, match.start)));
+
+    // Add the matching segment with highlighting
+    textSpans.add(TextSpan(
+      text: text.substring(match.start, match.end),
+      style: TextStyle(
+        color: Colors.blue, // Customize highlight color here
+        fontWeight: FontWeight.bold, // Customize highlight style here
+      ),
+    ));
+
+    // Update the start index for the next segment
+    startIndex = match.end;
+  }
+
+  // Add the remaining text segment
+  textSpans.add(TextSpan(text: text.substring(startIndex)));
+
+  return TextSpan(children: textSpans);
+}
+
 
 

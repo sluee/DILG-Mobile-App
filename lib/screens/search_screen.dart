@@ -23,6 +23,8 @@ import '../models/latest_issuances.dart';
 import '../models/legal_opinions.dart';
 import '../models/memo_circulars.dart';
 import '../models/presidential_directives.dart';
+import 'sidebar.dart';
+import 'bottom_navigation.dart';
 
 
 class SearchScreen extends StatefulWidget {
@@ -222,6 +224,34 @@ Future<void> fetchMemoCirculars() async {
  @override
 Widget build(BuildContext context) {
   return Scaffold(
+    appBar: AppBar(
+      title: Text(
+        'Search',
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
+      leading: Builder(
+        builder:(context) => IconButton(
+          icon: Icon(Icons.menu, color: Colors.white),
+          onPressed: () => Scaffold.of(context).openDrawer(),
+        ),
+      ),
+      backgroundColor: Colors.blue[900],
+    ),
+    drawer:Sidebar(
+      currentIndex: 0,
+      onItemSelected: (index){
+        _navigateToSelectedPage(context, index);
+      },
+    ),
+    bottomNavigationBar: BottomNavigation(
+      currentIndex: 1,
+      onTabTapped:(index){
+
+      },
+    ),
     body: SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -422,40 +452,41 @@ Widget _buildSearchResultsContainer() {
         : Center(child: Text('No results found'));
   }
 
-    TextSpan highlightTextWithOriginalTitle(String text, String highlight) {
-    List<TextSpan> spans = [];
-
-    // Find indices of matches
-    List<int> matches = [];
-    int index = text.toLowerCase().indexOf(highlight.toLowerCase());
-    while (index != -1) {
-      matches.add(index);
-      index = text.toLowerCase().indexOf(highlight.toLowerCase(), index + 1);
-    }
-
-    // Create text spans with highlighting
-    int prevIndex = 0;
-    for (int match in matches) {
-      // Add the original text before the match
-      spans.add(TextSpan(
-        text: text.substring(prevIndex, match),
-        style: TextStyle(color: Colors.black, fontSize: 15), // Set original text color and font size
-      ));
-      // Highlight the matching characters
-      spans.add(TextSpan(
-        text: text.substring(match, match + highlight.length),
-        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 15), // Customize highlighting style and font size
-      ));
-      prevIndex = match + highlight.length;
-    }
-    // Add the remaining original text
-    spans.add(TextSpan(
-      text: text.substring(prevIndex),
-      style: TextStyle(color: Colors.black, fontSize: 15), // Set original text color and font size
-    ));
-
-    return TextSpan(children: spans);
+  TextSpan highlightTextWithOriginalTitle(String text, String highlight) {
+  List<TextSpan> spans = [];
+  
+  // Find indices of matches
+  List<int> matches = [];
+  int index = text.toLowerCase().indexOf(highlight.toLowerCase());
+  while (index != -1) {
+    matches.add(index);
+    index = text.toLowerCase().indexOf(highlight.toLowerCase(), index + 1);
   }
+
+  // Create text spans with highlighting
+  int prevIndex = 0;
+  for (int match in matches) {
+    
+    
+        spans.add(TextSpan(
+      text: text.substring(prevIndex, match),
+      style: TextStyle(color: Colors.black, fontSize: 15), 
+    ));
+    // Highlight the matching characters
+    spans.add(TextSpan(
+      text: text.substring(match, match + highlight.length),
+      style: TextStyle( color: Colors.blue, fontSize: 15), 
+    ));
+    prevIndex = match + highlight.length;
+  }
+  // Add the remaining original text
+  spans.add(TextSpan(
+    text: text.substring(prevIndex),
+    style: TextStyle(color: Colors.black, fontSize: 15), 
+  ));
+
+  return TextSpan(children: spans);
+}
 
 void _handleSearch() {
   String searchInput = _searchController.text.toLowerCase();
@@ -541,6 +572,8 @@ void _handleRecentSearchTap(String value) {
     // Use Navigator to navigate to the desired route
     Navigator.pushNamed(context, route);
   }
+  
+  void _navigateToSelectedPage(BuildContext context, int index) {}
 }
 class SearchResult {
   final String title;

@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:DILGDOCS/screens/bottom_navigation.dart';
+import 'package:DILGDOCS/screens/sidebar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:path_provider/path_provider.dart';
 
 class LibraryScreen extends StatefulWidget {
-  final Function(String, String) onFileOpened;
+   final Function(String, String) onFileOpened;
 
   LibraryScreen({required this.onFileOpened});
 
@@ -58,20 +60,48 @@ class _LibraryScreenState extends State<LibraryScreen> {
     downloadedFiles.sort();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildSearchAndFilterRow(),
-            _buildPdf(context),
-          ],
+ @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text(
+        'Library',
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
         ),
       ),
-    );
-  }
+      leading: Builder(
+        builder: (context) => IconButton(
+          icon: Icon(Icons.menu, color: Colors.white),
+          onPressed: () => Scaffold.of(context).openDrawer(),
+        ),
+      ),
+      backgroundColor: Colors.blue[900],
+    ),
+    drawer: Sidebar(
+      currentIndex: 0,
+      onItemSelected: (index) {
+        _navigateToSelectedPage(context, index);
+      },
+    ),
+    bottomNavigationBar: BottomNavigation(
+      currentIndex: 2,
+      onTabTapped: (index) {
+        // Handle bottom navigation item taps if needed
+      },
+    ),
+    body: SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildSearchAndFilterRow(),
+          _buildPdf(context),
+        ],
+      ),
+    ),
+  );
+}
 
   Widget _buildSearchAndFilterRow() {
     return Padding(
@@ -335,6 +365,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 }
 
+ void _navigateToSelectedPage(BuildContext context, int index) {
+    // Handle navigation to selected page
+  }
 Future<void> openPdfViewer(BuildContext context, String filePath,
     Function(String, String) onFileOpened) async {
   await Navigator.push(

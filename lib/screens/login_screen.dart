@@ -56,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
     // If authToken exists, navigate to HomeScreen
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const HomeScreen(userData: {},)),
+      MaterialPageRoute(builder: (context) => const HomeScreen()),
     );
   }
 }
@@ -83,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
           // Navigate to HomeScreen
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const HomeScreen(userData: {},)),
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
           );
         } else {
           setState(() {
