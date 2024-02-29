@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-// import 'package:page_transition/page_transition.dart';
+import 'package:page_transition/page_transition.dart';
 import 'home_screen.dart';
 import 'search_screen.dart';
 import 'library_screen.dart';
-import 'edit_user.dart';
+import 'setting_screen.dart';
+
 
 class BottomNavigation extends StatefulWidget {
   final int currentIndex;
@@ -30,7 +31,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
         print('File opened: $fileName');
       },
     ),
-    // EditUser(),
+    SettingsScreen(),
   ];
 
   @override
@@ -39,7 +40,6 @@ class _BottomNavigationState extends State<BottomNavigation> {
       key: UniqueKey(),
       type: BottomNavigationBarType.fixed,
       selectedItemColor: Colors.white,
-      unselectedItemColor: Colors.grey,
       currentIndex: widget.currentIndex,
       onTap: (index) {
         // Update the state to reflect the selected index
@@ -63,8 +63,8 @@ class _BottomNavigationState extends State<BottomNavigation> {
           label: 'Library',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'Profile',
+          icon: Icon(Icons.settings),
+          label: 'Settings',
         ),
       ],
       backgroundColor: Colors.blue[900],
@@ -74,13 +74,13 @@ class _BottomNavigationState extends State<BottomNavigation> {
   void navigateToSelectedPage(BuildContext context, int index) {
     Widget page = _pages[index];
 
-    // Navigator.pushReplacement(
-    //   context,
-    //   PageTransition(
-    //     child: page,
-    //     type: PageTransitionType.fade, // or choose your transition type
-    //     duration: Duration(milliseconds: 500),
-    //   ),
-    // );
+    Navigator.pushReplacement(
+      context,
+      PageTransition(
+        child: page,
+        type: PageTransitionType.fade, // or choose your transition type
+        duration: Duration(milliseconds: 500),
+      ),
+    );
   }
 }

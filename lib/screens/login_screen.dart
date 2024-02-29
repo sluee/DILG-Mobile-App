@@ -28,28 +28,38 @@ class _LoginScreenState extends State<LoginScreen> {
     checkLoggedIn(); // Check if user is already logged in when screen initializes
   }
 
-  checkLoggedIn() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? authToken = prefs.getString('authToken');
+  Future<void> saveAuthToken(String token) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString('authToken', token);
+}
 
-    if (authToken != null) {
-      // If authToken exists, check if it's valid
-      try {
-        bool isValid = await AuthServices.validateToken(authToken);
-        if (isValid) {
-          // Token is valid, navigate to HomeScreen
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
-          );
-        }
-      } catch (error) {
-        print('Error validating token: $error');
-        // Handle token validation error
-      }
-    }
+// Function to retrieve authentication token
+Future<String?> getAuthToken() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.getString('authToken');
+}
+
+// Function to clear authentication token
+Future<void> clearAuthToken() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.remove('authToken');
+}
+
+// Check if user is logged in on app startup
+void checkLoggedIn() async {
+  String? authToken = await getAuthToken();
+  if (authToken != null) {
+    // Token exists, validate it (e.g., with server)
+    // If token is valid, navigate to home screen
+    // If token is invalid or expired, clear it and navigate to login screen
+    Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+  } else {
+    // No token found, navigate to login screen
   }
-
+}
   loginPressed() async {
      setState(() {
       _isLoggingIn = true;

@@ -1,5 +1,6 @@
 import 'package:DILGDOCS/Services/auth_services.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 import 'latest_issuances.dart';
 import 'joint_circulars.dart';
 import 'memo_circulars.dart';
@@ -63,28 +64,45 @@ class Sidebar extends StatelessWidget {
             _buildSidebarItem(Icons.info, 'About', 8, context),
             _buildSidebarItem(Icons.people, 'Developers', 9, context),
             Divider(color: Colors.white),
-          _buildSidebarItem(Icons.exit_to_app, 'Logout', 10, context, onPressed: () async {
-            try {
-              // Call the logout method (assuming you've implemented it)
-              await AuthServices.logout();
-              // Clear the stored token
-              await clearToken();
-              // Navigate to the login screen and remove all previous routes
-              Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-            } catch (error) {
-              print('Error during logout: $error');
-              // Handle the error, if any
-            }
-          }),
+            _buildSidebarItem(
+              Icons.exit_to_app,
+              'Logout',
+              10,
+              context,
+              onPressed: () async {
+                try {
+                  await logout(context); // Call the logout function
+                } catch (error) {
+                  print('Error during logout: $error');
+                  // Handle any errors that occur during logout
+                }
+              },
+            ),
+
           ],
         ),
       ),
     );
   }
-Future<void> clearToken() async {
-  final prefs = await SharedPreferences.getInstance();
-  prefs.remove('token');
+
+Future<void> logout(BuildContext context) async {
+  // Clear authentication token from storage
+  await clearAuthToken();
+
+  // Navigate to the login screen and remove all previous routes
+  Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
 }
+
+// Function to clear authentication token
+Future<void> clearAuthToken() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.remove('authToken');
+}
+
+// Future<void> clearToken() async {
+//   final prefs = await SharedPreferences.getInstance();
+//   prefs.remove('token');
+// }
   Widget _getPageByIndex(int index) {
     switch (index) {
       case 0:

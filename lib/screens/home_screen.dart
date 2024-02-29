@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'sidebar.dart';
-import 'bottom_navigation.dart';
-import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'issuance_pdf_screen.dart';
+import 'search_screen.dart';
 import 'library_screen.dart';
+import 'sidebar.dart';
+import 'edit_user.dart';
+import 'bottom_navigation.dart';
+import 'issuance_pdf_screen.dart'; // Import the new screen
+import 'package:url_launcher/url_launcher.dart'; // Import url_launcher package
 
 class Issuance {
   final String title;
@@ -21,10 +22,15 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  int _currentIndex = 0;
+  List<String> _drawerMenuItems = [
+    'Home',
+    'Search',
+    'Library',
+    'View Profile',
+  ];
+
   DateTime? currentBackPressTime;
-  late PageController _pageController;
-  late Timer _timer;
-  int _currentPage = 0;
 
   List<Issuance> _recentlyOpenedIssuances = [];
 
@@ -32,19 +38,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadRecentIssuances();
-    _pageController = PageController(viewportFraction: 0.8);
-    _timer = Timer.periodic(Duration(seconds: 4), (Timer timer) {
-      if (_currentPage < 4) {
-        _currentPage++;
-      } else {
-        _currentPage = 0;
-      }
-      _pageController.animateToPage(
-        _currentPage,
-        duration: Duration(seconds: 1),
-        curve: Curves.easeInOut,
-      );
-    });
   }
 
   void _loadRecentIssuances() async {
@@ -65,11 +58,15 @@ class _HomeScreenState extends State<HomeScreen> {
     await prefs.setStringList('recentIssuances', titles);
   }
 
+  void _clearRecentIssuances() {
+    setState(() {
+      _recentlyOpenedIssuances.clear();
+    });
+    _saveRecentIssuances();
+  }
 
   @override
   void dispose() {
-    _pageController.dispose();
-    _timer.cancel(); // Dispose the timer to avoid memory leaks
     _saveRecentIssuances();
     super.dispose();
   }
@@ -78,9 +75,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        if (currentBackPressTime == null ||
+        if (_currentIndex != 0) {
+          setState(() {
+            _currentIndex = 0;
+          });
+          return false;
+        } else if (currentBackPressTime == null ||
             DateTime.now().difference(currentBackPressTime!) >
-                Duration(seconds: 1)) {
+                Duration(seconds: 2)) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Press back again to exit'),
@@ -96,41 +98,43 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            'Home',
-            style: TextStyle(
+            _drawerMenuItems[
+                _currentIndex.clamp(0, _drawerMenuItems.length - 1)],
+            style: const TextStyle(
               fontWeight: FontWeight.bold,
-              color: Colors.white,
             ),
           ),
-          leading: Builder(
-            builder: (context) => IconButton(
-              icon: Icon(Icons.menu, color: Colors.white),
-              onPressed: () => Scaffold.of(context).openDrawer(),
-            ),
-          ),
+          leading: _currentIndex == 0
+              ? Builder(
+                  builder: (context) => IconButton(
+                    icon: Icon(Icons.menu, color: Colors.blue[900]),
+                    onPressed: () => Scaffold.of(context).openDrawer(),
+                  ),
+                )
+              : null,
           automaticallyImplyLeading: true,
-          backgroundColor: Colors.blue[900],
         ),
         body: _buildBody(),
         drawer: Sidebar(
+          currentIndex: _currentIndex,
           onItemSelected: (index) {
             setState(() {
-              _navigateToSelectedPage(context, index);
+              _currentIndex = index.clamp(0, _drawerMenuItems.length - 1);
             });
           },
-          currentIndex: 0,
         ),
         bottomNavigationBar: BottomNavigation(
+          currentIndex: _currentIndex,
           onTabTapped: (index) {
             setState(() {
-              // Handle bottom navigation item taps if needed
+              _currentIndex = index.clamp(0, _drawerMenuItems.length - 1);
             });
           },
-          currentIndex: 0,
         ),
       ),
     );
   }
+
 
   Widget _buildBody() {
     return SingleChildScrollView(
@@ -190,10 +194,10 @@ class _HomeScreenState extends State<HomeScreen> {
               child: _buildHorizontalScrollableCards(),
             ),
             _buildWideButton('ABOUT', 'https://dilgbohol.com'),
-            _buildWideButton('THE PROVINCIAL DIRECTOR', 'https://dilgbohol.com'),
+            _buildWideButton(
+                'THE PROVINCIAL DIRECTOR', 'https://dilgbohol.com'),
             _buildWideButton('VISION AND MISSION', 'https://dilgbohol.com'),
-            
-           Container(
+            Container(
               padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
                 color: Colors.grey[200],
@@ -209,7 +213,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
             const SizedBox(height: 16.0),
           ],
         ),
@@ -217,184 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
- 
-Widget _buildWideButton(String label, String url) {
-  return GestureDetector(
-    onTap: () {
-      _launchURL(url);
-    },
-    child: Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      decoration: BoxDecoration(
-        color: Colors.blue[600], // Adjust the color as needed
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 18.0,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          Icon(
-            Icons.arrow_forward,
-            color: Colors.white,
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-// Function to launch URLs
-void _launchURL(String url) async {
-  try {
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      throw 'Could not launch $url';
-    }
-  } catch (e) {
-    print('Error launching URL: $e');
-  }
-}
-
-// Function to launch URLs
-
-  Widget _buildHorizontalScrollableCards() {
-    return Container(
-      height: 150.0,
-      child: PageView.builder(
-        controller: _pageController,
-        scrollDirection: Axis.horizontal,
-        itemCount: 6, // Change the itemCount to 6 for 6 cards
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return _buildCard('assets/amu1.png', 'Card Title 0', index);
-          } else if (index == 1) {
-            return _buildCard('assets/amu2.png', 'Card Title 1', index);
-          } else if (index == 2) {
-            return _buildCard('assets/amu3.png', 'Card Title 2', index);
-          } else if (index == 3) {
-            return _buildCard('assets/amu4.png', 'Card Title 3', index);
-          } else if (index == 4) {
-            return _buildCard('assets/amu5.png', 'Card Title 4', index);
-          } else if (index == 5) {
-            // Display "See More" container for index 5
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 6.0),
-              child: Card(
-                elevation: 5.0,
-                child: InkWell(
-                  onTap: () {
-                    // Handle "See More" click
-                    print('See More clicked');
-                  },
-                  child:Center(
-                    child: GestureDetector(
-                      onTap: () {
-                        // Define the URL to redirect to
-                        String url = 'https://dilgbohol.com/news_update';
-                        // Open the URL in a web browser
-                        launch(url);
-                      },
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Go to News Updates',
-                            style: TextStyle(
-                              color: Colors.blue,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20.0,
-                            ),
-                          ),
-                          SizedBox(height: 5), // Adjust spacing between text and icon
-                          Icon(
-                            Icons.arrow_forward,
-                            size: 25.0,
-                            color: Colors.blue,
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                ),
-              ),
-            );
-          } else {}
-          return null;
-        },
-      ),
-    );
-  }
-
-  Widget _buildCard(String imagePath, String title, int index) {
-    return GestureDetector(
-      onTap: () {
-        // Handle card click
-        print('Card $index clicked');
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 12.0),
-        width: 200.0,
-        child: Card(
-          elevation: 5.0,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image container
-              Container(
-                height: 115.0,
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(imagePath),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              // Title container
-              Container(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16.0,
-                  ),
-                ),
-              ),
-              // Content container
-              Container(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-                  style: TextStyle(fontSize: 12.0),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              // Date container
-              Container(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'Date: ${DateTime.now().toString()}',
-                  style: TextStyle(fontSize: 10.0),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-   Widget _buildRecentIssuances() {
+  Widget _buildRecentIssuances() {
     // Map to keep track of seen titles
     Map<String, Issuance> seenTitles = {};
 
@@ -516,13 +342,220 @@ void _launchURL(String url) async {
               );
             }
           }).toList(),
+          // Add clear list button
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16.0),
+            child: ElevatedButton(
+              onPressed: () {
+                // Prompt the user to confirm before clearing the list
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('Clear List'),
+                      content: Text(
+                          'Are you sure you want to clear the list of recently opened issuances?'),
+                      actions: <Widget>[
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop(); // Close the dialog
+                          },
+                          child: Text('Cancel'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            _clearRecentIssuances(); // Clear the list
+                            Navigator.of(context).pop(); // Close the dialog
+                          },
+                          child: Text('Clear'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: Text('Clear List'),
+            ),
+          ),
         ],
       ],
     );
   }
 
+  Widget _buildWideButton(String label, String url) {
+    return GestureDetector(
+      onTap: () {
+        _launchURL(url);
+      },
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(vertical: 8.0),
+        decoration: BoxDecoration(
+          color: Colors.blue[600], // Adjust the color as needed
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 18.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward,
+              color: Colors.white,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-  void _navigateToSelectedPage(BuildContext context, int index) {
-    // Handle navigation to selected page
+  // Function to launch URLs
+  void _launchURL(String url) async {
+    try {
+      if (await canLaunch(url)) {
+        await launch(url);
+      } else {
+        throw 'Could not launch $url';
+      }
+    } catch (e) {
+      print('Error launching URL: $e');
+    }
+  }
+
+  PageController _pageController = PageController();
+
+  Widget _buildHorizontalScrollableCards() {
+    return Container(
+      height: 150.0,
+      child: PageView.builder(
+        controller: _pageController,
+        scrollDirection: Axis.horizontal,
+        itemCount: 6, // Change the itemCount to 6 for 6 cards
+        itemBuilder: (context, index) {
+          if (index == 0) {
+            return _buildCard('assets/amu1.png', 'Card Title 0', index);
+          } else if (index == 1) {
+            return _buildCard('assets/amu2.png', 'Card Title 1', index);
+          } else if (index == 2) {
+            return _buildCard('assets/amu3.png', 'Card Title 2', index);
+          } else if (index == 3) {
+            return _buildCard('assets/amu4.png', 'Card Title 3', index);
+          } else if (index == 4) {
+            return _buildCard('assets/amu5.png', 'Card Title 4', index);
+          } else if (index == 5) {
+            // Display "See More" container for index 5
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 6.0),
+              child: Card(
+                elevation: 5.0,
+                child: InkWell(
+                  onTap: () {
+                    // Handle "See More" click
+                    print('See More clicked');
+                  },
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: () {
+                        // Define the URL to redirect to
+                        String url = 'https://dilgbohol.com/news_update';
+                        // Open the URL in a web browser
+                        launch(url);
+                      },
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Go to News Updates',
+                            style: TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20.0,
+                            ),
+                          ),
+                          SizedBox(
+                              height:
+                                  5), // Adjust spacing between text and icon
+                          Icon(
+                            Icons.arrow_forward,
+                            size: 25.0,
+                            color: Colors.blue,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          } else {}
+        },
+      ),
+    );
+  }
+
+  Widget _buildCard(String imagePath, String title, int index) {
+    return GestureDetector(
+      onTap: () {
+        // Handle card click
+        print('Card $index clicked');
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 12.0),
+        width: 200.0,
+        child: Card(
+          elevation: 5.0,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image container
+              Container(
+                height: 115.0,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(imagePath),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              // Title container
+              Container(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16.0,
+                  ),
+                ),
+              ),
+              // Content container
+              Container(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+                  style: TextStyle(fontSize: 12.0),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              // Date container
+              Container(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Date: ${DateTime.now().toString()}',
+                  style: TextStyle(fontSize: 10.0),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
