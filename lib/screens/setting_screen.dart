@@ -1,6 +1,7 @@
 import 'package:DILGDOCS/Services/globals.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'change_password_modal.dart';
 import 'edit_user.dart';
 import 'login_screen.dart';
@@ -156,8 +157,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             SizedBox(height: 10.0),
             // Change Password Button
             InkWell(
-              onTap: () {
-                _showChangePasswordModal(context);
+               onTap: () {
+                // Navigate to the ChangePasswordScreen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ChangePasswordScreen()),
+                );
               },
               child: Container(
                 padding: EdgeInsets.all(16.0),
@@ -196,8 +202,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             SizedBox(height: 10.0),
             // FAQs Button
-            InkWell(
-              onTap: () {},
+             InkWell(
+              onTap: () {
+                _launchURL();
+              },
               child: Container(
                 padding: EdgeInsets.all(16.0),
                 child: Row(
@@ -407,17 +415,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Navigator.pushReplacementNamed(context, '/login');
   }
 
-  void _showChangePasswordModal(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: Container(
-            width: MediaQuery.of(context).size.width * 0.99,
-            child: ChangePasswordModal(),
-          ),
-        );
-      },
-    );
+  
+
+    void _launchURL() async {
+    const url = 'https://dilgbohol.com/faqs'; // Replace this URL with your desired destination URL
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 }
