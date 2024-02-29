@@ -1,14 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:DILGDOCS/Services/globals.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+import '../utils/routes.dart';
+
 class AuthServices {
   static final _storage = FlutterSecureStorage();
-   static final String _logoutUrl = '$baseURL/logout';
+  static final String _logoutUrl = '$baseURL/logout';
 
 
   static Future<http.Response> login(String email, String password) async {
@@ -112,10 +115,10 @@ class AuthServices {
   }
 
 
- static Future<void> logout() async {
-    // Clear the authentication token from secure storage
-    await _storage.delete(key: 'authToken');
-  }
+//  static Future<void> logout() async {
+//     // Clear the authentication token from secure storage
+//     await _storage.delete(key: 'authToken');
+//   }
 
   static Future<bool> validateToken(String authToken) async {
     final response = await http.get(
@@ -126,7 +129,8 @@ class AuthServices {
     return response.statusCode == 200;
   }
 
-  static Future<void> updateUserNameAndEmail(String token, String newName, String newEmail) async {
+ static Future<void> updateUserNameAndEmail(
+      String token, String newName, String newEmail) async {
     try {
       var userId = await getUserId(); // Retrieve userId from local storage
       var url = Uri.parse('$baseURL/user/update/$userId'); // Append userId to the update endpoint
@@ -157,5 +161,21 @@ class AuthServices {
     }
   }
 
+
+static Future<void> logout(BuildContext context) async {
+  // Clear the authentication token from secure storage
+  await _storage.delete(key: 'authToken');
+
+  // Clear any other user-related data stored locally
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.clear(); // Clear all stored preferences
+
+  // Navigate the user to the login screen and replace the current route
+  Navigator.pushReplacementNamed(context, Routes.login);
+}
+ static Future<bool> isAuthenticated() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.containsKey('token'); // Check if token exists in shared preferences
+  }
   
 }

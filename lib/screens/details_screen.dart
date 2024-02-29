@@ -109,95 +109,97 @@ class DetailsScreen extends StatelessWidget {
     );
   }
 
-  Future<void> downloadAndSavePdf(
-      BuildContext context, String url, String title) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Downloading PDF...'),
-              ],
-            ),
+ Future<void> downloadAndSavePdf(
+  BuildContext context, String url, String title) async {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return Dialog(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Downloading PDF...'),
+            ],
           ),
-        );
-      },
-    );
+        ),
+      );
+    },
+  );
 
-    try {
-      final appDir = await getExternalStorageDirectory();
-      final directoryPath = '${appDir!.path}/PDFs';
-      final filePath = '$directoryPath/$title.pdf';
+  try {
+    final appDir = await getExternalStorageDirectory();
+    final directoryPath = '${appDir!.path}/PDFs';
+    final sanitizedTitle = title.replaceAll('/', '-'); // Replace "/" with "-" in order to download
+    final filePath = '$directoryPath/$sanitizedTitle.pdf';
 
-      final file = File(filePath);
-      if (await file.exists()) {
-        Navigator.of(context).pop(); // Close the loading dialog
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('File Already Downloaded'),
-              content: Text(
-                  'The PDF has already been downloaded and saved locally.'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('OK'),
-                ),
-              ],
-            );
-          },
-        );
-        return;
-      }
-
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        final directory = Directory(directoryPath);
-        if (!await directory.exists()) {
-          await directory.create(recursive: true);
-        }
-
-        await file.writeAsBytes(response.bodyBytes);
-
-        print('PDF downloaded and saved at: $filePath');
-
-        Navigator.of(context).pop(); // Close the loading dialog
-
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Download Complete'),
-              content: Text('The PDF has been downloaded and saved locally.'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('OK'),
-                ),
-              ],
-            );
-          },
-        );
-      } else {
-        throw Exception('Failed to load PDF: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error downloading PDF: $e');
+    final file = File(filePath);
+    if (await file.exists()) {
       Navigator.of(context).pop(); // Close the loading dialog
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('File Already Downloaded'),
+            content: Text(
+                'The PDF has already been downloaded and saved locally.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+      return;
     }
+
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final directory = Directory(directoryPath);
+      if (!await directory.exists()) {
+        await directory.create(recursive: true);
+      }
+
+      await file.writeAsBytes(response.bodyBytes);
+
+      print('PDF downloaded and saved at: $filePath');
+
+      Navigator.of(context).pop(); // Close the loading dialog
+
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Download Complete'),
+            content: Text('The PDF has been downloaded and saved locally.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      throw Exception('Failed to load PDF: ${response.statusCode}');
+    }
+  } catch (e) {
+    print('Error downloading PDF: $e');
+    Navigator.of(context).pop(); // Close the loading dialog
   }
+}
+
 }
 

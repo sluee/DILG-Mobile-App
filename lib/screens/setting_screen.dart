@@ -17,7 +17,8 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool isAuthenticated = false;
   String userName = '';
- String userAvatar = '';
+  String email = '';
+  String userAvatar = '';
 
   @override
   void initState() {
@@ -25,15 +26,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _getUserInfo();
   }
 
-   Future<void> _getUserInfo() async {
+  Future<void> _getUserInfo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool loggedIn = prefs.getBool('isAuthenticated') ?? false;
     String? name = prefs.getString('userName');
-    String? avatar = prefs.getString('userAvatar');// Retrieve userAvatar
+    String? userEmail = prefs.getString('userEmail');
     setState(() {
       isAuthenticated = loggedIn;
       userName = name ?? '';
-      userAvatar = avatar ?? ''; // Set userAvatar
+      email = userEmail ?? '';
     });
   }
 
@@ -48,11 +49,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onPressed: () {
                 Navigator.pushReplacementNamed(context, '/home');
               },
-              color: Colors.white, // Set the color of the back button
+              color: Colors.white,
             ),
-            SizedBox(
-              width: 8.0,
-            ),
+            SizedBox(width: 8.0),
             Text(
               'Settings',
               style: TextStyle(
@@ -83,12 +82,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-              CircleAvatar(
-                    radius: 50.0,
-                    backgroundImage: userAvatar.isNotEmpty
+                CircleAvatar(
+                  radius: 50.0,
+                  backgroundImage: userAvatar.isNotEmpty
                       ? NetworkImage('$baseURL/images/$userAvatar') as ImageProvider
-                      : AssetImage('assets/eula.png') // Fallback image if userAvatar is empty
-                  ),
+                      : AssetImage('assets/eula.png'),
+                ),
                 SizedBox(width: 10.0),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,7 +99,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     SizedBox(height: 4.0),
                     Text(
-                      userName, // Display the user's name here
+                      userName,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 20.0,
@@ -114,11 +113,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // User Profile Button
             InkWell(
               onTap: () {
-                // Navigate to the user profile page (EditUser)
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => EditUser()),
-                );
+                ).then((_) => _getUserInfo()); // Refresh user info when returning from EditUser
               },
               child: Container(
                 padding: EdgeInsets.all(16.0),
@@ -159,7 +157,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // Change Password Button
             InkWell(
               onTap: () {
-                // Show the change password modal
                 _showChangePasswordModal(context);
               },
               child: Container(
@@ -200,9 +197,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             SizedBox(height: 10.0),
             // FAQs Button
             InkWell(
-              onTap: () {
-                // Handle FAQs button tap
-              },
+              onTap: () {},
               child: Container(
                 padding: EdgeInsets.all(16.0),
                 child: Row(
@@ -242,7 +237,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // About Button
             InkWell(
               onTap: () {
-                // Handle About button tap
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => About()),
@@ -287,7 +281,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // Developers Button
             InkWell(
               onTap: () {
-                // Handle Developers button tap
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => Developers()),
@@ -332,7 +325,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // Logout Button
             InkWell(
               onTap: () {
-                // Handle Logout button tap
                 _showLogoutDialog(context);
               },
               child: Container(
@@ -366,7 +358,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             SizedBox(height: 10.0),
-            // Additional Divider Below Logout
             Divider(
               color: Colors.grey,
               height: 1,
@@ -388,14 +379,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Close the dialog
+                Navigator.pop(context);
               },
               child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Close the dialog
-                _logout(); // Call the updated logout function
+                Navigator.pop(context);
+                _logout();
               },
               child: Text('Logout'),
             ),
@@ -406,7 +397,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _logout() async {
-    // Clear user authentication state
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('isAuthenticated', false);
 
@@ -423,8 +413,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           content: Container(
-            width: MediaQuery.of(context).size.width *
-                0.99, // Adjust the width as needed
+            width: MediaQuery.of(context).size.width * 0.99,
             child: ChangePasswordModal(),
           ),
         );

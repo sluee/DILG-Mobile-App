@@ -27,6 +27,7 @@ class Routes {
   static const String legalOpinions = '/legal-opinions';
   static const String login = '/login';
 
+
   static Map<String, WidgetBuilder> getRoutes(BuildContext context) {
     return {
       home: (context) => const HomeScreen(),
@@ -53,4 +54,5 @@ class Routes {
   static void navigateToLibrary(BuildContext context) {
     Navigator.pushNamed(context, library);
   }
+
 }
