@@ -390,6 +390,9 @@ Widget _buildHighlightedTitle(String title) {
       downloadedFiles.remove(filePath);
       filteredFiles.remove(filePath);
 
+      // Call the callback function provided by HomeScreen
+      widget.onFileDeleted?.call(filePath.split('/').last);
+
       // Show a confirmation dialog
       showDialog(
         context: context,
@@ -434,8 +437,6 @@ Widget _buildHighlightedTitle(String title) {
       );
     }
   }
-}
-
  void _navigateToSelectedPage(BuildContext context, int index) {
     // Handle navigation to selected page
   }
@@ -460,5 +461,5 @@ Widget _buildHighlightedTitle(String title) {
   }
   
   
-
+}
 // 

@@ -25,7 +25,6 @@ class _BottomNavigationState extends State<BottomNavigation> {
     HomeScreen(),
     SearchScreen(),
     LibraryScreen(
-      
       onFileOpened: (fileName, filePath) {
         // Implement your logic when file is opened
         print('File opened: $fileName');
@@ -35,7 +34,6 @@ class _BottomNavigationState extends State<BottomNavigation> {
         print('File deleted: $filePath');
       },
     ),
-   
     SettingsScreen(),
   ];
 
@@ -50,10 +48,6 @@ class _BottomNavigationState extends State<BottomNavigation> {
       onTap: (index) {
         // Update the state to reflect the selected index
         widget.onTabTapped(index);
-        // Use Navigator to navigate to the selected screen
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => _pages[index]),
-        );
       },
       items: [
         BottomNavigationBarItem(
@@ -74,19 +68,6 @@ class _BottomNavigationState extends State<BottomNavigation> {
         ),
       ],
       backgroundColor: Colors.blue[900],
-    );
-  }
-
-  void navigateToSelectedPage(BuildContext context, int index) {
-    Widget page = _pages[index];
-
-    Navigator.pushReplacement(
-      context,
-      PageTransition(
-        child: page,
-        type: PageTransitionType.fade, // or choose your transition type
-        duration: Duration(milliseconds: 500),
-      ),
     );
   }
 }

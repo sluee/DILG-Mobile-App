@@ -183,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                _buildWideButton('ABOUT', 'https://dilgbohol.com'),
+                _buildWideButton('NEWS & UPDATE', 'https://dilgbohol.com/'),
                 _buildWideButton(
                     'THE PROVINCIAL DIRECTOR', 'https://dilgbohol.com'),
                 _buildWideButton('VISION AND MISSION', 'https://dilgbohol.com'),
@@ -210,152 +210,149 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       case 1:
         return SearchScreen();
-      case 2:
-        return LibraryScreen(
-          onFileOpened: (title, subtitle) {
-            // Add the opened file to recently opened issuances
-            setState(() {
-              _recentlyOpenedIssuances.insert(0, Issuance(title: title));
-            });
-          },
-          onFileDeleted: (title) {
-            // Remove the deleted issuance from the list of recently opened issuances
-            setState(() {
-              _recentlyOpenedIssuances
-                  .removeWhere((issuance) => issuance.title == title);
-            });
-          },
-        );
+     case 2:
+  return LibraryScreen(
+    onFileOpened: (title, subtitle) {
+      setState(() {
+        _recentlyOpenedIssuances.insert(0, Issuance(title: title));
+      });
+    },
+    onFileDeleted: (title) {
+      setState(() {
+        _recentlyOpenedIssuances.removeWhere((issuance) => issuance.title == title);
+      });
+    },
+  );
+
       default:
         return SizedBox(); // Return an empty widget for unsupported index
     }
   }
 
   Widget _buildRecentIssuances() {
-  // Map to keep track of seen titles
-  Map<String, Issuance> seenTitles = {};
+    // Map to keep track of seen titles
+    Map<String, Issuance> seenTitles = {};
 
-  // Get the first 5 recently opened issuances
-  List<Issuance> recentIssuances = _recentlyOpenedIssuances.take(5).toList();
+    // Get the first 5 recently opened issuances
+    List<Issuance> recentIssuances = _recentlyOpenedIssuances.take(5).toList();
 
-  // Show the "Clear List" button only if there are recent issuances
-  Widget clearListButton = _recentlyOpenedIssuances.isNotEmpty
-      ? ElevatedButton(
-          onPressed: () {
-            setState(() {
-              _recentlyOpenedIssuances.clear();
-            });
-          },
-          child: Text('Clear List'),
-        )
-      : SizedBox();
+    // Show the "Clear List" button only if there are recent issuances
+    Widget clearListButton = _recentlyOpenedIssuances.isNotEmpty
+        ? ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _recentlyOpenedIssuances.clear();
+              });
+            },
+            child: Text('Clear List'),
+          )
+        : SizedBox();
 
-  // See More Button
-  Widget seeMoreButton = SizedBox();
-  if (_recentlyOpenedIssuances.length > 4) {
-    seeMoreButton = TextButton(
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => LibraryScreen(
-              onFileOpened:
-                  (title, subtitle) {}, // Provide dummy function or null
-            ),
-          ),
-        );
-      },
-      child: Text('See More'),
-    );
-  }
-
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Recently Opened Issuances',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+    // See More Button
+    Widget seeMoreButton = SizedBox();
+    if (_recentlyOpenedIssuances.length > 4) {
+      seeMoreButton = TextButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => LibraryScreen(
+                onFileOpened:
+                    (title, subtitle) {}, // Provide dummy function or null
               ),
             ),
-            // See More Button
-            seeMoreButton,
-          ],
-        ),
-      ),
-      const SizedBox(height: 14.0),
-      if (_recentlyOpenedIssuances.isEmpty)
-        Center(
-          child: Text(
-            'No recently opened Issuance/s',
-            style: TextStyle(
-              fontSize: 14,
-              fontStyle: FontStyle.italic,
-            ),
+          );
+        },
+        child: Text('See More'),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Recently Opened Issuances',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              // See More Button
+              seeMoreButton,
+            ],
           ),
         ),
-      if (_recentlyOpenedIssuances.isNotEmpty) ...[
-        ...recentIssuances.map((issuance) {
-          // Check if the title has already been seen
-          if (seenTitles.containsKey(issuance.title)) {
-            // If yes, skip displaying this issuance
-            return Container();
-          } else {
-            // Otherwise, add it to seen titles and display it
-            seenTitles[issuance.title] = issuance;
-            return Column(
-              children: [
-                ListTile(
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        issuance.title.length > 15
-                            ? '${issuance.title.substring(0, 15)}...'
-                            : issuance.title,
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          // Remove the current issuance from the list
-                          setState(() {
-                            _recentlyOpenedIssuances.remove(issuance);
-                          });
-                          // Add the current issuance to the top of the list
-                          setState(() {
-                            _recentlyOpenedIssuances.insert(0, issuance);
-                          });
-                          // Navigate to the PDF screen when the button is pressed
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => IssuancePDFScreen(
-                                title: issuance.title,
+        const SizedBox(height: 14.0),
+        if (_recentlyOpenedIssuances.isEmpty)
+          Center(
+            child: Text(
+              'No recently opened Issuance/s',
+              style: TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ),
+        if (_recentlyOpenedIssuances.isNotEmpty) ...[
+          ...recentIssuances.map((issuance) {
+            // Check if the title has already been seen
+            if (seenTitles.containsKey(issuance.title)) {
+              // If yes, skip displaying this issuance
+              return Container();
+            } else {
+              // Otherwise, add it to seen titles and display it
+              seenTitles[issuance.title] = issuance;
+              return Column(
+                children: [
+                  ListTile(
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          issuance.title.length > 15
+                              ? '${issuance.title.substring(0, 15)}...'
+                              : issuance.title,
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            // Remove the current issuance from the list
+                            setState(() {
+                              _recentlyOpenedIssuances.remove(issuance);
+                            });
+                            // Add the current issuance to the top of the list
+                            setState(() {
+                              _recentlyOpenedIssuances.insert(0, issuance);
+                            });
+                            // Navigate to the PDF screen when the button is pressed
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => IssuancePDFScreen(
+                                  title: issuance.title,
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                        child: Text('View'),
-                      ),
-                    ],
+                            );
+                          },
+                          child: Text('View'),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const Divider(),
-              ],
-            );
-          }
-        }).toList(),
-        clearListButton,
+                  const Divider(),
+                ],
+              );
+            }
+          }).toList(),
+          clearListButton,
+        ],
       ],
-    ],
-  );
-}
-
+    );
+  }
 
   Widget _buildWideButton(String label, String url) {
     return GestureDetector(
