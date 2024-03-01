@@ -25,12 +25,17 @@ class _BottomNavigationState extends State<BottomNavigation> {
     HomeScreen(),
     SearchScreen(),
     LibraryScreen(
+      
       onFileOpened: (fileName, filePath) {
         // Implement your logic when file is opened
         print('File opened: $fileName');
       },
-      // onFileDeleted: null, // or provide a default callback if applicable
+      onFileDeleted: (filePath) {
+        // Implement your logic when file is deleted
+        print('File deleted: $filePath');
+      },
     ),
+   
     SettingsScreen(),
   ];
 
