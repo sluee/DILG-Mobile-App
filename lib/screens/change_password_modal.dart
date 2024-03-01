@@ -76,51 +76,65 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             ),
             SizedBox(height: 20.0),
             TextFormField(
-              controller: _passwordController,
-              style: TextStyle(color: Colors.black),
-              decoration: InputDecoration(
-                labelText: 'New Password',
-                labelStyle: TextStyle(color: Colors.black),
-                suffixIcon: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _obscurePassword = !_obscurePassword;
-                    });
-                  },
-                  icon: Icon(
-                    _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                    color: Colors.grey,
+                controller: _passwordController,
+                style: TextStyle(color: Colors.black),
+                decoration: InputDecoration(
+                  labelText: 'New Password',
+                  labelStyle: TextStyle(color: Colors.black),
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                    icon: Icon(
+                      _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
+                obscureText: _obscurePassword,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a new password';
+                  }
+                  return null;
+                },
               ),
-              obscureText: _obscurePassword,
-            ),
-            SizedBox(height: 8.0),
-            TextFormField(
-              controller: _confirmPasswordController,
-              style: TextStyle(color: Colors.black),
-              decoration: InputDecoration(
-                labelText: 'Confirm Password',
-                labelStyle: TextStyle(color: Colors.black),
-                suffixIcon: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _obscureConfirmPassword = !_obscureConfirmPassword;
-                    });
-                  },
-                  icon: Icon(
-                    _obscureConfirmPassword
-                        ? Icons.visibility
-                        : Icons.visibility_off,
-                    color: Colors.grey,
+
+              TextFormField(
+                controller: _confirmPasswordController,
+                style: TextStyle(color: Colors.black),
+                decoration: InputDecoration(
+                  labelText: 'Confirm Password',
+                  labelStyle: TextStyle(color: Colors.black),
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _obscureConfirmPassword = !_obscureConfirmPassword;
+                      });
+                    },
+                    icon: Icon(
+                      _obscureConfirmPassword
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                      color: Colors.grey,
+                    ),
                   ),
+                  errorText: _confirmPasswordError.isNotEmpty
+                      ? _confirmPasswordError
+                      : null,
                 ),
-                errorText: _confirmPasswordError.isNotEmpty
-                    ? _confirmPasswordError
-                    : null,
+                obscureText: _obscureConfirmPassword,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please confirm your password';
+                  }
+                  return null;
+                },
               ),
-              obscureText: _obscureConfirmPassword,
-            ),
+
+
             SizedBox(height: 30.0),
             ElevatedButton(
               onPressed: () {
@@ -150,58 +164,28 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     );
   }
   void _resetPassword() async {
-    
-    var userId = await AuthServices.getUserId(); // Retrieve user ID
-    var token = await AuthServices.getToken(); // Retrieve authentication token
+  var userId = await AuthServices.getUserId(); // Retrieve user ID
+  var token = await AuthServices.getToken(); // Retrieve authentication token
 
-    var headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      };
+  var headers = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer $token',
+  };
 
-      // Check if token and user ID are not null or empty
-      if (token == null || token.isEmpty || userId == null) {
-        print('Authentication token or user ID is null or empty. Unable to update profile.');
-        return;
-      }
-      // Check if passwords match
-      if (_passwordController.text == _confirmPasswordController.text) {
-        // Prepare the data to send
-        Map<String, String> data = {
-          'new_password': _passwordController.text, // Change this key
-        };
+  // Check if token and user ID are not null or empty
+  if (token == null || token.isEmpty || userId == null) {
+    print('Authentication token or user ID is null or empty. Unable to update profile.');
+    return;
+  }
 
-        // Send the POST request to your backend API
-        // try {
-        //   final response = await http.put(
-        //     Uri.parse('$baseURL/users/$userId/change-password'),
-        //     body: json.encode(data),
-        //     headers: headers,
-        //   );
+  // Check if passwords match
+  if (_passwordController.text == _confirmPasswordController.text) {
+    // Prepare the data to send
+    Map<String, String> data = {
+      'new_password': _passwordController.text, // Change this key
+    };
 
-        //   // Check the response status code
-        //   if (response.statusCode == 200) {
-        //     // Password changed successfully
-        //     _showPasswordChangedDialog(context);
-        //   } else {
-        //     // Handle errors based on the response from the server
-        //     // For example, display an error message to the user
-        //     ScaffoldMessenger.of(context).showSnackBar(
-        //       SnackBar(
-        //         content: Text('Failed to update profile: ${response.reasonPhrase}'),
-        //       ),
-        //     );
-        //   }
-        // } catch (error) {
-        //   // Handle network errors or other exceptions
-        //   print('Error: $error');
-        //   ScaffoldMessenger.of(context).showSnackBar(
-        //     SnackBar(
-        //       content: Text('An error occurred. Please try again later.'),
-        //     ),
-        //   );
-        // }
-        try {
+    try {
       final response = await http.put(
         Uri.parse('$baseURL/users/$userId/change-password'),
         body: json.encode(data),
@@ -214,7 +198,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         _showPasswordChangedDialog(context);
       } else {
         // Handle errors based on the response from the server
-        // For example, display an error message to the user
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to update profile: ${response.reasonPhrase}'),
@@ -224,10 +207,22 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     } on SocketException catch (error) {
       // Handle no internet connection error
       print('No internet connection: $error');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('No internet connection. Please check your connection and try again.'),
-        ),
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('No Internet Connection'),
+            content: Text('Please check your connection and try again.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close the dialog
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
       );
     } catch (error) {
       // Handle network errors or other exceptions
@@ -238,12 +233,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         ),
       );
     }
-      } else {
-        // Set an error message that passwords don't match
-        setState(() {
-          _confirmPasswordError = 'Passwords do not match';
-        });
-      }
-    }
+  } else {
+    // Set an error message that passwords don't match
+    setState(() {
+      _confirmPasswordError = 'Passwords do not match';
+    });
+  }
+}
 
 }

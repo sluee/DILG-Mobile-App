@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'sidebar.dart';
 import 'details_screen.dart';
 import 'package:http/http.dart' as http;
-
+import 'bottom_navigation.dart';
 class DraftIssuances extends StatefulWidget {
   @override
   State<DraftIssuances> createState() => _DraftIssuancesState();
@@ -56,21 +56,24 @@ class _DraftIssuancesState extends State<DraftIssuances> {
             color: Colors.white,
           ),
         ),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu, color: Colors.white),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
+        iconTheme: IconThemeData(
+          color: Colors.white,
         ),
         backgroundColor: Colors.blue[900],
       ),
       body: _buildBody(),
-      drawer: Sidebar(
-        currentIndex: 1,
-        onItemSelected: (index) {
-          // _navigateToSelectedPage(context, index);
-        },
-      ),
+      // drawer: Sidebar(
+      //   currentIndex: 5,
+      //   onItemSelected: (index) {
+      //     _navigateToSelectedPage(context, index);
+      //   },
+      // ),
+      bottomNavigationBar: BottomNavigation(
+      currentIndex: 0,
+      onTabTapped:(index){
+
+      },
+    ),
     );
   }
 
@@ -210,6 +213,8 @@ class _DraftIssuancesState extends State<DraftIssuances> {
       ),
     );
   }
+  
+  void _navigateToSelectedPage(BuildContext context, int index) {}
 }
 
 TextSpan highlightMatches(String text, String query) {

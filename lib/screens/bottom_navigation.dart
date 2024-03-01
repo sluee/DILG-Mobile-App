@@ -5,7 +5,6 @@ import 'search_screen.dart';
 import 'library_screen.dart';
 import 'setting_screen.dart';
 
-
 class BottomNavigation extends StatefulWidget {
   final int currentIndex;
   final Function(int) onTabTapped;
@@ -30,6 +29,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
         // Implement your logic when file is opened
         print('File opened: $fileName');
       },
+      // onFileDeleted: null, // or provide a default callback if applicable
     ),
     SettingsScreen(),
   ];
@@ -40,6 +40,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
       key: UniqueKey(),
       type: BottomNavigationBarType.fixed,
       selectedItemColor: Colors.white,
+      unselectedItemColor: Colors.grey,
       currentIndex: widget.currentIndex,
       onTap: (index) {
         // Update the state to reflect the selected index

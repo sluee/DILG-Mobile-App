@@ -11,6 +11,8 @@ import 'sidebar.dart';
 import 'details_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:anim_search_bar/anim_search_bar.dart';
+import 'bottom_navigation.dart';
+
 class LatestIssuances extends StatefulWidget {
   @override
   _LatestIssuancesState createState() => _LatestIssuancesState();
@@ -65,23 +67,30 @@ Future<void> fetchLatestIssuances() async {
           'Latest Issuances',
           style: TextStyle(
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu, color: Colors.blue[900]),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
+        iconTheme: IconThemeData(
+          color: Colors.white,
         ),
+        backgroundColor: Colors.blue[900],
       ),
       body: _buildBody(),
-      drawer: Sidebar(
-        currentIndex: 7,
-        onItemSelected: (index) {
-          Navigator.pop(context);
-        },
-      ),
+      // drawer: Sidebar(
+      //   currentIndex: 1,
+      //   onItemSelected: (index) {
+      //     _navigateToSelectedPage(context, index);
+      //   },
+      // ),
+      bottomNavigationBar: BottomNavigation(
+      currentIndex: 0,
+      onTabTapped:(index){
+
+      },
+    ),
+      
     );
+    
   }
 
  Widget _buildBody() {

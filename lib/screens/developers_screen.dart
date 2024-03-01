@@ -13,20 +13,26 @@ class Developers extends StatelessWidget {
           'Developers',
           style: TextStyle(
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
-        leading: IconButton(
-          icon: Icon(Icons.menu, color: Colors.blue[900]),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+
+        iconTheme: IconThemeData(
+          color: Colors.white,
         ),
+        backgroundColor: Colors.blue[900],
+        // leading: IconButton(
+        //   icon: Icon(Icons.menu, color: Colors.blue[900]),
+        //   onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        // ),
       ),
-      drawer: Sidebar(
-        currentIndex: 9,
-        onItemSelected: (index) {
-          // Handle item selection if needed
-          _navigateToSelectedPage(context, index);
-        },
-      ),
+      // drawer: Sidebar(
+      //   currentIndex: 9,
+      //   onItemSelected: (index) {
+      //     // Handle item selection if needed
+      //     _navigateToSelectedPage(context, index);
+      //   },
+      // ),
       body: SingleChildScrollView(
         child: Center(
           child: Padding(

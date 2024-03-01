@@ -6,7 +6,7 @@ import 'package:DILGDOCS/screens/file_utils.dart';
 import 'package:DILGDOCS/screens/joint_circulars.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-
+import 'bottom_navigation.dart';
 import 'sidebar.dart';
 import 'details_screen.dart';
 import 'package:http/http.dart' as http;
@@ -57,22 +57,27 @@ class _LegalOpinionsState extends State<LegalOpinions> {
           'Legal Opinions',
           style: TextStyle(
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu, color: Colors.blue[900]),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
+        iconTheme: IconThemeData(
+          color: Colors.white,
         ),
+        backgroundColor: Colors.blue[900],
       ),
       body: _buildBody(),
-      drawer: Sidebar(
-        currentIndex: 7,
-        onItemSelected: (index) {
-          Navigator.pop(context);
-        },
-      ),
+      // drawer: Sidebar(
+      //   currentIndex: 7,
+      //   onItemSelected: (index) {
+      //     _navigateToSelectedPage(context, index);
+      //   },
+      // ),
+      bottomNavigationBar: BottomNavigation(
+      currentIndex: 0,
+      onTabTapped:(index){
+
+      },
+    ),
     );
   }
 

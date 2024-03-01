@@ -23,6 +23,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
   bool isSearching = false;
   String _selectedSortOption = 'Date';
   List<String> _sortOptions = ['Date', 'Name'];
+  Map<String, DateTime> downloadedFilesWithTime = {};
+
 
   @override
   void initState() {
@@ -54,124 +56,132 @@ class _LibraryScreenState extends State<LibraryScreen> {
         await loadDownloadedFiles(entity);
       } else if (entity is File && entity.path.toLowerCase().endsWith('.pdf')) {
         downloadedFiles.add(entity.path);
+        // Store the last modified timestamp for sorting
+        downloadedFilesWithTime[entity.path] = entity.lastModifiedSync();
       }
     }
 
-    downloadedFiles.sort();
+    // Sort files by last modified timestamp in descending order
+    downloadedFiles.sort((a, b) =>
+        downloadedFilesWithTime[b]!.compareTo(downloadedFilesWithTime[a]!));
+
+    // Update filteredFiles list to reflect the changes
+    _filterFiles(_searchController.text);
   }
 
+
  @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: Text(
-        'Library',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Library',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
-      ),
-      leading: Builder(
-        builder: (context) => IconButton(
-          icon: Icon(Icons.menu, color: Colors.white),
-          onPressed: () => Scaffold.of(context).openDrawer(),
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: Icon(Icons.menu, color: Colors.white),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
         ),
+        backgroundColor: Colors.blue[900],
       ),
-      backgroundColor: Colors.blue[900],
-    ),
-    drawer: Sidebar(
-      currentIndex: 0,
-      onItemSelected: (index) {
-        _navigateToSelectedPage(context, index);
-      },
-    ),
-    bottomNavigationBar: BottomNavigation(
-      currentIndex: 2,
-      onTabTapped: (index) {
-        // Handle bottom navigation item taps if needed
-      },
-    ),
-    body: SingleChildScrollView(
-  child: Container(
-    margin: EdgeInsets.only(top: 16.0), // Add margin top here
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _buildSearchAndFilterRow(),
-        _buildPdf(context),
-      ],
+      drawer: Sidebar(
+        currentIndex: 0,
+        onItemSelected: (index) {
+          _navigateToSelectedPage(context, index);
+        },
+      ),
+      bottomNavigationBar: BottomNavigation(
+        currentIndex: 2,
+        onTabTapped: (index) {
+          // Handle bottom navigation item taps if needed
+        },
+      ),
+      body: SingleChildScrollView(
+    child: Container(
+      margin: EdgeInsets.only(top: 16.0), // Add margin top here
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildSearchAndFilterRow(),
+          _buildPdf(context),
+        ],
+      ),
     ),
   ),
-),
-  );
-}
+    );
+  }
 
-Widget _buildSearchBar() {
-  return Container(
+  Widget _buildSearchBar() {
+    return Container(
 
-    child: Expanded(
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.5),
-              spreadRadius: 2,
-              blurRadius: 5,
-              offset: Offset(0, 3), // changes position of shadow
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Search...',
-                    border: InputBorder.none,
+      child: Expanded(
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 2,
+                blurRadius: 5,
+                offset: Offset(0, 3), // changes position of shadow
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search...',
+                      border: InputBorder.none,
+                    ),
+                    onChanged: (value) {
+                      _filterFiles(value);
+                    },
                   ),
-                  onChanged: (value) {
-                    _filterFiles(value);
-                  },
                 ),
               ),
-            ),
-            IconButton(
-              icon: Icon(Icons.search),
-              onPressed: () {
-                _filterFiles(_searchController.text);
-              },
-            ),
-          ],
+              IconButton(
+                icon: Icon(Icons.search),
+                onPressed: () {
+                  _filterFiles(_searchController.text);
+                },
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
 
-Widget _buildSearchAndFilterRow() {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 20),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Row(
-          children: [
-            _buildSearchBar(),
-            SizedBox(width: 10), // Add spacing between search bar and other widgets
-            // Add other widgets here
-          ],
-        ),
-        // Add other rows or widgets as needed
-      ],
-    ),
-  );
-}
+  Widget _buildSearchAndFilterRow() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              _buildSearchBar(),
+              SizedBox(width: 10), // Add spacing between search bar and other widgets
+              // Add other widgets here
+            ],
+          ),
+          // Add other rows or widgets as needed
+        ],
+      ),
+    );
+  }
 
 
   Widget _buildPdf(BuildContext context) {
@@ -381,13 +391,13 @@ Future<void> openPdfViewer(BuildContext context, String filePath,
   onFileOpened(fileName, filePath);
 }
 
-String getFolderName(String path) {
-  List<String> parts = path.split('/');
-  if (parts.length > 1) {
-    String folder = parts[parts.length - 2];
-    print('Folder name extracted: $folder');
-    return folder;
-  }
-  print('No folder name found in path: $path');
-  return 'Other';
-}
+// String getFolderName(String path) {
+//   List<String> parts = path.split('/');
+//   if (parts.length > 1) {
+//     String folder = parts[parts.length - 2];
+//     print('Folder name extracted: $folder');
+//     return folder;
+//   }
+//   print('No folder name found in path: $path');
+//   return 'Other';
+// }

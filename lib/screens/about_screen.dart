@@ -37,22 +37,28 @@ class _AboutState extends State<About> with SingleTickerProviderStateMixin {
           'About',
           style: TextStyle(
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu, color: Colors.blue[900]),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
+
+        iconTheme: IconThemeData(
+          color: Colors.white,
         ),
+        backgroundColor: Colors.blue[900],
+        // leading: Builder(
+        //   builder: (context) => IconButton(
+        //     icon: Icon(Icons.menu, color: Colors.blue[900]),
+        //     onPressed: () => Scaffold.of(context).openDrawer(),
+        //   ),
+        // ),
       ),
-      drawer: Sidebar(
-        currentIndex: 1,
-        onItemSelected: (index) {
-          // Handle item selection if needed
-          _navigateToSelectedPage(context, index);
-        },
-      ),
+      // drawer: Sidebar(
+      //   currentIndex: 1,
+      //   onItemSelected: (index) {
+      //     // Handle item selection if needed
+      //     _navigateToSelectedPage(context, index);
+      //   },
+      // ),
       body: Stack(
         children: [
           AnimatedContainer(
@@ -81,7 +87,7 @@ class _AboutState extends State<About> with SingleTickerProviderStateMixin {
               gradient: LinearGradient(
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
-                colors: [Colors.grey.shade500, Colors.grey.shade600],
+                colors: [Colors.white, Colors.white],
               ),
             ),
           ),

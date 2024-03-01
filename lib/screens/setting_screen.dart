@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:DILGDOCS/Services/globals.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -7,6 +10,8 @@ import 'edit_user.dart';
 import 'login_screen.dart';
 import 'about_screen.dart';
 import 'developers_screen.dart';
+import 'bottom_navigation.dart';
+import 'sidebar.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen();
@@ -20,6 +25,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String userName = '';
   String email = '';
   String userAvatar = '';
+  late ImageProvider _avatarImageProvider = AssetImage('assets/eula.png');
+
+  int _currentIndex = 3;
+  List<String> _drawerMenuItems = [
+    'Home',
+    'Search',
+    'Library',
+    'View Profile',
+  ];
 
   @override
   void initState() {
@@ -27,45 +41,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _getUserInfo();
   }
 
-  Future<void> _getUserInfo() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool loggedIn = prefs.getBool('isAuthenticated') ?? false;
-    String? name = prefs.getString('userName');
-    String? userEmail = prefs.getString('userEmail');
-    setState(() {
-      isAuthenticated = loggedIn;
-      userName = name ?? '';
-      email = userEmail ?? '';
-    });
-  }
+   Future<void> _getUserInfo() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  bool loggedIn = prefs.getBool('isAuthenticated') ?? false;
+  String? name = prefs.getString('userName');
+  String? userEmail = prefs.getString('userEmail');
+  String? avatarUrl = prefs.getString('userAvatar');
+
+  setState(() {
+    isAuthenticated = loggedIn;
+    userName = name ?? '';
+    email = userEmail ?? '';
+
+    if (avatarUrl != null && avatarUrl.isNotEmpty) {
+      // Use the retrieved avatar URL
+      _avatarImageProvider = NetworkImage(avatarUrl);
+    } else {
+      // Use a default avatar image
+      _avatarImageProvider = AssetImage('assets/eula.png');
+    }
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            IconButton(
-              icon: Icon(Icons.arrow_back),
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/home');
-              },
-              color: Colors.white,
-            ),
-            SizedBox(width: 8.0),
-            Text(
-              'Settings',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 30.0,
-                color: Colors.white,
-              ),
-            ),
-          ],
+        title: Text(
+        'Settings',
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
         ),
+      ),
+      leading: Builder(
+        builder:(context) => IconButton(
+          icon: Icon(Icons.menu, color: Colors.white),
+          onPressed: () => Scaffold.of(context).openDrawer(),
+        ),
+      ),
         backgroundColor: Colors.blue[900],
       ),
+
+      drawer:Sidebar(
+      currentIndex: 0,
+      onItemSelected: (index){
+        _navigateToSelectedPage(context, index);
+      },
+    ),
       body: _buildBody(),
+      
+      bottomNavigationBar: BottomNavigation(
+      currentIndex: 3,
+      onTabTapped:(index){
+
+      },
+    ),
     );
   }
 
@@ -83,12 +115,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 50.0,
-                  backgroundImage: userAvatar.isNotEmpty
-                      ? NetworkImage('$baseURL/images/$userAvatar') as ImageProvider
-                      : AssetImage('assets/eula.png'),
-                ),
+              CircleAvatar(
+                radius: 50.0,
+                backgroundImage: Image.network(
+                  'https://issuances.dilgbohol.com/images/$userAvatar',
+                  scale: 1.0,
+                ).image,
+              ),
+
                 SizedBox(width: 10.0),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -417,12 +451,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   
 
-    void _launchURL() async {
-    const url = 'https://dilgbohol.com/faqs'; // Replace this URL with your desired destination URL
+   void _launchURL() async {
+  var connectivityResult = await Connectivity().checkConnectivity();
+  if (connectivityResult == ConnectivityResult.none) {
+    // No internet connection
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('No Internet Connection'),
+          content: Text('Please connect to the internet.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  } else {
+    // Internet connection available, launch the URL
+    const url = 'https://dilgbohol.com/faqs';
     if (await canLaunch(url)) {
       await launch(url);
     } else {
       throw 'Could not launch $url';
     }
   }
+}
+
+  void _navigateToSelectedPage(BuildContext context, int index) {}
+
 }

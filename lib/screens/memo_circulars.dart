@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import '../models/memo_circulars.dart';
 import 'sidebar.dart';
 import 'details_screen.dart';
+import 'bottom_navigation.dart';
 
 class MemoCirculars extends StatefulWidget {
   @override
@@ -59,21 +60,24 @@ class _MemoCircularsState extends State<MemoCirculars> {
             color: Colors.white,
           ),
         ),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu, color: Colors.white),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
+        iconTheme: IconThemeData(
+          color: Colors.white,
         ),
         backgroundColor: Colors.blue[900],
       ),
       body: _buildBody(),
-      drawer: Sidebar(
-        currentIndex: 1,
-        onItemSelected: (index) {
-          _navigateToSelectedPage(context, index);
-        },
-      ),
+      // drawer: Sidebar(
+      //   currentIndex: 3,
+      //   onItemSelected: (index) {
+      //     _navigateToSelectedPage(context, index);
+      //   },
+      // ),
+      bottomNavigationBar: BottomNavigation(
+      currentIndex: 0,
+      onTabTapped:(index){
+
+      },
+    ),
     );
   }
 

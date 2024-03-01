@@ -7,7 +7,7 @@ import '../screens/sidebar.dart';
 import '../screens/details_screen.dart';
 import 'package:http/http.dart' as http;
 import 'file_utils.dart';
-
+import 'bottom_navigation.dart';
 class RepublicActs extends StatefulWidget {
   @override
   _RepublicActsState createState() => _RepublicActsState();
@@ -54,22 +54,28 @@ class _RepublicActsState extends State<RepublicActs> {
           'Republic Acts',
           style: TextStyle(
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu, color: Colors.blue[900]),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
+        iconTheme: IconThemeData(
+          color: Colors.white,
+          
         ),
+        backgroundColor: Colors.blue[900],
       ),
       body: _buildBody(),
-      drawer: Sidebar(
-        currentIndex: 6,
-        onItemSelected: (index) {
-          Navigator.pop(context);
-        },
-      ),
+      // drawer: Sidebar(
+      //   currentIndex: 6,
+      //   onItemSelected: (index) {
+      //     _navigateToSelectedPage(context, index);
+      //   },
+      // ),
+      bottomNavigationBar: BottomNavigation(
+      currentIndex: 0,
+      onTabTapped:(index){
+
+      },
+    ),
     );
   }
 
@@ -206,6 +212,8 @@ class _RepublicActsState extends State<RepublicActs> {
       }).toList();
     });
   }
+  
+  void _navigateToSelectedPage(BuildContext context, int index) {}
 }
 
 TextSpan highlightMatches(String text, String query) {

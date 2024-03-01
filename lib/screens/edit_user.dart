@@ -157,6 +157,7 @@ class _EditUserState extends State<EditUser> {
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
+                   Navigator.pushReplacementNamed(context, '/settings');
                 },
                 child: Text('OK'),
               ),
@@ -166,7 +167,7 @@ class _EditUserState extends State<EditUser> {
       );
       return;
     }
-
+    
     try {
       String? token = await AuthServices.getToken();
       if (token != null) {
@@ -200,6 +201,7 @@ class _EditUserState extends State<EditUser> {
                     ElevatedButton(
                       onPressed: () {
                         Navigator.pop(context);
+                        Navigator.pushReplacementNamed(context, '/settings');
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue[300],
