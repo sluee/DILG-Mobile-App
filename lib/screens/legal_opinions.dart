@@ -72,7 +72,7 @@ class _LegalOpinionsState extends State<LegalOpinions> {
       //     _navigateToSelectedPage(context, index);
       //   },
       // ),
-      bottomNavigationBar: BottomNavigation(
+        bottomNavigationBar: BottomNavigation(
       currentIndex: 0,
       onTabTapped:(index){
 

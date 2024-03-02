@@ -66,13 +66,11 @@ class _JointCircularsState extends State<JointCirculars> {
         backgroundColor: Colors.blue[900],
       ),
       body: _buildBody(),
-      bottomNavigationBar: BottomNavigation(
-      currentIndex: 0,
-      onTabTapped:(index){
-
-      },
-    ),
-      
+    //   bottomNavigationBar: BottomNavigation(
+    //   currentIndex: 0,
+    //   onTabTapped:(index){
+    //   },
+    // ),
     );
   }
 

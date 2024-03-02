@@ -1,9 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:page_transition/page_transition.dart';
-import 'home_screen.dart';
-import 'search_screen.dart';
-import 'library_screen.dart';
-import 'setting_screen.dart';
 
 class BottomNavigation extends StatefulWidget {
   final int currentIndex;
@@ -16,27 +11,10 @@ class BottomNavigation extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _BottomNavigationState createState() => _BottomNavigationState();
+  State<BottomNavigation> createState() => _BottomNavigationState();
 }
 
 class _BottomNavigationState extends State<BottomNavigation> {
-  // Define a list of pages/screens to navigate to
-  final List<Widget> _pages = [
-    HomeScreen(),
-    SearchScreen(),
-    LibraryScreen(
-      onFileOpened: (fileName, filePath) {
-        // Implement your logic when file is opened
-        print('File opened: $fileName');
-      },
-      onFileDeleted: (filePath) {
-        // Implement your logic when file is deleted
-        print('File deleted: $filePath');
-      },
-    ),
-    SettingsScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
@@ -46,7 +24,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
       unselectedItemColor: Colors.grey,
       currentIndex: widget.currentIndex,
       onTap: (index) {
-        // Update the state to reflect the selected index
+        // Call the onTabTapped function provided by the parent widget
         widget.onTabTapped(index);
       },
       items: [

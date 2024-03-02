@@ -75,8 +75,8 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
       //   },
       // ),
       bottomNavigationBar: BottomNavigation(
-      currentIndex: 0,
-      onTabTapped:(index){
+       currentIndex: 0,
+       onTabTapped:(index){
 
       },
     ),

@@ -11,7 +11,7 @@ import '../utils/routes.dart';
 
 class AuthServices {
   static final _storage = FlutterSecureStorage();
-  static final String _logoutUrl = '$baseURL/logout';
+  // static final String _logoutUrl = '$baseURL/logout';
 
 
   static Future<http.Response> login(String email, String password) async {

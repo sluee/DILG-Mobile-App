@@ -1,22 +1,14 @@
 import 'dart:convert';
-import 'dart:io';
+
 import 'package:DILGDOCS/Services/globals.dart';
 import 'package:DILGDOCS/models/republic_acts.dart';
 import 'package:DILGDOCS/screens/details.dart';
-import 'package:DILGDOCS/screens/draft_issuances.dart';
-import 'package:DILGDOCS/screens/joint_circulars.dart';
-import 'package:DILGDOCS/screens/latest_issuances.dart';
-import 'package:DILGDOCS/screens/legal_opinions.dart';
-import 'package:DILGDOCS/screens/memo_circulars.dart';
-import 'package:DILGDOCS/screens/pdf_preview.dart';
-import 'package:DILGDOCS/screens/presidential_directives.dart';
-import 'package:DILGDOCS/screens/republic_acts.dart';
+
 import 'package:DILGDOCS/utils/routes.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_pdfview/flutter_pdfview.dart';
+
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
-import 'package:http/http.dart' as http;
+
 import '../models/draft_issuances.dart';
 import '../models/joint_circulars.dart';
 import '../models/latest_issuances.dart';
@@ -24,7 +16,7 @@ import '../models/legal_opinions.dart';
 import '../models/memo_circulars.dart';
 import '../models/presidential_directives.dart';
 import 'sidebar.dart';
-import 'bottom_navigation.dart';
+
 
 
 class SearchScreen extends StatefulWidget {
@@ -64,6 +56,14 @@ class _SearchScreenState extends State<SearchScreen> {
     fetchJointCirculars();
     fetchDraftIssuances();
   }
+
+@override
+void dispose() {
+  // Cancel any ongoing asynchronous operations here
+  // For example, canceling network requests, timers, etc.
+  super.dispose();
+  
+}
 
 Future<void> fetchDraftIssuances() async {
     final response = await http.get(
@@ -246,12 +246,12 @@ Widget build(BuildContext context) {
         _navigateToSelectedPage(context, index);
       },
     ),
-    bottomNavigationBar: BottomNavigation(
-      currentIndex: 1,
-      onTabTapped:(index){
-
-      },
-    ),
+  //       bottomNavigationBar: BottomNavigation(
+  //   currentIndex: 1, // Set the current index according to your requirement
+  //   onTabTapped:(index) {
+  //     // Handle the tap event here if needed
+  //   },
+  // ),
     body: SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),

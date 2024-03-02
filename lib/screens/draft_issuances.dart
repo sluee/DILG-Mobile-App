@@ -68,12 +68,12 @@ class _DraftIssuancesState extends State<DraftIssuances> {
       //     _navigateToSelectedPage(context, index);
       //   },
       // ),
-      bottomNavigationBar: BottomNavigation(
-      currentIndex: 0,
-      onTabTapped:(index){
+    //   bottomNavigationBar: BottomNavigation(
+    //   currentIndex: 0,
+    //   onTabTapped:(index){
 
-      },
-    ),
+    //   },
+    // ),
     );
   }
 

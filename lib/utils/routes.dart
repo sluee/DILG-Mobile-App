@@ -1,3 +1,6 @@
+import 'package:DILGDOCS/screens/change_password_modal.dart';
+import 'package:DILGDOCS/screens/edit_user.dart';
+import 'package:DILGDOCS/screens/setting_screen.dart';
 import 'package:flutter/material.dart';
 import '../screens/draft_issuances.dart';
 import '../screens/joint_circulars.dart';
@@ -9,9 +12,9 @@ import '../screens/republic_acts.dart';
 import '../screens/home_screen.dart';
 import '../screens/search_screen.dart';
 import '../screens/library_screen.dart';
-import '../screens/intro_section.dart';
+// import '../screens/intro_section.dart';
 import '../screens/login_screen.dart';
-import 'package:DILGDOCS/screens/library_screen.dart';
+// import 'package:DILGDOCS/screens/library_screen.dart';
 
 class Routes {
   static const String home = '/';
@@ -26,7 +29,9 @@ class Routes {
   static const String republicActs = '/republic-acts';
   static const String legalOpinions = '/legal-opinions';
   static const String login = '/login';
-
+  static const String setting = '/settings';
+    static const String editUser = '/edit_user';
+  static const String changePassword = '/change-password';
 
   static Map<String, WidgetBuilder> getRoutes(BuildContext context) {
     return {
@@ -49,9 +54,12 @@ class Routes {
       draftIssuances: (context) => DraftIssuances(),
       republicActs: (context) => RepublicActs(),
       legalOpinions: (context) => LegalOpinions(),
-      login: (context) => LoginScreen(
+     login: (context) => LoginScreen(
             title: 'login',
           ),
+      editUser: (context) => EditUser(),
+      changePassword: (context) => ChangePasswordScreen(),
+      setting: (context)  => SettingsScreen(),   
     };
   }
 

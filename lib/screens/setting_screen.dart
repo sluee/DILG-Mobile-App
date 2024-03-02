@@ -14,7 +14,6 @@ import 'bottom_navigation.dart';
 import 'sidebar.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen();
 
   @override
   _SettingsScreenState createState() => _SettingsScreenState();
@@ -26,8 +25,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String email = '';
   String userAvatar = '';
   late ImageProvider _avatarImageProvider = AssetImage('assets/eula.png');
-
-  int _currentIndex = 3;
   List<String> _drawerMenuItems = [
     'Home',
     'Search',
@@ -63,43 +60,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
   });
 }
 
-
-  @override
-  Widget build(BuildContext context) {
+@override
+Widget build(BuildContext context) {
+  try {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-        'Settings',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
+          'Settings',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
-      ),
-      leading: Builder(
-        builder:(context) => IconButton(
-          icon: Icon(Icons.menu, color: Colors.white),
-          onPressed: () => Scaffold.of(context).openDrawer(),
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: Icon(Icons.menu, color: Colors.white),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
         ),
-      ),
         backgroundColor: Colors.blue[900],
       ),
-
-      drawer:Sidebar(
-      currentIndex: 0,
-      onItemSelected: (index){
-        _navigateToSelectedPage(context, index);
-      },
-    ),
+      drawer: Sidebar(
+        currentIndex: 0,
+        onItemSelected: (index) {
+          _navigateToSelectedPage(context, index);
+        },
+      ),
       body: _buildBody(),
-      
-      bottomNavigationBar: BottomNavigation(
-      currentIndex: 3,
-      onTabTapped:(index){
-
-      },
-    ),
+    );
+  } catch (e, stackTrace) {
+    print('Error: $e');
+    print('Stack Trace: $stackTrace');
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Error'),
+      ),
+      body: Center(
+        child: Text('An error occurred while building the Settings screen.'),
+      ),
     );
   }
+}
+
 
   Widget _buildBody() {
     return SingleChildScrollView(

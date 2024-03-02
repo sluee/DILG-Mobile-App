@@ -1,6 +1,7 @@
-import 'dart:convert';
+// import 'dart:convert';
 import 'dart:io';
 
+// import 'package:DILGDOCS/screens/bottom_navigation.dart';
 import 'package:DILGDOCS/screens/bottom_navigation.dart';
 import 'package:DILGDOCS/screens/sidebar.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +10,7 @@ import 'package:path_provider/path_provider.dart';
 
 class LibraryScreen extends StatefulWidget {
    final Function(String, String)? onFileOpened;
-  final Function(String)? onFileDeleted;
+   final Function(String)? onFileDeleted;
 
   LibraryScreen({
     this.onFileOpened,
@@ -26,7 +27,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
   List<String> filteredFiles = [];
   bool isSearching = false;
   Map<String, DateTime> downloadedFilesWithTime = {};
-
+  
+   int _currentIndex = 2;
+  List<String> _drawerMenuItems = [
+    'Home',
+    'Search',
+    'Library',
+    'View Profile',
+  ];
 
   @override
   void initState() {
@@ -97,12 +105,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
           _navigateToSelectedPage(context, index);
         },
       ),
-      bottomNavigationBar: BottomNavigation(
-        currentIndex: 2,
-        onTabTapped: (index) {
-          // Handle bottom navigation item taps if needed
-        },
-      ),
+      // bottomNavigationBar: BottomNavigation(
+      //     currentIndex: _currentIndex,
+      //     onTabTapped: (index) {
+      //       setState(() {
+      //         _currentIndex = index.clamp(0, _drawerMenuItems.length - 1);
+      //       });
+      //     }
+      // ),
       body: SingleChildScrollView(
     child: Container(
       margin: EdgeInsets.only(top: 16.0), // Add margin top here
@@ -253,9 +263,12 @@ Widget _buildPdf(BuildContext context) {
                       openPdfViewer(
                         context,
                         file,
-                        widget.onFileOpened ??
-                            (String fileName, String filePath) {},
                       );
+                      // Invoke the callback function when a PDF is opened
+                      if (widget.onFileOpened != null) {
+                        String fileName = file.split('/').last;
+                        widget.onFileOpened!(fileName, file);
+                      }
                     },
                   ),
                 );
@@ -391,7 +404,8 @@ Widget _buildHighlightedTitle(String title) {
       filteredFiles.remove(filePath);
 
       // Call the callback function provided by HomeScreen
-      widget.onFileDeleted?.call(filePath.split('/').last);
+      String fileName = filePath.split('/').last;
+      widget.onFileDeleted!(fileName);
 
       // Show a confirmation dialog
       showDialog(
@@ -440,26 +454,28 @@ Widget _buildHighlightedTitle(String title) {
  void _navigateToSelectedPage(BuildContext context, int index) {
     // Handle navigation to selected page
   }
-  Future<void> openPdfViewer(BuildContext context, String filePath,
-      Function(String, String) onFileOpened) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PDFView(
-          filePath: filePath,
-          enableSwipe: true,
-          swipeHorizontal: true,
-          autoSpacing: true,
-          pageSnap: true,
-          onViewCreated: (PDFViewController controller) {},
-        ),
+  Future<void> openPdfViewer(BuildContext context, String filePath) async {
+  await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => PDFView(
+        filePath: filePath,
+        enableSwipe: true,
+        swipeHorizontal: true,
+        autoSpacing: true,
+        pageSnap: true,
+        onViewCreated: (PDFViewController controller) {},
       ),
-    );
+    ),
+  );
 
+  if (widget.onFileOpened != null) {
     String fileName = filePath.split('/').last;
-    onFileOpened(fileName, filePath);
+    widget.onFileOpened!(fileName, filePath);
   }
-  
-  
 }
+ 
+}
+
+  
 // 
