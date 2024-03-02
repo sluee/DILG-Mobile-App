@@ -77,11 +77,11 @@ class _HomeScreenState extends State<HomeScreen> {
           return false;
         } else if (currentBackPressTime == null ||
             DateTime.now().difference(currentBackPressTime!) >
-                Duration(seconds: 2)) {
+                Duration(seconds: 1)) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Press back again to exit'),
-              duration: Duration(seconds: 2),
+              duration: Duration(seconds: 1),
             ),
           );
           currentBackPressTime = DateTime.now();

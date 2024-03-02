@@ -26,7 +26,6 @@ class _BottomNavigationState extends State<BottomNavigation> {
       onTap: (index) {
         // Call the onTabTapped function provided by the parent widget
         widget.onTabTapped(index);
-        
       },
       items: [
         BottomNavigationBarItem(

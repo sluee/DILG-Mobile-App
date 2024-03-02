@@ -103,8 +103,8 @@ Future<void> fetchUserDetails() async {
                   children: [
                     SizedBox(height: 25.0),
                     Text(
-                      'Welcome',
-                      style: TextStyle(color: Colors.grey),
+                      'Welcome, ',
+                      style: TextStyle(color: Colors.blue),
                     ),
                     SizedBox(height: 4.0),
                     Text(
@@ -136,7 +136,7 @@ Future<void> fetchUserDetails() async {
                       children: [
                         Icon(
                           Icons.person,
-                          color: Colors.grey,
+                          color: Colors.blue,
                         ),
                         SizedBox(width: 8.0),
                         Text(
@@ -182,7 +182,7 @@ Future<void> fetchUserDetails() async {
                       children: [
                         Icon(
                           Icons.lock,
-                          color: Colors.grey,
+                          color: Colors.blue,
                         ),
                         SizedBox(width: 8.0),
                         Text(
@@ -223,7 +223,7 @@ Future<void> fetchUserDetails() async {
                       children: [
                         Icon(
                           Icons.question_answer,
-                          color: Colors.grey,
+                          color: Colors.blue,
                         ),
                         SizedBox(width: 8.0),
                         Text(
@@ -267,7 +267,7 @@ Future<void> fetchUserDetails() async {
                       children: [
                         Icon(
                           Icons.info,
-                          color: Colors.grey,
+                          color: Colors.blue,
                         ),
                         SizedBox(width: 8.0),
                         Text(
@@ -311,7 +311,7 @@ Future<void> fetchUserDetails() async {
                       children: [
                         Icon(
                           Icons.people,
-                          color: Colors.grey,
+                          color: Colors.blue,
                         ),
                         SizedBox(width: 8.0),
                         Text(
@@ -352,7 +352,7 @@ Future<void> fetchUserDetails() async {
                       children: [
                         Icon(
                           Icons.exit_to_app,
-                          color: Colors.grey,
+                          color: Colors.blue,
                         ),
                         SizedBox(width: 8.0),
                         Text(
