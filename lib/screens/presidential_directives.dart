@@ -9,7 +9,7 @@ import 'sidebar.dart';
 import 'details_screen.dart';
 import 'package:http/http.dart' as http;
 import "file_utils.dart";
-import 'bottom_navigation.dart';
+// import 'bottom_navigation.dart';
 
 class PresidentialDirectives extends StatefulWidget {
   @override
@@ -74,12 +74,12 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
       //     _navigateToSelectedPage(context, index);
       //   },
       // ),
-      bottomNavigationBar: BottomNavigation(
-       currentIndex: 0,
-       onTabTapped:(index){
+    //   bottomNavigationBar: BottomNavigation(
+    //    currentIndex: 0,
+    //    onTabTapped:(index){
 
-      },
-    ),
+    //   },
+    // ),
     );
   }
 

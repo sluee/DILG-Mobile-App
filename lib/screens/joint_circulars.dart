@@ -7,9 +7,9 @@ import 'package:http/http.dart' as http;
 
 // Import other necessary files
 import '../models/joint_circulars.dart';
-import 'sidebar.dart';
+// import 'sidebar.dart';
 import 'details_screen.dart';
-import 'bottom_navigation.dart';
+// import 'bottom_navigation.dart';/
 
 class JointCirculars extends StatefulWidget {
   @override

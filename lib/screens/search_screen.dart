@@ -224,34 +224,14 @@ Future<void> fetchMemoCirculars() async {
  @override
 Widget build(BuildContext context) {
   return Scaffold(
-    appBar: AppBar(
-      title: Text(
-        'Search',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-      leading: Builder(
-        builder:(context) => IconButton(
-          icon: Icon(Icons.menu, color: Colors.white),
-          onPressed: () => Scaffold.of(context).openDrawer(),
-        ),
-      ),
-      backgroundColor: Colors.blue[900],
-    ),
+    
     drawer:Sidebar(
       currentIndex: 0,
       onItemSelected: (index){
         _navigateToSelectedPage(context, index);
       },
     ),
-  //       bottomNavigationBar: BottomNavigation(
-  //   currentIndex: 1, // Set the current index according to your requirement
-  //   onTabTapped:(index) {
-  //     // Handle the tap event here if needed
-  //   },
-  // ),
+ 
     body: SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),

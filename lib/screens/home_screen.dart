@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
     'Home',
     'Search',
     'Library',
-    'View Profile',
+    'Settings',
   ];
 
   DateTime? currentBackPressTime;

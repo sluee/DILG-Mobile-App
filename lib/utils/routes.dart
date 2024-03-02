@@ -20,7 +20,7 @@ class Routes {
   static const String home = '/';
   static const String search = '/search';
   static const String library = '/library';
-  static const String introsection = '/introsection';
+  // static const String introsection = '/introsection';
   static const String latestIssuances = '/latest-issuances';
   static const String jointCirculars = '/joint-circulars';
   static const String memoCirculars = '/memo-circulars';
@@ -30,7 +30,7 @@ class Routes {
   static const String legalOpinions = '/legal-opinions';
   static const String login = '/login';
   static const String setting = '/settings';
-    static const String editUser = '/edit_user';
+  static const String editUser = '/edit_user';
   static const String changePassword = '/change-password';
 
   static Map<String, WidgetBuilder> getRoutes(BuildContext context) {
@@ -54,7 +54,7 @@ class Routes {
       draftIssuances: (context) => DraftIssuances(),
       republicActs: (context) => RepublicActs(),
       legalOpinions: (context) => LegalOpinions(),
-     login: (context) => LoginScreen(
+      login: (context) => LoginScreen(
             title: 'login',
           ),
       editUser: (context) => EditUser(),
@@ -63,8 +63,8 @@ class Routes {
     };
   }
 
-  static void navigateToLibrary(BuildContext context) {
-    Navigator.pushNamed(context, library);
-  }
+  // static void navigateToLibrary(BuildContext context) {
+  //   Navigator.pushNamed(context, library);
+  // }
 
 }

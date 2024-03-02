@@ -25,12 +25,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String email = '';
   String userAvatar = '';
   late ImageProvider _avatarImageProvider = AssetImage('assets/eula.png');
-  List<String> _drawerMenuItems = [
-    'Home',
-    'Search',
-    'Library',
-    'View Profile',
-  ];
+ 
 
   @override
   void initState() {
@@ -60,48 +55,56 @@ class _SettingsScreenState extends State<SettingsScreen> {
   });
 }
 
+// @override
+// Widget build(BuildContext context) {
+//   try {
+//     return Scaffold(
+      
+//       drawer: Sidebar(
+//         currentIndex: 0,
+//         onItemSelected: (index) {
+//           _navigateToSelectedPage(context, index);
+//         },
+//       ),
+//       body: _buildBody(),
+//     );
+//   } catch (e, stackTrace) {
+//     print('Error: $e');
+//     print('Stack Trace: $stackTrace');
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text('Error'),
+//       ),
+//       body: Center(
+//         child: Text('An error occurred while building the Settings screen.'),
+//       ),
+//     );
+//   }
+// }
+
 @override
-Widget build(BuildContext context) {
-  try {
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Settings',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu, color: Colors.white),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
-        backgroundColor: Colors.blue[900],
-      ),
       drawer: Sidebar(
         currentIndex: 0,
         onItemSelected: (index) {
           _navigateToSelectedPage(context, index);
         },
       ),
-      body: _buildBody(),
-    );
-  } catch (e, stackTrace) {
-    print('Error: $e');
-    print('Stack Trace: $stackTrace');
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Error'),
+      body: SingleChildScrollView(
+      child: Container(
+        margin: EdgeInsets.only(top: 16.0), // Add margin top here
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+           _buildBody(),
+           
+          ],
+        ),
       ),
-      body: Center(
-        child: Text('An error occurred while building the Settings screen.'),
-      ),
+    ),
     );
   }
-}
-
 
   Widget _buildBody() {
     return SingleChildScrollView(
@@ -113,18 +116,14 @@ Widget build(BuildContext context) {
           children: [
             SizedBox(height: 20.0),
             // Profile Section
-            Row(
+           Row(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-              CircleAvatar(
-                radius: 50.0,
-                backgroundImage: Image.network(
-                  'https://issuances.dilgbohol.com/images/$userAvatar',
-                  scale: 1.0,
-                ).image,
-              ),
-
+                CircleAvatar(
+                  radius: 50.0,
+                  backgroundImage: _avatarImageProvider,
+                ),
                 SizedBox(width: 10.0),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

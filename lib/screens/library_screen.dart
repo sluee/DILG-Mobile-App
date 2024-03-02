@@ -33,7 +33,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     'Home',
     'Search',
     'Library',
-    'View Profile',
+    'Settings',
   ];
 
   @override
@@ -83,48 +83,24 @@ class _LibraryScreenState extends State<LibraryScreen> {
  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Library',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu, color: Colors.white),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
-        backgroundColor: Colors.blue[900],
-      ),
       drawer: Sidebar(
         currentIndex: 0,
         onItemSelected: (index) {
           _navigateToSelectedPage(context, index);
         },
       ),
-      // bottomNavigationBar: BottomNavigation(
-      //     currentIndex: _currentIndex,
-      //     onTabTapped: (index) {
-      //       setState(() {
-      //         _currentIndex = index.clamp(0, _drawerMenuItems.length - 1);
-      //       });
-      //     }
-      // ),
       body: SingleChildScrollView(
-    child: Container(
-      margin: EdgeInsets.only(top: 16.0), // Add margin top here
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildSearchAndFilterRow(),
-          _buildPdf(context),
-        ],
+      child: Container(
+        margin: EdgeInsets.only(top: 16.0), // Add margin top here
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildSearchAndFilterRow(),
+            _buildPdf(context),
+          ],
+        ),
       ),
     ),
-  ),
     );
   }
 
