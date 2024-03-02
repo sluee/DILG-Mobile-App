@@ -1,19 +1,17 @@
-import 'dart:io';
-
+import 'package:DILGDOCS/Services/auth_services.dart';
 import 'package:DILGDOCS/Services/globals.dart';
-import 'package:connectivity/connectivity.dart';
+import 'package:DILGDOCS/screens/change_password_modal.dart';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'change_password_modal.dart';
 import 'edit_user.dart';
-import 'login_screen.dart';
 import 'about_screen.dart';
 import 'developers_screen.dart';
-import 'bottom_navigation.dart';
-import 'sidebar.dart';
+import 'package:http/http.dart' as http;
 
 class SettingsScreen extends StatefulWidget {
+
 
   @override
   _SettingsScreenState createState() => _SettingsScreenState();
@@ -24,85 +22,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String userName = '';
   String email = '';
   String userAvatar = '';
-  late ImageProvider _avatarImageProvider = AssetImage('assets/eula.png');
- 
+  String? userAvatarUrl;
+   String? avatarUrl;
+  late Image avatarImage;
+
+Future<void> fetchUserDetails() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? avatarFileName = prefs.getString('userAvatar');
+  var userId = await AuthServices.getUserId();
+
+  if (avatarFileName != null && avatarFileName.isNotEmpty) {
+    setState(() {
+      // Construct the complete URL for fetching the avatar image
+      userAvatarUrl = '$baseURL/$avatarFileName';
+    });
+
+    // Print statements for debugging
+    print('Image URL: $userAvatarUrl');
+
+    // Display the image using NetworkImage within an Image widget
+    setState(() {
+      avatarImage = Image.network(userAvatarUrl!);
+    });
+  } else {
+    // Handle case where avatarFileName is null or empty
+    print('Avatar file name is null or empty');
+  }
+}
+
 
   @override
   void initState() {
     super.initState();
     _getUserInfo();
+    fetchUserDetails();
   }
 
-   Future<void> _getUserInfo() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool loggedIn = prefs.getBool('isAuthenticated') ?? false;
-  String? name = prefs.getString('userName');
-  String? userEmail = prefs.getString('userEmail');
-  String? avatarUrl = prefs.getString('userAvatar');
+  Future<void> _getUserInfo() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool loggedIn = prefs.getBool('isAuthenticated') ?? false;
+    String? name = prefs.getString('userName');
+    String? userEmail = prefs.getString('userEmail');
+    setState(() {
+      isAuthenticated = loggedIn;
+      userName = name ?? '';
+      email = userEmail ?? '';
+    });
+  }
 
-  setState(() {
-    isAuthenticated = loggedIn;
-    userName = name ?? '';
-    email = userEmail ?? '';
-
-    if (avatarUrl != null && avatarUrl.isNotEmpty) {
-      // Use the retrieved avatar URL
-      _avatarImageProvider = NetworkImage(avatarUrl);
-    } else {
-      // Use a default avatar image
-      _avatarImageProvider = AssetImage('assets/eula.png');
-    }
-  });
-}
-
-// @override
-// Widget build(BuildContext context) {
-//   try {
-//     return Scaffold(
-      
-//       drawer: Sidebar(
-//         currentIndex: 0,
-//         onItemSelected: (index) {
-//           _navigateToSelectedPage(context, index);
-//         },
-//       ),
-//       body: _buildBody(),
-//     );
-//   } catch (e, stackTrace) {
-//     print('Error: $e');
-//     print('Stack Trace: $stackTrace');
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Error'),
-//       ),
-//       body: Center(
-//         child: Text('An error occurred while building the Settings screen.'),
-//       ),
-//     );
-//   }
-// }
-
-@override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: Sidebar(
-        currentIndex: 0,
-        onItemSelected: (index) {
-          _navigateToSelectedPage(context, index);
-        },
-      ),
-      body: SingleChildScrollView(
-      child: Container(
-        margin: EdgeInsets.only(top: 16.0), // Add margin top here
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-           _buildBody(),
-           
-          ],
-        ),
-      ),
-    ),
+      body: _buildBody(),
     );
   }
 
@@ -116,13 +87,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             SizedBox(height: 20.0),
             // Profile Section
-           Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 50.0,
-                  backgroundImage: _avatarImageProvider,
+               CircleAvatar(
+                  backgroundImage: userAvatarUrl != null
+                      ? NetworkImage(userAvatarUrl!) as ImageProvider<Object>? // Cast to ImageProvider<Object>?
+                      : AssetImage('assets/eula.png'),
+                  radius: 50,
                 ),
                 SizedBox(width: 10.0),
                 Column(
@@ -429,7 +402,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                _logout();
+                logout(context);
               },
               child: Text('Logout'),
             ),
@@ -439,51 +412,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _logout() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool('isAuthenticated', false);
-
-    setState(() {
-      isAuthenticated = false;
-    });
-
-    Navigator.pushReplacementNamed(context, '/login');
-  }
-
   
+  Future<void> logout(BuildContext context) async {
+  // Clear authentication token from storage
+  await clearAuthToken();
 
-   void _launchURL() async {
-  var connectivityResult = await Connectivity().checkConnectivity();
-  if (connectivityResult == ConnectivityResult.none) {
-    // No internet connection
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('No Internet Connection'),
-          content: Text('Please connect to the internet.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Close the dialog
-              },
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
-  } else {
-    // Internet connection available, launch the URL
-    const url = 'https://dilgbohol.com/faqs';
+ print('Authentication token cleared.');
+  // Navigate to the login screen and remove all previous routes
+  Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+}
+
+// Function to clear authentication token
+Future<void> clearAuthToken() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.remove('authToken');
+}
+
+
+    void _launchURL() async {
+    const url = 'https://dilgbohol.com/faqs'; // Replace this URL with your desired destination URL
     if (await canLaunch(url)) {
       await launch(url);
     } else {
       throw 'Could not launch $url';
     }
   }
-}
-
-  void _navigateToSelectedPage(BuildContext context, int index) {}
-
 }

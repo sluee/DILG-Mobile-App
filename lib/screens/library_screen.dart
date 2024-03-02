@@ -91,7 +91,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
       ),
       body: SingleChildScrollView(
       child: Container(
-        margin: EdgeInsets.only(top: 16.0), // Add margin top here
+        margin: EdgeInsets.only(top: 16.0), 
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -106,7 +106,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   Widget _buildSearchBar() {
     return Container(
-
       child: Expanded(
         child: Container(
           decoration: BoxDecoration(
@@ -161,11 +160,10 @@ class _LibraryScreenState extends State<LibraryScreen> {
           Row(
             children: [
               _buildSearchBar(),
-              SizedBox(width: 10), // Add spacing between search bar and other widgets
-              // Add other widgets here
+              SizedBox(width: 10), 
             ],
           ),
-          // Add other rows or widgets as needed
+         
         ],
       ),
     );

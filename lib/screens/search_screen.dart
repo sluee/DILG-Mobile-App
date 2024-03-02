@@ -231,7 +231,7 @@ Widget build(BuildContext context) {
         _navigateToSelectedPage(context, index);
       },
     ),
- 
+
     body: SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),

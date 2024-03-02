@@ -1,3 +1,4 @@
+import 'package:DILGDOCS/screens/setting_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'search_screen.dart';
@@ -212,18 +213,20 @@ class _HomeScreenState extends State<HomeScreen> {
       case 1:
         return SearchScreen();
      case 2:
-  return LibraryScreen(
-    onFileOpened: (title, subtitle) {
-      setState(() {
-        _recentlyOpenedIssuances.insert(0, Issuance(title: title));
-      });
-    },
-    onFileDeleted: (title) {
-      setState(() {
-        _recentlyOpenedIssuances.removeWhere((issuance) => issuance.title == title);
-      });
-    },
-  );
+      return LibraryScreen(
+        onFileOpened: (title, subtitle) {
+          setState(() {
+            _recentlyOpenedIssuances.insert(0, Issuance(title: title));
+          });
+        },
+        onFileDeleted: (title) {
+          setState(() {
+            _recentlyOpenedIssuances.removeWhere((issuance) => issuance.title == title);
+          });
+        },
+      );
+      case 3:
+       return SettingsScreen();
 
       default:
         return SizedBox(); // Return an empty widget for unsupported index

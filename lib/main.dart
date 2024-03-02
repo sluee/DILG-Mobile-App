@@ -1,7 +1,5 @@
-import 'package:DILGDOCS/screens/bottom_navigation.dart';
 import 'package:DILGDOCS/screens/home_screen.dart';
 import 'package:DILGDOCS/screens/library_screen.dart';
-import 'package:DILGDOCS/screens/login_screen.dart';
 import 'package:DILGDOCS/screens/search_screen.dart';
 import 'package:DILGDOCS/screens/setting_screen.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +13,7 @@ class MyApp extends StatelessWidget {
   const MyApp({Key? key});
 
   @override
-  Widget build(BuildContext context) {
+   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'DILG Bohol',
@@ -23,20 +21,16 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
         useMaterial3: true,
       ),
-      initialRoute: Routes.login,
-      // routes: Routes.getRoutes(context),
-      // home: BottomNavigationPage(), 
+      initialRoute: Routes.login, 
       routes: Routes.getRoutes(context),
-
-      
-     // onGenerateRoute: (settings) {
-      //   // Handle unknown routes, such as pressing the back button
-      //   return MaterialPageRoute(builder: (context) => const HomeScreen());
-      // },
+      // home: BottomNavigationWithNavigator(),
     );
   }
+
   
 }
+
+
 class BottomNavigationPage extends StatefulWidget {
   @override
   _BottomNavigationPageState createState() => _BottomNavigationPageState();
@@ -72,14 +66,8 @@ class _BottomNavigationPageState extends State<BottomNavigationPage> {
           SettingsScreen(),
         ],
       ),
-      bottomNavigationBar: BottomNavigation(
-        currentIndex: _currentIndex,
-        onTabTapped: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-      ),
+     
     );
   }
 }
+
