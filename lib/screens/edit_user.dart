@@ -57,28 +57,47 @@ class _EditUserState extends State<EditUser> {
       context: context,
       builder: (BuildContext context) {
         return Container(
-          height: 270,
-          child: GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              mainAxisSpacing: 5.0,
-              crossAxisSpacing: 5.0,
-            ),
-            itemCount: assetImages.length,
-            itemBuilder: (BuildContext context, int index) {
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedAvatarPath = assetImages[index];
-                  });
-                  Navigator.pop(context);
-                },
-                child: Image.asset(
-                  assetImages[index],
-                  fit: BoxFit.cover,
+          height: 310,
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                alignment: Alignment.center,
+                child: Text(
+                  'Select Avatar',
+                  style: TextStyle(
+                    fontSize: 21.0,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              );
-            },
+              ),
+              SizedBox(height: 10.0),
+              Expanded(
+                child: GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 5.0,
+                    crossAxisSpacing: 5.0,
+                  ),
+                  itemCount: assetImages.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedAvatarPath = assetImages[index];
+                        });
+                        Navigator.pop(context);
+                      },
+                      child: Image.asset(
+                        assetImages[index],
+                        fit: BoxFit.cover,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -121,7 +140,8 @@ class _EditUserState extends State<EditUser> {
                     image: _selectedAvatarPath != null
                         ? DecorationImage(
                             image: AssetImage(_selectedAvatarPath!),
-                            fit: BoxFit.cover,
+                            fit: BoxFit
+                                .contain, // Use BoxFit.contain to fit the image within the container
                           )
                         : null,
                   ),
