@@ -1,3 +1,6 @@
+import 'package:DILGDOCS/screens/change_password_modal.dart';
+import 'package:DILGDOCS/screens/edit_user.dart';
+import 'package:DILGDOCS/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import '../screens/draft_issuances.dart';
 import '../screens/joint_circulars.dart';
@@ -9,15 +12,15 @@ import '../screens/republic_acts.dart';
 import '../screens/home_screen.dart';
 import '../screens/search_screen.dart';
 import '../screens/library_screen.dart';
-import '../screens/intro_section.dart';
+// import '../screens/intro_section.dart';
 import '../screens/login_screen.dart';
-import 'package:DILGDOCS/screens/library_screen.dart';
+// import 'package:DILGDOCS/screens/library_screen.dart';
 
 class Routes {
-  static const String home = '/';
+  static const String home = '/home';
   static const String search = '/search';
   static const String library = '/library';
-  static const String introsection = '/introsection';
+  // static const String introsection = '/introsection';
   static const String latestIssuances = '/latest-issuances';
   static const String jointCirculars = '/joint-circulars';
   static const String memoCirculars = '/memo-circulars';
@@ -26,15 +29,22 @@ class Routes {
   static const String republicActs = '/republic-acts';
   static const String legalOpinions = '/legal-opinions';
   static const String login = '/login';
+  static const String setting = '/settings';
+  static const String editUser = '/edit_user';
+  static const String changePassword = '/change-password';
 
   static Map<String, WidgetBuilder> getRoutes(BuildContext context) {
     return {
       home: (context) => const HomeScreen(),
       search: (context) => SearchScreen(),
-      library: (context) => LibraryScreen(
+      'library': (context) => LibraryScreen(
             onFileOpened: (fileName, filePath) {
               // Implement your logic when file is opened
               print('File opened: $fileName');
+            },
+            onFileDeleted: (filePath) {
+              // Implement your logic when file is deleted
+              print('File deleted: $filePath');
             },
           ),
       latestIssuances: (context) => LatestIssuances(),
@@ -47,10 +57,13 @@ class Routes {
       login: (context) => LoginScreen(
             title: 'login',
           ),
+      editUser: (context) => EditUser(),
+      changePassword: (context) => ChangePasswordModal(),
+      setting: (context) => SettingsScreen(),
     };
   }
 
-  static void navigateToLibrary(BuildContext context) {
-    Navigator.pushNamed(context, library);
-  }
+  // static void navigateToLibrary(BuildContext context) {
+  //   Navigator.pushNamed(context, library);
+  // }
 }

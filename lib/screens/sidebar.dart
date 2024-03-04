@@ -61,43 +61,42 @@ class Sidebar extends StatelessWidget {
             _buildSidebarItem(
                 Icons.library_books, 'Legal Opinions', 7, context),
             Divider(color: Colors.white),
-            _buildSidebarItem(Icons.info, 'About', 8, context),
-            _buildSidebarItem(Icons.people, 'Developers', 9, context),
-            Divider(color: Colors.white),
-            _buildSidebarItem(
-              Icons.exit_to_app,
-              'Logout',
-              10,
-              context,
-              onPressed: () async {
-                try {
-                  await logout(context); // Call the logout function
-                } catch (error) {
-                  print('Error during logout: $error');
-                  // Handle any errors that occur during logout
-                }
-              },
-            ),
-
+            // _buildSidebarItem(Icons.info, 'About', 8, context),
+            // _buildSidebarItem(Icons.people, 'Developers', 9, context),
+            // Divider(color: Colors.white),
+            // _buildSidebarItem(
+            //   Icons.exit_to_app,
+            //   'Logout',
+            //   10,
+            //   context,
+            //   onPressed: () async {
+            //     try {
+            //       await logout(context); // Call the logout function
+            //     } catch (error) {
+            //       print('Error during logout: $error');
+            //       // Handle any errors that occur during logout
+            //     }
+            //   },
+            // ),
           ],
         ),
       ),
     );
   }
 
-Future<void> logout(BuildContext context) async {
-  // Clear authentication token from storage
-  await clearAuthToken();
+  Future<void> logout(BuildContext context) async {
+    // Clear authentication token from storage
+    await clearAuthToken();
 
-  // Navigate to the login screen and remove all previous routes
-  Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-}
+    // Navigate to the login screen and remove all previous routes
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+  }
 
 // Function to clear authentication token
-Future<void> clearAuthToken() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.remove('authToken');
-}
+  Future<void> clearAuthToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('authToken');
+  }
 
 // Future<void> clearToken() async {
 //   final prefs = await SharedPreferences.getInstance();
@@ -121,10 +120,10 @@ Future<void> clearAuthToken() async {
         return RepublicActs();
       case 7:
         return LegalOpinions();
-      case 8:
-        return About();
-      case 9:
-        return Developers();
+      // case 8:
+      //   return About();
+      // case 9:
+      //   return Developers();
       // Add cases for other items
       // ...
       default:

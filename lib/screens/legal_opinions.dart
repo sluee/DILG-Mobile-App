@@ -6,7 +6,7 @@ import 'package:DILGDOCS/screens/file_utils.dart';
 import 'package:DILGDOCS/screens/joint_circulars.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-
+import 'bottom_navigation.dart';
 import 'sidebar.dart';
 import 'details_screen.dart';
 import 'package:http/http.dart' as http;
@@ -39,7 +39,8 @@ class _LegalOpinionsState extends State<LegalOpinions> {
       final List<dynamic> data = json.decode(response.body)['legals'];
 
       setState(() {
-        _legalOpinions = data.map((item) => LegalOpinion.fromJson(item)).toList();
+        _legalOpinions =
+            data.map((item) => LegalOpinion.fromJson(item)).toList();
         _filteredLegalOpinions = _legalOpinions;
       });
     } else {
@@ -57,26 +58,31 @@ class _LegalOpinionsState extends State<LegalOpinions> {
           'Legal Opinions',
           style: TextStyle(
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu, color: Colors.blue[900]),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
+        iconTheme: IconThemeData(
+          color: Colors.white,
         ),
+        backgroundColor: Colors.blue[900],
       ),
       body: _buildBody(),
-      drawer: Sidebar(
-        currentIndex: 7,
-        onItemSelected: (index) {
-          Navigator.pop(context);
-        },
-      ),
+      // drawer: Sidebar(
+      //   currentIndex: 7,
+      //   onItemSelected: (index) {
+      //     _navigateToSelectedPage(context, index);
+      //   },
+      // ),
+      //     bottomNavigationBar: BottomNavigation(
+      //   currentIndex: 0,
+      //   onTabTapped:(index){
+
+      //   },
+      // ),
     );
   }
 
- Widget _buildBody() {
+  Widget _buildBody() {
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -110,15 +116,20 @@ class _LegalOpinionsState extends State<LegalOpinions> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 16.0),
-              for (int index = 0; index < _filteredLegalOpinions.length; index++)
+              for (int index = 0;
+                  index < _filteredLegalOpinions.length;
+                  index++)
                 InkWell(
                   onTap: () {
-                    _navigateToDetailsPage(context, _filteredLegalOpinions[index]);
+                    _navigateToDetailsPage(
+                        context, _filteredLegalOpinions[index]);
                   },
                   child: Container(
                     decoration: BoxDecoration(
                       border: Border(
-                        bottom: BorderSide(color: const Color.fromARGB(255, 203, 201, 201), width: 1.0),
+                        bottom: BorderSide(
+                            color: const Color.fromARGB(255, 203, 201, 201),
+                            width: 1.0),
                       ),
                     ),
                     child: Card(
@@ -134,7 +145,11 @@ class _LegalOpinionsState extends State<LegalOpinions> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text.rich(
-                                    highlightMatches(_filteredLegalOpinions[index].issuance.title, _searchController.text),
+                                    highlightMatches(
+                                        _filteredLegalOpinions[index]
+                                            .issuance
+                                            .title,
+                                        _searchController.text),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -143,18 +158,23 @@ class _LegalOpinionsState extends State<LegalOpinions> {
                                     ),
                                   ),
                                   SizedBox(height: 4.0),
-                                  
-                                   Text.rich(
-                                  _filteredLegalOpinions[index].issuance.referenceNo != 'N/A'
-                                    ? highlightMatches('Ref #: ${_filteredLegalOpinions[index].issuance.referenceNo}', _searchController.text)
-                                    : TextSpan(text: 'Ref #: N/A'),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
+                                  Text.rich(
+                                    _filteredLegalOpinions[index]
+                                                .issuance
+                                                .referenceNo !=
+                                            'N/A'
+                                        ? highlightMatches(
+                                            'Ref #: ${_filteredLegalOpinions[index].issuance.referenceNo}',
+                                            _searchController.text)
+                                        : TextSpan(text: 'Ref #: N/A'),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
                                   ),
-                                ),
                                   Text(
-                                    _filteredLegalOpinions[index].category != 'N/A'
+                                    _filteredLegalOpinions[index].category !=
+                                            'N/A'
                                         ? 'Category: ${_filteredLegalOpinions[index].category}'
                                         : '',
                                     style: TextStyle(
@@ -167,10 +187,15 @@ class _LegalOpinionsState extends State<LegalOpinions> {
                               ),
                             ),
                             SizedBox(width: 16.0),
-                             Text(
-                              _filteredLegalOpinions[index].issuance.date != 'N/A' 
-                                ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(_filteredLegalOpinions[index].issuance.date))
-                                : '',
+                            Text(
+                              _filteredLegalOpinions[index].issuance.date !=
+                                      'N/A'
+                                  ? DateFormat('MMMM dd, yyyy').format(
+                                      DateTime.parse(
+                                          _filteredLegalOpinions[index]
+                                              .issuance
+                                              .date))
+                                  : '',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontStyle: FontStyle.italic,
@@ -195,8 +220,9 @@ class _LegalOpinionsState extends State<LegalOpinions> {
       MaterialPageRoute(
         builder: (context) => DetailsScreen(
           title: issuance.issuance.title,
-          content: 'Ref #: ${issuance.issuance.referenceNo != 'N/A' ? issuance.issuance.referenceNo + '\n' : ''}'
-                '${issuance.issuance.date != 'N/A' ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date)) + '\n' : ''}',
+          content:
+              'Ref #: ${issuance.issuance.referenceNo != 'N/A' ? issuance.issuance.referenceNo + '\n' : ''}'
+              '${issuance.issuance.date != 'N/A' ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date)) + '\n' : ''}',
           pdfUrl: issuance.issuance.urlLink,
           type: getTypeForDownload(issuance.issuance.type),
         ),
@@ -210,7 +236,8 @@ class _LegalOpinionsState extends State<LegalOpinions> {
       _filteredLegalOpinions = _legalOpinions.where((opinion) {
         final title = opinion.issuance.title.toLowerCase();
         final referenceNo = opinion.issuance.referenceNo.toLowerCase();
-        return title.contains(query.toLowerCase()) || referenceNo.contains(query.toLowerCase());
+        return title.contains(query.toLowerCase()) ||
+            referenceNo.contains(query.toLowerCase());
       }).toList();
     });
   }
@@ -241,8 +268,8 @@ TextSpan highlightMatches(String text, String query) {
     textSpans.add(TextSpan(
       text: text.substring(match.start, match.end),
       style: TextStyle(
-        color: Colors.blue, 
-        fontWeight: FontWeight.bold, 
+        color: Colors.blue,
+        fontWeight: FontWeight.bold,
       ),
     ));
 
@@ -255,6 +282,5 @@ TextSpan highlightMatches(String text, String query) {
 
   return TextSpan(children: textSpans);
 }
+
 void _navigateToSelectedPage(BuildContext context, int index) {}
-
-

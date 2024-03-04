@@ -1,15 +1,16 @@
+import 'package:DILGDOCS/Services/auth_services.dart';
 import 'package:DILGDOCS/Services/globals.dart';
+import 'package:DILGDOCS/screens/change_password_modal.dart';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'change_password_modal.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'edit_user.dart';
-import 'login_screen.dart';
 import 'about_screen.dart';
 import 'developers_screen.dart';
+import 'package:http/http.dart' as http;
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen();
-
   @override
   _SettingsScreenState createState() => _SettingsScreenState();
 }
@@ -17,54 +18,58 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   bool isAuthenticated = false;
   String userName = '';
- String userAvatar = '';
+  String email = '';
+  String userAvatar = '';
+  String? userAvatarUrl;
+  String? avatarUrl;
+  late Image avatarImage;
+
+  Future<void> fetchUserDetails() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? avatarFileName = prefs.getString('userAvatar');
+    var userId = await AuthServices.getUserId();
+
+    if (avatarFileName != null && avatarFileName.isNotEmpty) {
+      setState(() {
+        // Construct the complete URL for fetching the avatar image
+        userAvatarUrl = '$baseURL/$avatarFileName';
+      });
+
+      // Print statements for debugging
+      print('Image URL: $userAvatarUrl');
+
+      // Display the image using NetworkImage within an Image widget
+      setState(() {
+        avatarImage = Image.network(userAvatarUrl!);
+      });
+    } else {
+      // Handle case where avatarFileName is null or empty
+      print('Avatar file name is null or empty');
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _getUserInfo();
+    fetchUserDetails();
   }
 
-   Future<void> _getUserInfo() async {
+  Future<void> _getUserInfo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool loggedIn = prefs.getBool('isAuthenticated') ?? false;
     String? name = prefs.getString('userName');
-    String? avatar = prefs.getString('userAvatar');// Retrieve userAvatar
+    String? userEmail = prefs.getString('userEmail');
     setState(() {
       isAuthenticated = loggedIn;
       userName = name ?? '';
-      userAvatar = avatar ?? ''; // Set userAvatar
+      email = userEmail ?? '';
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            IconButton(
-              icon: Icon(Icons.arrow_back),
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/home');
-              },
-              color: Colors.white, // Set the color of the back button
-            ),
-            SizedBox(
-              width: 8.0,
-            ),
-            Text(
-              'Settings',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 30.0,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.blue[900],
-      ),
       body: _buildBody(),
     );
   }
@@ -83,24 +88,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-              CircleAvatar(
-                    radius: 50.0,
-                    backgroundImage: userAvatar.isNotEmpty
-                      ? NetworkImage('$baseURL/images/$userAvatar') as ImageProvider
-                      : AssetImage('assets/eula.png') // Fallback image if userAvatar is empty
-                  ),
+                CircleAvatar(
+                  backgroundImage: userAvatarUrl != null
+                      ? NetworkImage(userAvatarUrl!) as ImageProvider<
+                          Object>? // Cast to ImageProvider<Object>?
+                      : AssetImage('assets/eula.png'),
+                  radius: 50,
+                ),
                 SizedBox(width: 10.0),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: 25.0),
                     Text(
-                      'Welcome',
-                      style: TextStyle(color: Colors.grey),
+                      'Welcome, ',
+                      style: TextStyle(color: Colors.blue),
                     ),
                     SizedBox(height: 4.0),
                     Text(
-                      userName, // Display the user's name here
+                      userName,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 20.0,
@@ -114,11 +120,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // User Profile Button
             InkWell(
               onTap: () {
-                // Navigate to the user profile page (EditUser)
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => EditUser()),
-                );
+                ).then((_) =>
+                    _getUserInfo()); // Refresh user info when returning from EditUser
               },
               child: Container(
                 padding: EdgeInsets.all(16.0),
@@ -129,7 +135,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       children: [
                         Icon(
                           Icons.person,
-                          color: Colors.grey,
+                          color: Colors.blue,
                         ),
                         SizedBox(width: 8.0),
                         Text(
@@ -159,8 +165,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // Change Password Button
             InkWell(
               onTap: () {
-                // Show the change password modal
-                _showChangePasswordModal(context);
+                // Navigate to the ChangePasswordScreen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ChangePasswordModal()),
+                );
               },
               child: Container(
                 padding: EdgeInsets.all(16.0),
@@ -171,7 +181,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       children: [
                         Icon(
                           Icons.lock,
-                          color: Colors.grey,
+                          color: Colors.blue,
                         ),
                         SizedBox(width: 8.0),
                         Text(
@@ -201,7 +211,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // FAQs Button
             InkWell(
               onTap: () {
-                // Handle FAQs button tap
+                _launchURL();
               },
               child: Container(
                 padding: EdgeInsets.all(16.0),
@@ -212,7 +222,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       children: [
                         Icon(
                           Icons.question_answer,
-                          color: Colors.grey,
+                          color: Colors.blue,
                         ),
                         SizedBox(width: 8.0),
                         Text(
@@ -242,7 +252,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // About Button
             InkWell(
               onTap: () {
-                // Handle About button tap
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => About()),
@@ -257,7 +266,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       children: [
                         Icon(
                           Icons.info,
-                          color: Colors.grey,
+                          color: Colors.blue,
                         ),
                         SizedBox(width: 8.0),
                         Text(
@@ -287,7 +296,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // Developers Button
             InkWell(
               onTap: () {
-                // Handle Developers button tap
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => Developers()),
@@ -302,7 +310,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       children: [
                         Icon(
                           Icons.people,
-                          color: Colors.grey,
+                          color: Colors.blue,
                         ),
                         SizedBox(width: 8.0),
                         Text(
@@ -332,7 +340,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // Logout Button
             InkWell(
               onTap: () {
-                // Handle Logout button tap
                 _showLogoutDialog(context);
               },
               child: Container(
@@ -344,7 +351,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       children: [
                         Icon(
                           Icons.exit_to_app,
-                          color: Colors.grey,
+                          color: Colors.blue,
                         ),
                         SizedBox(width: 8.0),
                         Text(
@@ -366,7 +373,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             SizedBox(height: 10.0),
-            // Additional Divider Below Logout
             Divider(
               color: Colors.grey,
               height: 1,
@@ -388,14 +394,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Close the dialog
+                Navigator.pop(context);
               },
               child: Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Close the dialog
-                _logout(); // Call the updated logout function
+                Navigator.pop(context);
+                logout(context);
               },
               child: Text('Logout'),
             ),
@@ -405,30 +411,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _logout() async {
-    // Clear user authentication state
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool('isAuthenticated', false);
+  Future<void> logout(BuildContext context) async {
+    await clearAuthToken();
 
-    setState(() {
-      isAuthenticated = false;
-    });
+    // Set isAuthenticated to false
+    await AuthServices.storeAuthenticated(false);
 
-    Navigator.pushReplacementNamed(context, '/login');
+    // Navigate to the login screen and remove all previous routes
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
   }
 
-  void _showChangePasswordModal(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: Container(
-            width: MediaQuery.of(context).size.width *
-                0.99, // Adjust the width as needed
-            child: ChangePasswordModal(),
-          ),
-        );
-      },
-    );
+// Function to clear authentication token
+  Future<void> clearAuthToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('authToken');
+  }
+
+  void _launchURL() async {
+    const url =
+        'https://dilgbohol.com/faqs'; // Replace this URL with your desired destination URL
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 }

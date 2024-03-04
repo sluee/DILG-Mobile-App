@@ -11,6 +11,8 @@ import 'sidebar.dart';
 import 'details_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:anim_search_bar/anim_search_bar.dart';
+import 'bottom_navigation.dart';
+
 class LatestIssuances extends StatefulWidget {
   @override
   _LatestIssuancesState createState() => _LatestIssuancesState();
@@ -18,7 +20,8 @@ class LatestIssuances extends StatefulWidget {
 
 class _LatestIssuancesState extends State<LatestIssuances> {
   List<LatestIssuance> _latestIssuances = [];
-  List<LatestIssuance> _filteredLatestIssuances = []; // Initialize filtered list
+  List<LatestIssuance> _filteredLatestIssuances =
+      []; // Initialize filtered list
   TextEditingController _searchController = TextEditingController();
 
   @override
@@ -27,35 +30,36 @@ class _LatestIssuancesState extends State<LatestIssuances> {
     fetchLatestIssuances();
   }
 
-Future<void> fetchLatestIssuances() async {
-  final response = await http.get(
-    Uri.parse('$baseURL/latest_issuances'),
-    headers: {
-      'Accept': 'application/json',
-    },
-  );
+  Future<void> fetchLatestIssuances() async {
+    final response = await http.get(
+      Uri.parse('$baseURL/latest_issuances'),
+      headers: {
+        'Accept': 'application/json',
+      },
+    );
 
-  if (response.statusCode == 200) {
-    final Map<String, dynamic>? responseData = json.decode(response.body);
+    if (response.statusCode == 200) {
+      final Map<String, dynamic>? responseData = json.decode(response.body);
 
-    if (responseData != null && responseData.containsKey('latests')) {
-      final List<dynamic> data = responseData['latests'];
+      if (responseData != null && responseData.containsKey('latests')) {
+        final List<dynamic> data = responseData['latests'];
 
-      setState(() {
-        _latestIssuances = data.map((item) => LatestIssuance.fromJson(item)).toList();
-        _filteredLatestIssuances = _latestIssuances;
-      });
+        setState(() {
+          _latestIssuances =
+              data.map((item) => LatestIssuance.fromJson(item)).toList();
+          _filteredLatestIssuances = _latestIssuances;
+        });
+      } else {
+        print('Failed to load latest opinions: Data format error');
+        print(
+            'Response body: ${response.body}'); // Print response body for debugging
+      }
     } else {
-      print('Failed to load latest opinions: Data format error');
-      print('Response body: ${response.body}'); // Print response body for debugging
+      print('Failed to load latest opinions');
+      print('Response status code: ${response.statusCode}');
+      print('Response body: ${response.body}');
     }
-  } else {
-    print('Failed to load latest opinions');
-    print('Response status code: ${response.statusCode}');
-    print('Response body: ${response.body}');
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -65,37 +69,40 @@ Future<void> fetchLatestIssuances() async {
           'Latest Issuances',
           style: TextStyle(
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu, color: Colors.blue[900]),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
+        iconTheme: IconThemeData(
+          color: Colors.white,
         ),
+        backgroundColor: Colors.blue[900],
       ),
       body: _buildBody(),
-      drawer: Sidebar(
-        currentIndex: 7,
-        onItemSelected: (index) {
-          Navigator.pop(context);
-        },
-      ),
+      // drawer: Sidebar(
+      //   currentIndex: 1,
+      //   onItemSelected: (index) {
+      //     _navigateToSelectedPage(context, index);
+      //   },
+      // ),
+      //   bottomNavigationBar: BottomNavigation(
+      //   currentIndex: 0,
+      //   onTabTapped:(index){
+
+      //   },
+      // ),
     );
   }
 
- Widget _buildBody() {
+  Widget _buildBody() {
     return SingleChildScrollView(
       child: Column(
-        
         children: [
           // Search Input
           Container(
             margin: EdgeInsets.only(top: 16.0),
             padding: EdgeInsets.symmetric(horizontal: 16.0),
             decoration: BoxDecoration(
-             borderRadius: BorderRadius.circular(10),
-            
+              borderRadius: BorderRadius.circular(10),
             ),
             child: TextField(
               controller: _searchController,
@@ -118,20 +125,25 @@ Future<void> fetchLatestIssuances() async {
             ),
           ),
 
-  // Display the filtered presidential directives
+          // Display the filtered presidential directives
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 16.0),
-              for (int index = 0; index < _filteredLatestIssuances.length; index++)
+              for (int index = 0;
+                  index < _filteredLatestIssuances.length;
+                  index++)
                 InkWell(
                   onTap: () {
-                    _navigateToDetailsPage(context, _filteredLatestIssuances[index]);
+                    _navigateToDetailsPage(
+                        context, _filteredLatestIssuances[index]);
                   },
                   child: Container(
                     decoration: BoxDecoration(
                       border: Border(
-                        bottom: BorderSide(color: const Color.fromARGB(255, 203, 201, 201), width: 1.0),
+                        bottom: BorderSide(
+                            color: const Color.fromARGB(255, 203, 201, 201),
+                            width: 1.0),
                       ),
                     ),
                     child: Card(
@@ -147,7 +159,11 @@ Future<void> fetchLatestIssuances() async {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text.rich(
-                                    highlightMatches(_filteredLatestIssuances[index].issuance.title, _searchController.text),
+                                    highlightMatches(
+                                        _filteredLatestIssuances[index]
+                                            .issuance
+                                            .title,
+                                        _searchController.text),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -156,26 +172,35 @@ Future<void> fetchLatestIssuances() async {
                                     ),
                                   ),
                                   SizedBox(height: 4.0),
-                                Text.rich(
-                                  _filteredLatestIssuances[index].issuance.referenceNo != 'N/A'
-                                    ? highlightMatches('Ref #: ${_filteredLatestIssuances[index].issuance.referenceNo}', _searchController.text)
-                                    : TextSpan(text: ''),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
+                                  Text.rich(
+                                    _filteredLatestIssuances[index]
+                                                .issuance
+                                                .referenceNo !=
+                                            'N/A'
+                                        ? highlightMatches(
+                                            'Ref #: ${_filteredLatestIssuances[index].issuance.referenceNo}',
+                                            _searchController.text)
+                                        : TextSpan(text: ''),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
                                   ),
-                                ),
-                                    Text.rich(
-                                  _filteredLatestIssuances[index].outcome != 'N/A'
-                                    ? highlightMatches('Outcome Area: ${_filteredLatestIssuances[index].outcome}', _searchController.text)
-                                    : TextSpan(text: ''),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
-                                  ),
+                                  Text.rich(
+                                    _filteredLatestIssuances[index].outcome !=
+                                            'N/A'
+                                        ? highlightMatches(
+                                            'Outcome Area: ${_filteredLatestIssuances[index].outcome}',
+                                            _searchController.text)
+                                        : TextSpan(text: ''),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
                                   ),
                                   Text(
-                                    _filteredLatestIssuances[index].category != 'N/A'
+                                    _filteredLatestIssuances[index].category !=
+                                            'N/A'
                                         ? 'Category: ${_filteredLatestIssuances[index].category}'
                                         : '',
                                     style: TextStyle(
@@ -188,10 +213,15 @@ Future<void> fetchLatestIssuances() async {
                               ),
                             ),
                             SizedBox(width: 16.0),
-                             Text(
-                              _filteredLatestIssuances[index].issuance.date != 'N/A' 
-                                ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(_filteredLatestIssuances[index].issuance.date))
-                                : '',
+                            Text(
+                              _filteredLatestIssuances[index].issuance.date !=
+                                      'N/A'
+                                  ? DateFormat('MMMM dd, yyyy').format(
+                                      DateTime.parse(
+                                          _filteredLatestIssuances[index]
+                                              .issuance
+                                              .date))
+                                  : '',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontStyle: FontStyle.italic,
@@ -211,102 +241,105 @@ Future<void> fetchLatestIssuances() async {
   }
 
   void _navigateToDetailsPage(BuildContext context, LatestIssuance issuance) {
-  print('PDF URL: ${issuance.issuance.urlLink}');
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => DetailsScreen(
-        title: issuance.issuance.title,
-        content: 'Ref #: ${issuance.issuance.referenceNo != 'N/A' ? issuance.issuance.referenceNo + '\n' : ''}'
+    print('PDF URL: ${issuance.issuance.urlLink}');
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DetailsScreen(
+            title: issuance.issuance.title,
+            content:
+                'Ref #: ${issuance.issuance.referenceNo != 'N/A' ? issuance.issuance.referenceNo + '\n' : ''}'
                 '${issuance.issuance.date != 'N/A' ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date)) + '\n' : ''}'
                 '${issuance.category != 'N/A' ? 'Category: ${issuance.category}\n' : ''}',
-        pdfUrl: issuance.issuance.urlLink,
-        type: getTypeForDownload(issuance.issuance.type),
-      ),
-    )
-  );
-}
-Widget buildContent(LatestIssuance issuance) {
-  List<InlineSpan> spans = [];
-
-  if (issuance.issuance.referenceNo != 'N/A') {
-    spans.add(TextSpan(text: 'Ref #${issuance.issuance.referenceNo}\n'));
+            pdfUrl: issuance.issuance.urlLink,
+            type: getTypeForDownload(issuance.issuance.type),
+          ),
+        ));
   }
 
-  if (issuance.issuance.date != 'N/A') {
-    spans.add(TextSpan(text: '${DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date))}\n'));
+  Widget buildContent(LatestIssuance issuance) {
+    List<InlineSpan> spans = [];
+
+    if (issuance.issuance.referenceNo != 'N/A') {
+      spans.add(TextSpan(text: 'Ref #${issuance.issuance.referenceNo}\n'));
+    }
+
+    if (issuance.issuance.date != 'N/A') {
+      spans.add(TextSpan(
+          text:
+              '${DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date))}\n'));
+    }
+
+    if (issuance.category != 'N/A') {
+      spans.add(TextSpan(text: 'Category: ${issuance.category}\n'));
+    }
+
+    return RichText(
+      text: TextSpan(children: spans),
+      textAlign: TextAlign.start,
+    );
   }
 
-  if (issuance.category != 'N/A') {
-    spans.add(TextSpan(text: 'Category: ${issuance.category}\n'));
+  void _filterLatestIssuances(String query) {
+    setState(() {
+      // Filter the latest issuances based on the search query
+      _filteredLatestIssuances = _latestIssuances.where((issuance) {
+        final title = issuance.issuance.title.toLowerCase();
+        final referenceNo = issuance.issuance.referenceNo.toLowerCase();
+        final outcome = issuance.outcome.toLowerCase();
+        return title.contains(query.toLowerCase()) ||
+            referenceNo.contains(query.toLowerCase());
+      }).toList();
+    });
   }
 
-  return RichText(
-    text: TextSpan(children: spans),
-    textAlign: TextAlign.start,
-  );
-}
+  TextSpan highlightMatches(String text, String query) {
+    if (query.isEmpty) {
+      return TextSpan(text: text);
+    }
 
+    List<TextSpan> textSpans = [];
 
- void _filterLatestIssuances(String query) {
-  setState(() {
-    // Filter the latest issuances based on the search query
-    _filteredLatestIssuances = _latestIssuances.where((issuance) {
-      final title = issuance.issuance.title.toLowerCase();
-      final referenceNo = issuance.issuance.referenceNo.toLowerCase();
-      final outcome = issuance.outcome.toLowerCase();
-      return title.contains(query.toLowerCase()) || referenceNo.contains(query.toLowerCase());
-    }).toList();
-  });
-}
+    // Create a regular expression pattern with case-insensitive matching
+    RegExp regex = RegExp(query, caseSensitive: false);
 
+    // Find all matches of the query in the text
+    Iterable<Match> matches = regex.allMatches(text);
 
-TextSpan highlightMatches(String text, String query) {
-  if (query.isEmpty) {
-    return TextSpan(text: text);
+    // Start index for slicing the text
+    int startIndex = 0;
+
+    // Add text segments with and without highlighting
+    for (Match match in matches) {
+      // Add text segment before the match
+      textSpans.add(TextSpan(text: text.substring(startIndex, match.start)));
+
+      // Add the matching segment with highlighting
+      textSpans.add(TextSpan(
+        text: text.substring(match.start, match.end),
+        style: TextStyle(
+          color: Colors.blue,
+          fontWeight: FontWeight.bold,
+        ),
+      ));
+
+      // Update the start index for the next segment
+      startIndex = match.end;
+    }
+
+    // Add the remaining text segment
+    textSpans.add(TextSpan(text: text.substring(startIndex)));
+
+    return TextSpan(children: textSpans);
   }
 
-  List<TextSpan> textSpans = [];
-
-  // Create a regular expression pattern with case-insensitive matching
-  RegExp regex = RegExp(query, caseSensitive: false);
-
-  // Find all matches of the query in the text
-  Iterable<Match> matches = regex.allMatches(text);
-
-  // Start index for slicing the text
-  int startIndex = 0;
-
-  // Add text segments with and without highlighting
-  for (Match match in matches) {
-    // Add text segment before the match
-    textSpans.add(TextSpan(text: text.substring(startIndex, match.start)));
-
-    // Add the matching segment with highlighting
-    textSpans.add(TextSpan(
-      text: text.substring(match.start, match.end),
-      style: TextStyle(
-        color: Colors.blue, 
-        fontWeight: FontWeight.bold, 
-      ),
-    ));
-
-    // Update the start index for the next segment
-    startIndex = match.end;
-  }
-
-  // Add the remaining text segment
-  textSpans.add(TextSpan(text: text.substring(startIndex)));
-
-  return TextSpan(children: textSpans);
-}
-
- String _truncateText(String text, int maxLength) {
+  String _truncateText(String text, int maxLength) {
     if (text.length <= maxLength) {
       return text;
     } else {
       return text.substring(0, maxLength) + '...';
     }
- }
-void _navigateToSelectedPage(BuildContext context, int index) {}
+  }
+
+  void _navigateToSelectedPage(BuildContext context, int index) {}
 }

@@ -7,6 +7,7 @@ import '../screens/sidebar.dart';
 import '../screens/details_screen.dart';
 import 'package:http/http.dart' as http;
 import 'file_utils.dart';
+import 'bottom_navigation.dart';
 
 class RepublicActs extends StatefulWidget {
   @override
@@ -54,26 +55,31 @@ class _RepublicActsState extends State<RepublicActs> {
           'Republic Acts',
           style: TextStyle(
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu, color: Colors.blue[900]),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
+        iconTheme: IconThemeData(
+          color: Colors.white,
         ),
+        backgroundColor: Colors.blue[900],
       ),
       body: _buildBody(),
-      drawer: Sidebar(
-        currentIndex: 6,
-        onItemSelected: (index) {
-          Navigator.pop(context);
-        },
-      ),
+      // drawer: Sidebar(
+      //   currentIndex: 6,
+      //   onItemSelected: (index) {
+      //     _navigateToSelectedPage(context, index);
+      //   },
+      // ),
+      //   bottomNavigationBar: BottomNavigation(
+      //   currentIndex: 0,
+      //   onTabTapped:(index){
+
+      //   },
+      // ),
     );
   }
 
-   Widget _buildBody() {
+  Widget _buildBody() {
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -110,12 +116,15 @@ class _RepublicActsState extends State<RepublicActs> {
               for (int index = 0; index < _filteredRepublicActs.length; index++)
                 InkWell(
                   onTap: () {
-                    _navigateToDetailsPage(context, _filteredRepublicActs[index]);
+                    _navigateToDetailsPage(
+                        context, _filteredRepublicActs[index]);
                   },
                   child: Container(
                     decoration: BoxDecoration(
                       border: Border(
-                        bottom: BorderSide(color: const Color.fromARGB(255, 203, 201, 201), width: 1.0),
+                        bottom: BorderSide(
+                            color: const Color.fromARGB(255, 203, 201, 201),
+                            width: 1.0),
                       ),
                     ),
                     child: Card(
@@ -130,9 +139,11 @@ class _RepublicActsState extends State<RepublicActs> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                 Text.rich(
+                                  Text.rich(
                                     highlightMatches(
-                                      _filteredRepublicActs[index].issuance.title,
+                                      _filteredRepublicActs[index]
+                                          .issuance
+                                          .title,
                                       _searchController.text,
                                     ),
                                     maxLines: 1,
@@ -142,11 +153,11 @@ class _RepublicActsState extends State<RepublicActs> {
                                       fontSize: 15,
                                     ),
                                   ),
-
                                   SizedBox(height: 4.0),
-                                  
                                   Text(
-                                    _filteredRepublicActs[index].responsibleOffice != 'N/A'
+                                    _filteredRepublicActs[index]
+                                                .responsibleOffice !=
+                                            'N/A'
                                         ? 'Responsible Office: ${_filteredRepublicActs[index].responsibleOffice}'
                                         : '',
                                     style: TextStyle(
@@ -159,10 +170,15 @@ class _RepublicActsState extends State<RepublicActs> {
                               ),
                             ),
                             SizedBox(width: 16.0),
-                             Text(
-                              _filteredRepublicActs[index].issuance.date != 'N/A' 
-                                ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(_filteredRepublicActs[index].issuance.date))
-                                : '',
+                            Text(
+                              _filteredRepublicActs[index].issuance.date !=
+                                      'N/A'
+                                  ? DateFormat('MMMM dd, yyyy').format(
+                                      DateTime.parse(
+                                          _filteredRepublicActs[index]
+                                              .issuance
+                                              .date))
+                                  : '',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontStyle: FontStyle.italic,
@@ -180,17 +196,18 @@ class _RepublicActsState extends State<RepublicActs> {
       ),
     );
   }
+
   void _navigateToDetailsPage(BuildContext context, RepublicAct issuance) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => DetailsScreen(
           title: issuance.issuance.title,
-           content: 'Ref #: ${issuance.issuance.referenceNo != 'N/A' ? issuance.issuance.referenceNo + '\n' : ''}'
-                '${issuance.issuance.date != 'N/A' ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date)) + '\n' : ''}',
-          pdfUrl: issuance.issuance.urlLink, 
+          content:
+              'Ref #: ${issuance.issuance.referenceNo != 'N/A' ? issuance.issuance.referenceNo + '\n' : ''}'
+              '${issuance.issuance.date != 'N/A' ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date)) + '\n' : ''}',
+          pdfUrl: issuance.issuance.urlLink,
           type: getTypeForDownload(issuance.issuance.type),
-      
         ),
       ),
     );
@@ -202,10 +219,13 @@ class _RepublicActsState extends State<RepublicActs> {
       _filteredRepublicActs = _republicActs.where((act) {
         final title = act.issuance.title.toLowerCase();
         final referenceNo = act.issuance.referenceNo.toLowerCase();
-        return title.contains(query.toLowerCase()) || referenceNo.contains(query.toLowerCase());
+        return title.contains(query.toLowerCase()) ||
+            referenceNo.contains(query.toLowerCase());
       }).toList();
     });
   }
+
+  void _navigateToSelectedPage(BuildContext context, int index) {}
 }
 
 TextSpan highlightMatches(String text, String query) {
@@ -247,6 +267,3 @@ TextSpan highlightMatches(String text, String query) {
 
   return TextSpan(children: textSpans);
 }
-
-
-

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'sidebar.dart';
 import 'details_screen.dart';
 import 'package:http/http.dart' as http;
+import 'bottom_navigation.dart';
 
 class DraftIssuances extends StatefulWidget {
   @override
@@ -34,7 +35,8 @@ class _DraftIssuancesState extends State<DraftIssuances> {
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body)['drafts'];
       setState(() {
-        _draftIssuances = data.map((item) => DraftIssuance.fromJson(item)).toList();
+        _draftIssuances =
+            data.map((item) => DraftIssuance.fromJson(item)).toList();
         _filteredDraftIssuances = _draftIssuances;
       });
     } else {
@@ -56,21 +58,24 @@ class _DraftIssuancesState extends State<DraftIssuances> {
             color: Colors.white,
           ),
         ),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu, color: Colors.white),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
+        iconTheme: IconThemeData(
+          color: Colors.white,
         ),
         backgroundColor: Colors.blue[900],
       ),
       body: _buildBody(),
-      drawer: Sidebar(
-        currentIndex: 1,
-        onItemSelected: (index) {
-          // _navigateToSelectedPage(context, index);
-        },
-      ),
+      // drawer: Sidebar(
+      //   currentIndex: 5,
+      //   onItemSelected: (index) {
+      //     _navigateToSelectedPage(context, index);
+      //   },
+      // ),
+      //   bottomNavigationBar: BottomNavigation(
+      //   currentIndex: 0,
+      //   onTabTapped:(index){
+
+      //   },
+      // ),
     );
   }
 
@@ -108,15 +113,20 @@ class _DraftIssuancesState extends State<DraftIssuances> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 16.0),
-              for (int index = 0; index < _filteredDraftIssuances.length; index++)
+              for (int index = 0;
+                  index < _filteredDraftIssuances.length;
+                  index++)
                 InkWell(
                   onTap: () {
-                    _navigateToDetailsPage(context, _filteredDraftIssuances[index]);
+                    _navigateToDetailsPage(
+                        context, _filteredDraftIssuances[index]);
                   },
                   child: Container(
                     decoration: BoxDecoration(
                       border: Border(
-                        bottom: BorderSide(color: const Color.fromARGB(255, 203, 201, 201), width: 1.0),
+                        bottom: BorderSide(
+                            color: const Color.fromARGB(255, 203, 201, 201),
+                            width: 1.0),
                       ),
                     ),
                     child: Card(
@@ -131,25 +141,33 @@ class _DraftIssuancesState extends State<DraftIssuances> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                 Text.rich(
-                                      highlightMatches(_filteredDraftIssuances[index].issuance.title, _searchController.text),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 15,
-                                      ),
+                                  Text.rich(
+                                    highlightMatches(
+                                        _filteredDraftIssuances[index]
+                                            .issuance
+                                            .title,
+                                        _searchController.text),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
                                     ),
+                                  ),
                                   SizedBox(height: 4.0),
-                                    Text.rich(
-                                    highlightMatches('Ref #: ${_filteredDraftIssuances[index].issuance.referenceNo}', _searchController.text),
+                                  Text.rich(
+                                    highlightMatches(
+                                        'Ref #: ${_filteredDraftIssuances[index].issuance.referenceNo}',
+                                        _searchController.text),
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey,
                                     ),
                                   ),
                                   Text.rich(
-                                    highlightMatches('Responsible Office: ${_filteredDraftIssuances[index].responsible_office}', _searchController.text),
+                                    highlightMatches(
+                                        'Responsible Office: ${_filteredDraftIssuances[index].responsible_office}',
+                                        _searchController.text),
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey,
@@ -160,10 +178,15 @@ class _DraftIssuancesState extends State<DraftIssuances> {
                               ),
                             ),
                             SizedBox(width: 16.0),
-                             Text(
-                              _filteredDraftIssuances[index].issuance.date != 'N/A' 
-                                ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(_filteredDraftIssuances[index].issuance.date))
-                                : '',
+                            Text(
+                              _filteredDraftIssuances[index].issuance.date !=
+                                      'N/A'
+                                  ? DateFormat('MMMM dd, yyyy').format(
+                                      DateTime.parse(
+                                          _filteredDraftIssuances[index]
+                                              .issuance
+                                              .date))
+                                  : '',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontStyle: FontStyle.italic,
@@ -202,14 +225,17 @@ class _DraftIssuancesState extends State<DraftIssuances> {
       MaterialPageRoute(
         builder: (context) => DetailsScreen(
           title: issuance.issuance.title,
-           content: 'Ref #: ${issuance.issuance.referenceNo != 'N/A' ? issuance.issuance.referenceNo + '\n' : ''}'
-                '${issuance.issuance.date != 'N/A' ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date)) + '\n' : ''}',
+          content:
+              'Ref #: ${issuance.issuance.referenceNo != 'N/A' ? issuance.issuance.referenceNo + '\n' : ''}'
+              '${issuance.issuance.date != 'N/A' ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date)) + '\n' : ''}',
           pdfUrl: issuance.issuance.urlLink,
           type: getTypeForDownload(issuance.issuance.type),
         ),
       ),
     );
   }
+
+  void _navigateToSelectedPage(BuildContext context, int index) {}
 }
 
 TextSpan highlightMatches(String text, String query) {
@@ -237,8 +263,8 @@ TextSpan highlightMatches(String text, String query) {
     textSpans.add(TextSpan(
       text: text.substring(match.start, match.end),
       style: TextStyle(
-        color: Colors.blue, 
-        fontWeight: FontWeight.bold, 
+        color: Colors.blue,
+        fontWeight: FontWeight.bold,
       ),
     ));
 
@@ -251,4 +277,3 @@ TextSpan highlightMatches(String text, String query) {
 
   return TextSpan(children: textSpans);
 }
-

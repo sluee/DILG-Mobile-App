@@ -9,6 +9,7 @@ import 'sidebar.dart';
 import 'details_screen.dart';
 import 'package:http/http.dart' as http;
 import "file_utils.dart";
+// import 'bottom_navigation.dart';
 
 class PresidentialDirectives extends StatefulWidget {
   @override
@@ -38,7 +39,8 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
 
       if (data != null) {
         setState(() {
-          _presidentialDirectives = data.map((item) => PresidentialDirective.fromJson(item)).toList();
+          _presidentialDirectives =
+              data.map((item) => PresidentialDirective.fromJson(item)).toList();
           _filteredPresidentialDirectives = _presidentialDirectives;
         });
       }
@@ -61,21 +63,24 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
             color: Colors.white,
           ),
         ),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu, color: Colors.white),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
+        iconTheme: IconThemeData(
+          color: Colors.white,
         ),
         backgroundColor: Colors.blue[900],
       ),
       body: _buildBody(),
-      drawer: Sidebar(
-        currentIndex: 1,
-        onItemSelected: (index) {
-          _navigateToSelectedPage(context, index);
-        },
-      ),
+      // drawer: Sidebar(
+      //   currentIndex: 4,
+      //   onItemSelected: (index) {
+      //     _navigateToSelectedPage(context, index);
+      //   },
+      // ),
+      //   bottomNavigationBar: BottomNavigation(
+      //    currentIndex: 0,
+      //    onTabTapped:(index){
+
+      //   },
+      // ),
     );
   }
 
@@ -113,15 +118,20 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 16.0),
-              for (int index = 0; index < _filteredPresidentialDirectives.length; index++)
+              for (int index = 0;
+                  index < _filteredPresidentialDirectives.length;
+                  index++)
                 InkWell(
                   onTap: () {
-                    _navigateToDetailsPage(context, _filteredPresidentialDirectives[index]);
+                    _navigateToDetailsPage(
+                        context, _filteredPresidentialDirectives[index]);
                   },
                   child: Container(
                     decoration: BoxDecoration(
                       border: Border(
-                        bottom: BorderSide(color: const Color.fromARGB(255, 203, 201, 201), width: 1.0),
+                        bottom: BorderSide(
+                            color: const Color.fromARGB(255, 203, 201, 201),
+                            width: 1.0),
                       ),
                     ),
                     child: Card(
@@ -136,8 +146,12 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                 Text.rich(
-                                    highlightMatches(_filteredPresidentialDirectives[index].issuance.title, _searchController.text),
+                                  Text.rich(
+                                    highlightMatches(
+                                        _filteredPresidentialDirectives[index]
+                                            .issuance
+                                            .title,
+                                        _searchController.text),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -146,30 +160,40 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
                                     ),
                                   ),
                                   SizedBox(height: 4.0),
-                                 Text.rich(
-                                  highlightMatches('Ref #: ${_filteredPresidentialDirectives[index].issuance.referenceNo}', _searchController.text),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
+                                  Text.rich(
+                                    highlightMatches(
+                                        'Ref #: ${_filteredPresidentialDirectives[index].issuance.referenceNo}',
+                                        _searchController.text),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
                                   ),
-                                ),
-                                Text.rich(
-                                  highlightMatches('Responsible Office: ${_filteredPresidentialDirectives[index].responsible_office}', _searchController.text),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
-                                    overflow: TextOverflow.ellipsis,
+                                  Text.rich(
+                                    highlightMatches(
+                                        'Responsible Office: ${_filteredPresidentialDirectives[index].responsible_office}',
+                                        _searchController.text),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                ),
-
                                 ],
                               ),
                             ),
                             SizedBox(width: 16.0),
-                             Text(
-                              _filteredPresidentialDirectives[index].issuance.date != 'N/A' 
-                                ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(_filteredPresidentialDirectives[index].issuance.date))
-                                : '',
+                            Text(
+                              _filteredPresidentialDirectives[index]
+                                          .issuance
+                                          .date !=
+                                      'N/A'
+                                  ? DateFormat('MMMM dd, yyyy').format(
+                                      DateTime.parse(
+                                          _filteredPresidentialDirectives[index]
+                                              .issuance
+                                              .date))
+                                  : '',
                               style: TextStyle(
                                 fontSize: 12,
                                 fontStyle: FontStyle.italic,
@@ -191,7 +215,8 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
   void _filterPresidentialDirectives(String query) {
     setState(() {
       // Filter the presidential directives based on the search query
-      _filteredPresidentialDirectives = _presidentialDirectives.where((directive) {
+      _filteredPresidentialDirectives =
+          _presidentialDirectives.where((directive) {
         final title = directive.issuance.title.toLowerCase();
         final referenceNo = directive.issuance.referenceNo.toLowerCase();
         final responsibleOffice = directive.responsible_office.toLowerCase();
@@ -202,15 +227,17 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
     });
   }
 
-  void _navigateToDetailsPage(BuildContext context, PresidentialDirective directive) {
+  void _navigateToDetailsPage(
+      BuildContext context, PresidentialDirective directive) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => DetailsScreen(
           title: directive.issuance.title,
-           content: 'Ref #: ${directive.issuance.referenceNo != 'N/A' ? directive.issuance.referenceNo + '\n' : ''}'
-                '${directive.issuance.date != 'N/A' ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(directive.issuance.date)) + '\n' : ''}'
-                '${directive.responsible_office != 'N/A' ? 'Category: ${directive.responsible_office}\n' : ''}',
+          content:
+              'Ref #: ${directive.issuance.referenceNo != 'N/A' ? directive.issuance.referenceNo + '\n' : ''}'
+              '${directive.issuance.date != 'N/A' ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(directive.issuance.date)) + '\n' : ''}'
+              '${directive.responsible_office != 'N/A' ? 'Category: ${directive.responsible_office}\n' : ''}',
           pdfUrl: directive.issuance.urlLink,
           type: getTypeForDownload(directive.issuance.type),
         ),
@@ -218,51 +245,47 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
     );
   }
 
-TextSpan highlightMatches(String text, String query) {
-  if (query.isEmpty) {
-    return TextSpan(text: text);
+  TextSpan highlightMatches(String text, String query) {
+    if (query.isEmpty) {
+      return TextSpan(text: text);
+    }
+
+    List<TextSpan> textSpans = [];
+
+    // Create a regular expression pattern with case-insensitive matching
+    RegExp regex = RegExp(query, caseSensitive: false);
+
+    // Find all matches of the query in the text
+    Iterable<Match> matches = regex.allMatches(text);
+
+    // Start index for slicing the text
+    int startIndex = 0;
+
+    // Add text segments with and without highlighting
+    for (Match match in matches) {
+      // Add text segment before the match
+      textSpans.add(TextSpan(text: text.substring(startIndex, match.start)));
+
+      // Add the matching segment with highlighting
+      textSpans.add(TextSpan(
+        text: text.substring(match.start, match.end),
+        style: TextStyle(
+          color: Colors.blue,
+          fontWeight: FontWeight.bold,
+        ),
+      ));
+
+      // Update the start index for the next segment
+      startIndex = match.end;
+    }
+
+    // Add the remaining text segment
+    textSpans.add(TextSpan(text: text.substring(startIndex)));
+
+    return TextSpan(children: textSpans);
   }
-
-  List<TextSpan> textSpans = [];
-
-  // Create a regular expression pattern with case-insensitive matching
-  RegExp regex = RegExp(query, caseSensitive: false);
-
-  // Find all matches of the query in the text
-  Iterable<Match> matches = regex.allMatches(text);
-
-  // Start index for slicing the text
-  int startIndex = 0;
-
-  // Add text segments with and without highlighting
-  for (Match match in matches) {
-    // Add text segment before the match
-    textSpans.add(TextSpan(text: text.substring(startIndex, match.start)));
-
-    // Add the matching segment with highlighting
-    textSpans.add(TextSpan(
-      text: text.substring(match.start, match.end),
-      style: TextStyle(
-        color: Colors.blue, 
-        fontWeight: FontWeight.bold, 
-      ),
-    ));
-
-    // Update the start index for the next segment
-    startIndex = match.end;
-  }
-
-  // Add the remaining text segment
-  textSpans.add(TextSpan(text: text.substring(startIndex)));
-
-  return TextSpan(children: textSpans);
-}
-
-
 
   void _navigateToSelectedPage(BuildContext context, int index) {
     // Handle navigation if needed
   }
 }
-
-
