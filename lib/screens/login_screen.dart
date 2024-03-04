@@ -117,33 +117,31 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
         child: Padding(
-          padding: EdgeInsets.all(screenWidth * 0.05),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               CircleAvatar(
-                radius: screenWidth * 0.1,
+                radius: 34,
                 backgroundImage: AssetImage('assets/dilg-main.png'),
               ),
-              SizedBox(height: screenHeight * 0.03),
+              SizedBox(height: 15),
               Text(
                 'Department of the Interior and Local Government - Bohol Province',
                 style: TextStyle(
-                  fontSize: screenWidth * 0.04,
+                  fontSize: 17,
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: screenHeight * 0.02),
+              SizedBox(height: 16),
               Container(
-                padding: EdgeInsets.all(screenWidth * 0.03),
+                padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   border: Border.all(color: Color.fromARGB(255, 0, 0, 255)),
                   borderRadius: BorderRadius.circular(10),
@@ -153,11 +151,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text(
                       'Sign in to your Account',
                       style: TextStyle(
-                        fontSize: screenWidth * 0.03,
+                        fontSize: 15,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: screenHeight * 0.02),
+                    SizedBox(height: 8),
                     TextFormField(
                       controller: _emailController,
                       decoration: InputDecoration(
@@ -165,7 +163,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         errorText: emailError.isNotEmpty ? emailError : null,
                       ),
                     ),
-                    SizedBox(height: screenHeight * 0.02),
+                    SizedBox(height: 8),
                     TextField(
                       controller: _passwordController,
                       obscureText: !_isPasswordVisible,
@@ -187,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: screenHeight * 0.02),
+                    SizedBox(height: 8),
                     Row(
                       children: [
                         Checkbox(
@@ -211,11 +209,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: screenHeight * 0.02),
+              SizedBox(height: 14),
               Text(
                 '© DILG-Bohol Province 2024',
                 style: TextStyle(
-                  fontSize: screenWidth * 0.015,
+                  fontSize: 10,
                   color: const Color.fromARGB(255, 6, 0, 0),
                 ),
               ),
