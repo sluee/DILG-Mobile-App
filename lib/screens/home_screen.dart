@@ -183,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                _buildWideButton('NEWS & UPDATE', 'https://dilgbohol.com/'),
+                _buildWideButton('NEWS & UPDATE', 'https://dilgbohol.com/news_update'),
                 _buildWideButton(
                     'THE PROVINCIAL DIRECTOR', 'https://dilgbohol.com'),
                 _buildWideButton('VISION AND MISSION', 'https://dilgbohol.com'),

@@ -21,11 +21,12 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
   bool _isLoggingIn = false;
+  bool _isPasswordVisible = false;
 
   @override
   void initState() {
     super.initState();
-    checkLoggedIn(); // Check if user is already logged in when screen initializes
+    checkLoggedIn();
   }
 
   Future<void> saveAuthToken(String token) async {
@@ -33,36 +34,28 @@ class _LoginScreenState extends State<LoginScreen> {
     await prefs.setString('authToken', token);
   }
 
-// Function to retrieve authentication token
   Future<String?> getAuthToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('authToken');
   }
 
-// Function to clear authentication token
   Future<void> clearAuthToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('authToken');
   }
 
-// Check if user is logged in on app startup
   void checkLoggedIn() async {
     String? authToken = await getAuthToken();
     if (authToken != null) {
       bool isValidToken = await AuthServices.validateToken(authToken);
       if (isValidToken) {
-        // Token is valid, navigate to home screen
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
         );
       } else {
-        // Token is invalid or expired, clear it and navigate to login screen
         clearAuthToken();
-        // You can choose to navigate to login screen here if needed
       }
-    } else {
-      // No token found, navigate to login screen
     }
   }
 
@@ -85,11 +78,9 @@ class _LoginScreenState extends State<LoginScreen> {
         if (response.statusCode == 200) {
           final token = responseMap['token'];
 
-          // Store token locally and mark user as authenticated
           await AuthServices.storeToken(token);
           await AuthServices.storeAuthenticated(true);
 
-          // Navigate to HomeScreen
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -126,31 +117,33 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
+   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(screenWidth * 0.05),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               CircleAvatar(
-                radius: 34,
+                radius: screenWidth * 0.1,
                 backgroundImage: AssetImage('assets/dilg-main.png'),
               ),
-              SizedBox(height: 15),
+              SizedBox(height: screenHeight * 0.03),
               Text(
                 'Department of the Interior and Local Government - Bohol Province',
                 style: TextStyle(
-                  fontSize: 17,
+                  fontSize: screenWidth * 0.04,
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 16),
+              SizedBox(height: screenHeight * 0.02),
               Container(
-                padding: EdgeInsets.all(16),
+                padding: EdgeInsets.all(screenWidth * 0.03),
                 decoration: BoxDecoration(
                   border: Border.all(color: Color.fromARGB(255, 0, 0, 255)),
                   borderRadius: BorderRadius.circular(10),
@@ -160,36 +153,41 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text(
                       'Sign in to your Account',
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: screenWidth * 0.03,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(height: 8),
+                    SizedBox(height: screenHeight * 0.02),
                     TextFormField(
                       controller: _emailController,
                       decoration: InputDecoration(
                         labelText: 'Email',
                         errorText: emailError.isNotEmpty ? emailError : null,
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        // Add more complex email validation if needed
-                        return null;
-                      },
                     ),
-                    SizedBox(height: 8),
+                    SizedBox(height: screenHeight * 0.02),
                     TextField(
                       controller: _passwordController,
-                      obscureText: true,
+                      obscureText: !_isPasswordVisible,
                       decoration: InputDecoration(
                         labelText: 'Password',
                         errorText:
                             passwordError.isNotEmpty ? passwordError : null,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isPasswordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isPasswordVisible = !_isPasswordVisible;
+                            });
+                          },
+                        ),
                       ),
                     ),
-                    SizedBox(height: 8),
+                    SizedBox(height: screenHeight * 0.02),
                     Row(
                       children: [
                         Checkbox(
@@ -203,11 +201,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         Text('Remember Me'),
                         Spacer(),
                         ElevatedButton(
-                          onPressed: _isLoggingIn
-                              ? null
-                              : loginPressed, // Disable button when logging in
+                          onPressed: _isLoggingIn ? null : loginPressed,
                           child: _isLoggingIn
-                              ? CircularProgressIndicator() // Show spinner while logging in
+                              ? CircularProgressIndicator()
                               : Text('Log in'),
                         ),
                       ],
@@ -215,11 +211,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: 14),
+              SizedBox(height: screenHeight * 0.02),
               Text(
                 '© DILG-Bohol Province 2024',
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: screenWidth * 0.015,
                   color: const Color.fromARGB(255, 6, 0, 0),
                 ),
               ),
