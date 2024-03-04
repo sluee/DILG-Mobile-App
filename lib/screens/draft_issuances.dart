@@ -19,6 +19,8 @@ class _DraftIssuancesState extends State<DraftIssuances> {
   List<DraftIssuance> _draftIssuances = [];
   List<DraftIssuance> _filteredDraftIssuances = [];
   bool _hasInternetConnection = true;
+  bool _isLoading = true;
+
 
   @override
   void initState() {
@@ -96,6 +98,7 @@ Future<void> _openWifiSettings() async {
       setState(() {
         _draftIssuances = data.map((item) => DraftIssuance.fromJson(item)).toList();
         _filteredDraftIssuances = _draftIssuances;
+         _isLoading = false; 
       });
     } else {
       // Handle error
@@ -121,25 +124,45 @@ Future<void> _openWifiSettings() async {
         ),
         backgroundColor: Colors.blue[900],
       ),
-      body: _hasInternetConnection ? _buildBody() : Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'No internet connection',
-                style: TextStyle(fontSize: 20.0),
-              ),
-              SizedBox(height: 10.0),
-              ElevatedButton(
-                onPressed: () {
+     body: _hasInternetConnection 
+    ? (_isLoading 
+        ? _buildLoadingWidget() 
+        : _buildBody())
+    : Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'No internet connection',
+              style: TextStyle(fontSize: 20.0),
+            ),
+            SizedBox(height: 10.0),
+            ElevatedButton(
+              onPressed: () {
                 _openWifiSettings();
-                },
-                child: Text('Connect to Internet'),
-              ),
-            ],
-          ),
+              },
+              child: Text('Connect to Internet'),
+            ),
+          ],
         ),
+      ),
       
+    );
+  }
+
+Widget _buildLoadingWidget() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(), // Circular progress indicator
+          SizedBox(height: 16),
+          Text(
+            'Loading Files',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
     );
   }
 

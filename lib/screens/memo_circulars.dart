@@ -22,6 +22,7 @@ class _MemoCircularsState extends State<MemoCirculars> {
   List<MemoCircular> _memoCirculars = [];
   List<MemoCircular> _filteredMemoCirculars = [];
   bool _hasInternetConnection = true;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -100,6 +101,7 @@ Future<void> _openWifiSettings() async {
       setState(() {
         _memoCirculars = data.map((item) => MemoCircular.fromJson(item)).toList();
         _filteredMemoCirculars = _memoCirculars; // Initially set the filtered list to all items
+         _isLoading = false; 
       });
     } else {
       // Handle error
@@ -126,30 +128,44 @@ Future<void> _openWifiSettings() async {
        
         backgroundColor: Colors.blue[900],
       ),
-      body: _hasInternetConnection ? _buildBody() : Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'No internet connection',
-                style: TextStyle(fontSize: 20.0),
-              ),
-              SizedBox(height: 10.0),
-              ElevatedButton(
-                onPressed: () {
+     body: _hasInternetConnection 
+    ? (_isLoading 
+        ? _buildLoadingWidget() 
+        : _buildBody())
+    : Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'No internet connection',
+              style: TextStyle(fontSize: 20.0),
+            ),
+            SizedBox(height: 10.0),
+            ElevatedButton(
+              onPressed: () {
                 _openWifiSettings();
-                },
-                child: Text('Connect to Internet'),
-              ),
-            ],
-          ),
+              },
+              child: Text('Connect to Internet'),
+            ),
+          ],
         ),
-      // drawer: Sidebar(
-      //   currentIndex: 1,
-      //   onItemSelected: (index) {
-      //     _navigateToSelectedPage(context, index);
-      //   },
-      // ),
+      ),
+
+    );
+  }
+  Widget _buildLoadingWidget() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(), // Circular progress indicator
+          SizedBox(height: 16),
+          Text(
+            'Loading Files',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
     );
   }
 

@@ -1,8 +1,8 @@
-import 'package:DILGDOCS/screens/setting_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'search_screen.dart';
 import 'library_screen.dart';
+import 'setting_screen.dart';
 import 'sidebar.dart';
 import 'bottom_navigation.dart';
 import 'issuance_pdf_screen.dart';
@@ -27,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
     'Home',
     'Search',
     'Library',
-    'Settings',
+    'Setting',
   ];
 
   DateTime? currentBackPressTime;
@@ -75,11 +75,11 @@ class _HomeScreenState extends State<HomeScreen> {
           return false;
         } else if (currentBackPressTime == null ||
             DateTime.now().difference(currentBackPressTime!) >
-                Duration(seconds: 1)) {
+                Duration(seconds: 2)) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Press back again to exit'),
-              duration: Duration(seconds: 1),
+              duration: Duration(seconds: 2),
             ),
           );
           currentBackPressTime = DateTime.now();
@@ -173,20 +173,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
                 const SizedBox(height: 30.0),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'News and Updates:',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                _buildWideButton('NEWS & UPDATE', 'https://dilgbohol.com/news_update'),
+                _buildWideButton('NEWS AND UPDATES', 'https://dilgbohol.com/news_update'),
                 _buildWideButton(
-                    'THE PROVINCIAL DIRECTOR', 'https://dilgbohol.com'),
-                _buildWideButton('VISION AND MISSION', 'https://dilgbohol.com'),
+                    'THE PROVINCIAL DIRECTOR', 'https://dilgbohol.com/provincial_director'),
+                _buildWideButton('VISION AND MISSION', 'https://dilgbohol.com/about_us'),
                 Container(
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
@@ -213,20 +203,21 @@ class _HomeScreenState extends State<HomeScreen> {
       case 2:
         return LibraryScreen(
           onFileOpened: (title, subtitle) {
+            // Add the opened file to recently opened issuances
             setState(() {
               _recentlyOpenedIssuances.insert(0, Issuance(title: title));
             });
           },
           onFileDeleted: (title) {
+            // Remove the deleted issuance from the list of recently opened issuances
             setState(() {
               _recentlyOpenedIssuances
                   .removeWhere((issuance) => issuance.title == title);
             });
           },
         );
-      case 3:
+        case 3:
         return SettingsScreen();
-
       default:
         return SizedBox(); // Return an empty widget for unsupported index
     }

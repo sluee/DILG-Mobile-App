@@ -20,6 +20,7 @@ class _LegalOpinionsState extends State<LegalOpinions> {
   List<LegalOpinion> _legalOpinions = [];
   List<LegalOpinion> _filteredLegalOpinions = []; 
   bool _hasInternetConnection = true;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -34,6 +35,7 @@ class _LegalOpinionsState extends State<LegalOpinions> {
         });
       } else {
         _loadContentIfConnected();
+       
       }
     });
   }
@@ -99,6 +101,7 @@ Future<void> _openWifiSettings() async {
       setState(() {
         _legalOpinions = data.map((item) => LegalOpinion.fromJson(item)).toList();
         _filteredLegalOpinions = _legalOpinions;
+        _isLoading = false; 
       });
     } else {
       print('Failed to load latest legal opinions');
@@ -123,25 +126,45 @@ Future<void> _openWifiSettings() async {
         ),
         backgroundColor: Colors.blue[900],
       ),
-       body: _hasInternetConnection ? _buildBody() : Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'No internet connection',
-                style: TextStyle(fontSize: 20.0),
-              ),
-              SizedBox(height: 10.0),
-              ElevatedButton(
-                onPressed: () {
+    body: _hasInternetConnection 
+    ? (_isLoading 
+        ? _buildLoadingWidget() 
+        : _buildBody())
+    : Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'No internet connection',
+              style: TextStyle(fontSize: 20.0),
+            ),
+            SizedBox(height: 10.0),
+            ElevatedButton(
+              onPressed: () {
                 _openWifiSettings();
-                },
-                child: Text('Connect to Internet'),
-              ),
-            ],
-          ),
+              },
+              child: Text('Connect to Internet'),
+            ),
+          ],
         ),
+      ),
      
+    );
+  }
+
+ Widget _buildLoadingWidget() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(), // Circular progress indicator
+          SizedBox(height: 16),
+          Text(
+            'Loading Files',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
     );
   }
 

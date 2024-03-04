@@ -19,6 +19,7 @@ class _LatestIssuancesState extends State<LatestIssuances> {
   List<LatestIssuance> _filteredLatestIssuances = []; // Initialize filtered list
   TextEditingController _searchController = TextEditingController();
   bool _hasInternetConnection = true;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -75,6 +76,7 @@ Future<void> fetchLatestIssuances() async {
       setState(() {
         _latestIssuances = data.map((item) => LatestIssuance.fromJson(item)).toList();
         _filteredLatestIssuances = _latestIssuances;
+         _isLoading = false;
       });
     } else {
       print('Failed to load latest opinions: Data format error');
@@ -129,25 +131,44 @@ Future<void> _openWifiSettings() async {
         ),
         backgroundColor: Colors.blue[900],
       ),
-        body: _hasInternetConnection ? _buildBody() : Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'No internet connection',
-                style: TextStyle(fontSize: 20.0),
-              ),
-              SizedBox(height: 10.0),
-              ElevatedButton(
-                onPressed: () {
+        body: _hasInternetConnection 
+    ? (_isLoading 
+        ? _buildLoadingWidget() 
+        : _buildBody())
+    : Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'No internet connection',
+              style: TextStyle(fontSize: 20.0),
+            ),
+            SizedBox(height: 10.0),
+            ElevatedButton(
+              onPressed: () {
                 _openWifiSettings();
-                },
-                child: Text('Connect to Internet'),
-              ),
-            ],
-          ),
+              },
+              child: Text('Connect to Internet'),
+            ),
+          ],
         ),
-      
+      ),
+    );
+  }
+
+Widget _buildLoadingWidget() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(), // Circular progress indicator
+          SizedBox(height: 16),
+          Text(
+            'Loading Files',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
     );
   }
 

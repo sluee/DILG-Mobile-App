@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:DILGDOCS/screens/pdf_preview.dart';
 import 'package:DILGDOCS/screens/search_screen.dart';
 import 'package:flutter/material.dart';
@@ -16,8 +15,20 @@ class DetailsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(searchResult.title),
+        title: Text(
+          searchResult.title,
+          style: TextStyle(color: Colors.white),
+        ),
+         leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          color: Colors.white,
+        ),
+        backgroundColor: Colors.blue[900],
       ),
+      
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
