@@ -13,19 +13,13 @@ class Developers extends StatelessWidget {
           'Developers',
           style: TextStyle(
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
-        leading: IconButton(
-          icon: Icon(Icons.menu, color: Colors.blue[900]),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        iconTheme: IconThemeData(
+          color: Colors.white,
         ),
-      ),
-      drawer: Sidebar(
-        currentIndex: 9,
-        onItemSelected: (index) {
-          // Handle item selection if needed
-          _navigateToSelectedPage(context, index);
-        },
+        backgroundColor: Colors.blue[900],
       ),
       body: SingleChildScrollView(
         child: Center(

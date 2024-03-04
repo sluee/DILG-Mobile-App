@@ -23,27 +23,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String? userAvatarUrl;
   String? avatarUrl;
   late Image avatarImage;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   Future<void> fetchUserDetails() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? avatarFileName = prefs.getString('userAvatar');
     var userId = await AuthServices.getUserId();
 
+    String? selectedAvatarPath = prefs.getString('selectedAvatarPath');
+
     if (avatarFileName != null && avatarFileName.isNotEmpty) {
       setState(() {
-        // Construct the complete URL for fetching the avatar image
         userAvatarUrl = '$baseURL/$avatarFileName';
       });
-
-      // Print statements for debugging
-      print('Image URL: $userAvatarUrl');
-
-      // Display the image using NetworkImage within an Image widget
+    } else if (selectedAvatarPath != null) {
+      // If userAvatarUrl is not available, use the selectedAvatarPath
       setState(() {
-        avatarImage = Image.network(userAvatarUrl!);
+        userAvatarUrl = selectedAvatarPath;
       });
     } else {
-      // Handle case where avatarFileName is null or empty
       print('Avatar file name is null or empty');
     }
   }
@@ -70,6 +68,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       body: _buildBody(),
     );
   }
@@ -90,9 +89,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 CircleAvatar(
                   backgroundImage: userAvatarUrl != null
-                      ? NetworkImage(userAvatarUrl!) as ImageProvider<
-                          Object>? // Cast to ImageProvider<Object>?
-                      : AssetImage('assets/eula.png'),
+                      ? NetworkImage(userAvatarUrl!)
+                      : AssetImage('assets/default.png')
+                          as ImageProvider<Object>,
                   radius: 50,
                 ),
                 SizedBox(width: 10.0),

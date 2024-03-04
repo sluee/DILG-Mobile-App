@@ -85,6 +85,13 @@ flutter:
     - assets/amu3.png
     - assets/amu4.png
     - assets/amu5.png
+    - assets/girl 1.png
+    - assets/girl 2.png
+    - assets/girl 3.png
+    - assets/pic 1.png
+    - assets/pic 2.png
+    - assets/pic 3.png
+    - assets/default.png
 
   fonts:
     - family: Poppins
