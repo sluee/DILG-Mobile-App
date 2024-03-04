@@ -1,18 +1,14 @@
 import 'package:DILGDOCS/Services/auth_services.dart';
 import 'package:DILGDOCS/Services/globals.dart';
 import 'package:DILGDOCS/screens/change_password_modal.dart';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'edit_user.dart';
 import 'about_screen.dart';
 import 'developers_screen.dart';
-import 'package:http/http.dart' as http;
 
 class SettingsScreen extends StatefulWidget {
-
-
   @override
   _SettingsScreenState createState() => _SettingsScreenState();
 }
@@ -23,33 +19,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String email = '';
   String userAvatar = '';
   String? userAvatarUrl;
-   String? avatarUrl;
+  String? avatarUrl;
   late Image avatarImage;
 
-Future<void> fetchUserDetails() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? avatarFileName = prefs.getString('userAvatar');
-  var userId = await AuthServices.getUserId();
+  Future<void> fetchUserDetails() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? avatarFileName = prefs.getString('userAvatar');
+    var userId = await AuthServices.getUserId();
 
-  if (avatarFileName != null && avatarFileName.isNotEmpty) {
-    setState(() {
-      // Construct the complete URL for fetching the avatar image
-      userAvatarUrl = '$baseURL/$avatarFileName';
-    });
+    if (avatarFileName != null && avatarFileName.isNotEmpty) {
+      setState(() {
+        // Construct the complete URL for fetching the avatar image
+        userAvatarUrl = '$baseURL/$avatarFileName';
+      });
 
-    // Print statements for debugging
-    print('Image URL: $userAvatarUrl');
+      // Print statements for debugging
+      print('Image URL: $userAvatarUrl');
 
-    // Display the image using NetworkImage within an Image widget
-    setState(() {
-      avatarImage = Image.network(userAvatarUrl!);
-    });
-  } else {
-    // Handle case where avatarFileName is null or empty
-    print('Avatar file name is null or empty');
+      // Display the image using NetworkImage within an Image widget
+      setState(() {
+        avatarImage = Image.network(userAvatarUrl!);
+      });
+    } else {
+      // Handle case where avatarFileName is null or empty
+      print('Avatar file name is null or empty');
+    }
   }
-}
-
 
   @override
   void initState() {
@@ -91,9 +86,10 @@ Future<void> fetchUserDetails() async {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-               CircleAvatar(
+                CircleAvatar(
                   backgroundImage: userAvatarUrl != null
-                      ? NetworkImage(userAvatarUrl!) as ImageProvider<Object>? // Cast to ImageProvider<Object>?
+                      ? NetworkImage(userAvatarUrl!) as ImageProvider<
+                          Object>? // Cast to ImageProvider<Object>?
                       : AssetImage('assets/eula.png'),
                   radius: 50,
                 ),
@@ -125,7 +121,8 @@ Future<void> fetchUserDetails() async {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => EditUser()),
-                ).then((_) => _getUserInfo()); // Refresh user info when returning from EditUser
+                ).then((_) =>
+                    _getUserInfo()); // Refresh user info when returning from EditUser
               },
               child: Container(
                 padding: EdgeInsets.all(16.0),
@@ -165,7 +162,7 @@ Future<void> fetchUserDetails() async {
             SizedBox(height: 10.0),
             // Change Password Button
             InkWell(
-               onTap: () {
+              onTap: () {
                 // Navigate to the ChangePasswordScreen
                 Navigator.push(
                   context,
@@ -210,9 +207,9 @@ Future<void> fetchUserDetails() async {
             ),
             SizedBox(height: 10.0),
             // FAQs Button
-             InkWell(
+            InkWell(
               onTap: () {
-                _launchURL();
+                _launchURL('https://dilgbohol.com/faqs');
               },
               child: Container(
                 padding: EdgeInsets.all(16.0),
@@ -412,29 +409,31 @@ Future<void> fetchUserDetails() async {
     );
   }
 
-  
   Future<void> logout(BuildContext context) async {
-  // Clear authentication token from storage
-  await clearAuthToken();
+    await clearAuthToken();
 
- print('Authentication token cleared.');
-  // Navigate to the login screen and remove all previous routes
-  Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-}
+    // Set isAuthenticated to false
+    await AuthServices.storeAuthenticated(false);
+
+    // Navigate to the login screen and remove all previous routes
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+  }
 
 // Function to clear authentication token
-Future<void> clearAuthToken() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.remove('authToken');
-}
+  Future<void> clearAuthToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('authToken');
+  }
 
-
-    void _launchURL() async {
-    const url = 'https://dilgbohol.com/faqs'; // Replace this URL with your desired destination URL
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      throw 'Could not launch $url';
+Future<void> _launchURL(String url) async {
+    try {
+      if (await canLaunch(url)) {
+        await launch(url);
+      } else {
+        throw 'Could not launch $url';
+      }
+    } catch (e) {
+      print('Error launching URL: $e');
     }
   }
 }

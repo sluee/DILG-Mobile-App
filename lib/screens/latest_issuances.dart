@@ -1,32 +1,61 @@
 import 'dart:convert';
 import 'package:DILGDOCS/models/latest_issuances.dart';
 import 'package:DILGDOCS/screens/file_utils.dart';
-import 'package:flutter/foundation.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../Services/globals.dart';
-import '../models/latest_issuances.dart';
-import '../utils/routes.dart';
-import 'sidebar.dart';
 import 'details_screen.dart';
 import 'package:http/http.dart' as http;
-import 'package:anim_search_bar/anim_search_bar.dart';
-import 'bottom_navigation.dart';
-
 class LatestIssuances extends StatefulWidget {
   @override
   _LatestIssuancesState createState() => _LatestIssuancesState();
+   
 }
 
 class _LatestIssuancesState extends State<LatestIssuances> {
   List<LatestIssuance> _latestIssuances = [];
   List<LatestIssuance> _filteredLatestIssuances = []; // Initialize filtered list
   TextEditingController _searchController = TextEditingController();
+  bool _hasInternetConnection = true;
 
   @override
   void initState() {
     super.initState();
-    fetchLatestIssuances();
+    // fetchLatestIssuances();
+     _checkInternetConnection();
+     _loadContentIfConnected();
+    Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+      if (result == ConnectivityResult.none) {
+        setState(() {
+          _hasInternetConnection = false;
+        });
+      } else {
+        _loadContentIfConnected();
+      }
+    });
+  }
+
+   Future<void> _loadContentIfConnected() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult != ConnectivityResult.none) {
+      setState(() {
+        _hasInternetConnection = true;
+      });
+      // Load your content here
+      fetchLatestIssuances();
+    }
+  }
+
+
+Future<void> _checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      setState(() {
+        _hasInternetConnection = false;
+      });
+    }
   }
 
 Future<void> fetchLatestIssuances() async {
@@ -58,6 +87,31 @@ Future<void> fetchLatestIssuances() async {
   }
 }
 
+Future<void> _openWifiSettings() async {
+  const url = 'app-settings:';
+  if (await canLaunch(url)) {
+    await launch(url);
+  } else {
+    // Provide a generic message for both Android and iOS users
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Unable to open Wi-Fi settings'),
+          content: Text('Please open your Wi-Fi settings manually via the device settings.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -70,42 +124,41 @@ Future<void> fetchLatestIssuances() async {
             color: Colors.white,
           ),
         ),
-        iconTheme: IconThemeData(
+         iconTheme: IconThemeData(
           color: Colors.white,
         ),
         backgroundColor: Colors.blue[900],
       ),
-      body: _buildBody(),
-      // drawer: Sidebar(
-      //   currentIndex: 1,
-      //   onItemSelected: (index) {
-      //     _navigateToSelectedPage(context, index);
-      //   },
-      // ),
-    //   bottomNavigationBar: BottomNavigation(
-    //   currentIndex: 0,
-    //   onTabTapped:(index){
-
-    //   },
-    // ),
+        body: _hasInternetConnection ? _buildBody() : Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'No internet connection',
+                style: TextStyle(fontSize: 20.0),
+              ),
+              SizedBox(height: 10.0),
+              ElevatedButton(
+                onPressed: () {
+                _openWifiSettings();
+                },
+                child: Text('Connect to Internet'),
+              ),
+            ],
+          ),
+        ),
       
     );
-    
   }
 
  Widget _buildBody() {
     return SingleChildScrollView(
       child: Column(
-        
         children: [
           // Search Input
           Container(
             margin: EdgeInsets.only(top: 16.0),
             padding: EdgeInsets.symmetric(horizontal: 16.0),
-            decoration: BoxDecoration(
-             borderRadius: BorderRadius.circular(10),
-            
-            ),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -120,14 +173,15 @@ Future<void> fetchLatestIssuances() async {
                 contentPadding: EdgeInsets.symmetric(vertical: 16.0),
               ),
               style: TextStyle(fontSize: 16.0),
-              onChanged: (value) {
+             onChanged: (value) {
                 // Call the function to filter the list based on the search query
                 _filterLatestIssuances(value); // Corrected method call
               },
+
             ),
           ),
 
-  // Display the filtered presidential directives
+          // Display the filtered latest issuances
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

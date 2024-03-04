@@ -2,12 +2,13 @@ import 'dart:convert';
 import 'package:DILGDOCS/Services/globals.dart';
 import 'package:DILGDOCS/models/draft_issuances.dart';
 import 'package:DILGDOCS/screens/file_utils.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import 'sidebar.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'details_screen.dart';
 import 'package:http/http.dart' as http;
-import 'bottom_navigation.dart';
+
 class DraftIssuances extends StatefulWidget {
   @override
   State<DraftIssuances> createState() => _DraftIssuancesState();
@@ -17,12 +18,71 @@ class _DraftIssuancesState extends State<DraftIssuances> {
   TextEditingController _searchController = TextEditingController();
   List<DraftIssuance> _draftIssuances = [];
   List<DraftIssuance> _filteredDraftIssuances = [];
+  bool _hasInternetConnection = true;
 
   @override
   void initState() {
     super.initState();
-    fetchDraftIssuances();
+    // fetchDraftIssuances();
+     _checkInternetConnection();
+     _loadContentIfConnected();
+    Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+      if (result == ConnectivityResult.none) {
+        setState(() {
+          _hasInternetConnection = false;
+        });
+      } else {
+        _loadContentIfConnected();
+      }
+    });
   }
+
+ Future<void> _loadContentIfConnected() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult != ConnectivityResult.none) {
+      setState(() {
+        _hasInternetConnection = true;
+      });
+      // Load your content here
+      fetchDraftIssuances();
+    }
+  }
+
+
+Future<void> _checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      setState(() {
+        _hasInternetConnection = false;
+      });
+    }
+  }
+
+Future<void> _openWifiSettings() async {
+  const url = 'app-settings:';
+  if (await canLaunch(url)) {
+    await launch(url);
+  } else {
+    // Provide a generic message for both Android and iOS users
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Unable to open Wi-Fi settings'),
+          content: Text('Please open your Wi-Fi settings manually via the device settings.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
 
   Future<void> fetchDraftIssuances() async {
     final response = await http.get(
@@ -61,19 +121,25 @@ class _DraftIssuancesState extends State<DraftIssuances> {
         ),
         backgroundColor: Colors.blue[900],
       ),
-      body: _buildBody(),
-      // drawer: Sidebar(
-      //   currentIndex: 5,
-      //   onItemSelected: (index) {
-      //     _navigateToSelectedPage(context, index);
-      //   },
-      // ),
-    //   bottomNavigationBar: BottomNavigation(
-    //   currentIndex: 0,
-    //   onTabTapped:(index){
-
-    //   },
-    // ),
+      body: _hasInternetConnection ? _buildBody() : Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'No internet connection',
+                style: TextStyle(fontSize: 20.0),
+              ),
+              SizedBox(height: 10.0),
+              ElevatedButton(
+                onPressed: () {
+                _openWifiSettings();
+                },
+                child: Text('Connect to Internet'),
+              ),
+            ],
+          ),
+        ),
+      
     );
   }
 
@@ -134,25 +200,29 @@ class _DraftIssuancesState extends State<DraftIssuances> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                 Text.rich(
-                                      highlightMatches(_filteredDraftIssuances[index].issuance.title, _searchController.text),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 15,
-                                      ),
+                                  Text(
+                                    _filteredDraftIssuances[index].issuance.title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
                                     ),
+                                  ),
                                   SizedBox(height: 4.0),
-                                    Text.rich(
-                                    highlightMatches('Ref #: ${_filteredDraftIssuances[index].issuance.referenceNo}', _searchController.text),
+                                  Text(
+                                      _filteredDraftIssuances[index].issuance.referenceNo != 'N/A'
+                                    ? 'Ref #: ${_filteredDraftIssuances[index].issuance.referenceNo}'
+                                    : '',
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey,
                                     ),
                                   ),
-                                  Text.rich(
-                                    highlightMatches('Responsible Office: ${_filteredDraftIssuances[index].responsible_office}', _searchController.text),
+                                  Text(
+                                    _filteredDraftIssuances[index].responsible_office != 'N/A'
+                                        ? 'Responsible Office: ${_filteredDraftIssuances[index].responsible_office}'
+                                        : '',
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey,
@@ -213,47 +283,4 @@ class _DraftIssuancesState extends State<DraftIssuances> {
       ),
     );
   }
-  
-  void _navigateToSelectedPage(BuildContext context, int index) {}
 }
-
-TextSpan highlightMatches(String text, String query) {
-  if (query.isEmpty) {
-    return TextSpan(text: text);
-  }
-
-  List<TextSpan> textSpans = [];
-
-  // Create a regular expression pattern with case-insensitive matching
-  RegExp regex = RegExp(query, caseSensitive: false);
-
-  // Find all matches of the query in the text
-  Iterable<Match> matches = regex.allMatches(text);
-
-  // Start index for slicing the text
-  int startIndex = 0;
-
-  // Add text segments with and without highlighting
-  for (Match match in matches) {
-    // Add text segment before the match
-    textSpans.add(TextSpan(text: text.substring(startIndex, match.start)));
-
-    // Add the matching segment with highlighting
-    textSpans.add(TextSpan(
-      text: text.substring(match.start, match.end),
-      style: TextStyle(
-        color: Colors.blue, 
-        fontWeight: FontWeight.bold, 
-      ),
-    ));
-
-    // Update the start index for the next segment
-    startIndex = match.end;
-  }
-
-  // Add the remaining text segment
-  textSpans.add(TextSpan(text: text.substring(startIndex)));
-
-  return TextSpan(children: textSpans);
-}
-

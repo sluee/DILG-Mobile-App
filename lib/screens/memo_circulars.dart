@@ -1,15 +1,16 @@
 import 'dart:convert';
 import 'package:DILGDOCS/Services/globals.dart';
 import 'package:DILGDOCS/screens/file_utils.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // Import other necessary files
 import '../models/memo_circulars.dart';
 import 'sidebar.dart';
 import 'details_screen.dart';
-import 'bottom_navigation.dart';
 
 class MemoCirculars extends StatefulWidget {
   @override
@@ -20,12 +21,71 @@ class _MemoCircularsState extends State<MemoCirculars> {
   TextEditingController _searchController = TextEditingController();
   List<MemoCircular> _memoCirculars = [];
   List<MemoCircular> _filteredMemoCirculars = [];
+  bool _hasInternetConnection = true;
 
   @override
   void initState() {
     super.initState();
-    fetchMemoCirculars();
+    // fetchMemoCirculars();
+     _checkInternetConnection();
+    _loadContentIfConnected();
+    Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
+      if (result == ConnectivityResult.none) {
+        setState(() {
+          _hasInternetConnection = false;
+        });
+      } else {
+        _loadContentIfConnected();
+      }
+    });
   }
+
+   Future<void> _loadContentIfConnected() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult != ConnectivityResult.none) {
+      setState(() {
+        _hasInternetConnection = true;
+      });
+      // Load your memo circulars
+      fetchMemoCirculars();
+    }
+  }
+
+
+Future<void> _checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      setState(() {
+        _hasInternetConnection = false;
+      });
+    }
+  }
+
+Future<void> _openWifiSettings() async {
+  const url = 'app-settings:';
+  if (await canLaunch(url)) {
+    await launch(url);
+  } else {
+    // Provide a generic message for both Android and iOS users
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Unable to open Wi-Fi settings'),
+          content: Text('Please open your Wi-Fi settings manually via the device settings.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
 
   Future<void> fetchMemoCirculars() async {
     final response = await http.get(
@@ -60,24 +120,36 @@ class _MemoCircularsState extends State<MemoCirculars> {
             color: Colors.white,
           ),
         ),
-        iconTheme: IconThemeData(
+       iconTheme: IconThemeData(
           color: Colors.white,
         ),
+       
         backgroundColor: Colors.blue[900],
       ),
-      body: _buildBody(),
+      body: _hasInternetConnection ? _buildBody() : Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'No internet connection',
+                style: TextStyle(fontSize: 20.0),
+              ),
+              SizedBox(height: 10.0),
+              ElevatedButton(
+                onPressed: () {
+                _openWifiSettings();
+                },
+                child: Text('Connect to Internet'),
+              ),
+            ],
+          ),
+        ),
       // drawer: Sidebar(
-      //   currentIndex: 3,
+      //   currentIndex: 1,
       //   onItemSelected: (index) {
       //     _navigateToSelectedPage(context, index);
       //   },
       // ),
-    //   bottomNavigationBar: BottomNavigation(
-    //   currentIndex: 0,
-    //   onTabTapped:(index){
-
-    //   },
-    // ),
     );
   }
 
@@ -147,21 +219,18 @@ class _MemoCircularsState extends State<MemoCirculars> {
                                   ),
                                 SizedBox(height: 4.0),
                                  Text.rich(
-                                  _filteredMemoCirculars[index].issuance.referenceNo != 'N/A'
-                                    ? highlightMatches('Ref #: ${_filteredMemoCirculars[index].issuance.referenceNo}', _searchController.text)
-                                    : TextSpan(text: 'Ref #: N/A'),
+                                  highlightMatches('Ref #: ${_filteredMemoCirculars[index].issuance.referenceNo}', _searchController.text),
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey,
                                   ),
                                 ),
                                 Text.rich(
-                                  _filteredMemoCirculars[index].issuance.referenceNo != 'N/A'
-                                    ? highlightMatches('Responsible Office: ${_filteredMemoCirculars[index].responsible_office}', _searchController.text)
-                                    : TextSpan(text: 'Responsible Office: N/A'),
+                                  highlightMatches('Responsible Office: ${_filteredMemoCirculars[index].responsible_office}', _searchController.text),
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],
@@ -266,7 +335,3 @@ TextSpan highlightMatches(String text, String query) {
     // Handle navigation if needed
   }
 }
-
-
-
-

@@ -1,18 +1,16 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:DILGDOCS/Services/globals.dart';
+import 'package:DILGDOCS/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
-import '../utils/routes.dart';
 
 class AuthServices {
   static final _storage = FlutterSecureStorage();
-  // static final String _logoutUrl = '$baseURL/logout';
-
 
   static Future<http.Response> login(String email, String password) async {
     try {
@@ -33,20 +31,21 @@ class AuthServices {
 
       print(response.body);
 
-       if (response.statusCode == 200) {
-      var responseData = jsonDecode(response.body);
-      var token = responseData['token']; // Retrieve token from response
-      var user = responseData['user']; // Retrieve user object from response
-      var userId = user['id']; // Retrieve user ID from user object
-      await storeTokenAndUserId(token, userId); 
-      await fetchAndStoreUserDetails(token); /// Store token and user ID locally
-      print('Login successful');
-      return response;
+      if (response.statusCode == 200) {
+        var responseData = jsonDecode(response.body);
+        var token = responseData['token'];
+        var user = responseData['user'];
+        var userId = user['id'];
+        await storeTokenAndUserId(token, userId);
+        await fetchAndStoreUserDetails(token);
+        await storeAuthenticated(true); // Update authentication status
+
+        print('Login successful');
+        return response;
       } else {
         print('Login failed with status code: ${response.statusCode}');
         return response;
       }
-   
     } catch (error) {
       print('Error during login: $error');
       throw error;
@@ -74,7 +73,7 @@ class AuthServices {
         await prefs.setInt('userId', user['id']);
         await prefs.setString('userName', user['name']);
         await prefs.setString('userEmail', user['email']);
-        await prefs.setString('userAvatar', user['avatar']); // Store user's avatar URL
+        await prefs.setString('userAvatar', user['avatar']);
         var avatarUrl = user['avatar'];
         var avatarResponse = await http.get(Uri.parse(avatarUrl));
         if (avatarResponse.statusCode == 200) {
@@ -114,12 +113,6 @@ class AuthServices {
     return prefs.getInt('userId');
   }
 
-
-//  static Future<void> logout() async {
-//     // Clear the authentication token from secure storage
-//     await _storage.delete(key: 'authToken');
-//   }
-
   static Future<bool> validateToken(String authToken) async {
     final response = await http.get(
       Uri.parse('$baseURL/auth/validate-token'),
@@ -129,11 +122,11 @@ class AuthServices {
     return response.statusCode == 200;
   }
 
- static Future<void> updateUserNameAndEmail(
+  static Future<void> updateUserNameAndEmail(
       String token, String newName, String newEmail) async {
     try {
-      var userId = await getUserId(); // Retrieve userId from local storage
-      var url = Uri.parse('$baseURL/user/update/$userId'); // Append userId to the update endpoint
+      var userId = await getUserId();
+      var url = Uri.parse('$baseURL/user/update/$userId');
 
       http.Response response = await http.put(
         url,
@@ -148,7 +141,6 @@ class AuthServices {
       );
 
       if (response.statusCode == 200) {
-        // If the update was successful, update the stored name and email
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('userName', newName);
         await prefs.setString('userEmail', newEmail);
@@ -161,21 +153,25 @@ class AuthServices {
     }
   }
 
-
-static Future<void> logout(BuildContext context) async {
-  // Clear the authentication token from secure storage
-  await _storage.delete(key: 'authToken');
-
-  // Clear any other user-related data stored locally
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  await prefs.clear(); // Clear all stored preferences
-
-  // Navigate the user to the login screen and replace the current route
-  Navigator.pushReplacementNamed(context, Routes.login);
-}
- static Future<bool> isAuthenticated() async {
+  static Future<void> logout(BuildContext context) async {
+    await _storage.delete(key: 'authToken');
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.containsKey('token'); // Check if token exists in shared preferences
+    await prefs.setBool('isAuthenticated', false);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+          builder: (context) => const LoginScreen(title: 'Login')),
+    );
   }
-  
+
+  static Future<bool> isAuthenticated() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.containsKey('isAuthenticated') &&
+        prefs.getBool('isAuthenticated')!;
+  }
+
+  static Future<void> storeAuthenticated(bool isAuthenticated) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isAuthenticated', isAuthenticated);
+  }
 }

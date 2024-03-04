@@ -17,7 +17,7 @@ import '../screens/login_screen.dart';
 // import 'package:DILGDOCS/screens/library_screen.dart';
 
 class Routes {
-  static const String home = '/';
+  static const String home = '/home';
   static const String search = '/search';
   static const String library = '/library';
   // static const String introsection = '/introsection';
@@ -37,7 +37,7 @@ class Routes {
     return {
       home: (context) => const HomeScreen(),
       search: (context) => SearchScreen(),
-       'library': (context) => LibraryScreen(
+      'library': (context) => LibraryScreen(
             onFileOpened: (fileName, filePath) {
               // Implement your logic when file is opened
               print('File opened: $fileName');
@@ -59,12 +59,11 @@ class Routes {
           ),
       editUser: (context) => EditUser(),
       changePassword: (context) => ChangePasswordScreen(),
-      setting: (context)  => SettingsScreen(),   
+      setting: (context) => SettingsScreen(),
     };
   }
 
   // static void navigateToLibrary(BuildContext context) {
   //   Navigator.pushNamed(context, library);
   // }
-
 }

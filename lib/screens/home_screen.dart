@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'search_screen.dart';
 import 'library_screen.dart';
 import 'sidebar.dart';
-import 'edit_user.dart';
 import 'bottom_navigation.dart';
 import 'issuance_pdf_screen.dart';
 import 'package:url_launcher/url_launcher.dart'; // Import url_launcher package
@@ -17,7 +16,6 @@ class Issuance {
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
-  
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -212,21 +210,22 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       case 1:
         return SearchScreen();
-     case 2:
-      return LibraryScreen(
-        onFileOpened: (title, subtitle) {
-          setState(() {
-            _recentlyOpenedIssuances.insert(0, Issuance(title: title));
-          });
-        },
-        onFileDeleted: (title) {
-          setState(() {
-            _recentlyOpenedIssuances.removeWhere((issuance) => issuance.title == title);
-          });
-        },
-      );
+      case 2:
+        return LibraryScreen(
+          onFileOpened: (title, subtitle) {
+            setState(() {
+              _recentlyOpenedIssuances.insert(0, Issuance(title: title));
+            });
+          },
+          onFileDeleted: (title) {
+            setState(() {
+              _recentlyOpenedIssuances
+                  .removeWhere((issuance) => issuance.title == title);
+            });
+          },
+        );
       case 3:
-       return SettingsScreen();
+        return SettingsScreen();
 
       default:
         return SizedBox(); // Return an empty widget for unsupported index
