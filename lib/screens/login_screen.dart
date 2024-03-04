@@ -21,11 +21,12 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
   bool _isLoggingIn = false;
+  bool _isPasswordVisible = false;
 
   @override
   void initState() {
     super.initState();
-    checkLoggedIn(); // Check if user is already logged in when screen initializes
+    checkLoggedIn();
   }
 
   Future<void> saveAuthToken(String token) async {
@@ -33,36 +34,28 @@ class _LoginScreenState extends State<LoginScreen> {
     await prefs.setString('authToken', token);
   }
 
-// Function to retrieve authentication token
   Future<String?> getAuthToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('authToken');
   }
 
-// Function to clear authentication token
   Future<void> clearAuthToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('authToken');
   }
 
-// Check if user is logged in on app startup
   void checkLoggedIn() async {
     String? authToken = await getAuthToken();
     if (authToken != null) {
       bool isValidToken = await AuthServices.validateToken(authToken);
       if (isValidToken) {
-        // Token is valid, navigate to home screen
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
         );
       } else {
-        // Token is invalid or expired, clear it and navigate to login screen
         clearAuthToken();
-        // You can choose to navigate to login screen here if needed
       }
-    } else {
-      // No token found, navigate to login screen
     }
   }
 
@@ -85,11 +78,9 @@ class _LoginScreenState extends State<LoginScreen> {
         if (response.statusCode == 200) {
           final token = responseMap['token'];
 
-          // Store token locally and mark user as authenticated
           await AuthServices.storeToken(token);
           await AuthServices.storeAuthenticated(true);
 
-          // Navigate to HomeScreen
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -171,22 +162,27 @@ class _LoginScreenState extends State<LoginScreen> {
                         labelText: 'Email',
                         errorText: emailError.isNotEmpty ? emailError : null,
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your email';
-                        }
-                        // Add more complex email validation if needed
-                        return null;
-                      },
                     ),
                     SizedBox(height: 8),
                     TextField(
                       controller: _passwordController,
-                      obscureText: true,
+                      obscureText: !_isPasswordVisible,
                       decoration: InputDecoration(
                         labelText: 'Password',
                         errorText:
                             passwordError.isNotEmpty ? passwordError : null,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isPasswordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isPasswordVisible = !_isPasswordVisible;
+                            });
+                          },
+                        ),
                       ),
                     ),
                     SizedBox(height: 8),
@@ -203,11 +199,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         Text('Remember Me'),
                         Spacer(),
                         ElevatedButton(
-                          onPressed: _isLoggingIn
-                              ? null
-                              : loginPressed, // Disable button when logging in
+                          onPressed: _isLoggingIn ? null : loginPressed,
                           child: _isLoggingIn
-                              ? CircularProgressIndicator() // Show spinner while logging in
+                              ? CircularProgressIndicator()
                               : Text('Log in'),
                         ),
                       ],
