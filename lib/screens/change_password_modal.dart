@@ -27,10 +27,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           content: Text('Your password has been successfully updated.'),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Close the dialog
-                Navigator.pop(context); // Close the modal
+             onPressed: () {
+                Navigator.pop(context); // Close the EditUser screen
+                Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false); // Navigate to the home screen
               },
+
               child: Text('OK'),
             ),
           ],

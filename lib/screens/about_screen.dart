@@ -1,109 +1,51 @@
 import 'package:flutter/material.dart';
-import 'sidebar.dart';
 
-class About extends StatelessWidget {
+class BottomNavigation extends StatefulWidget {
+  final int currentIndex;
+  final Function(int) onTabTapped;
+
+  const BottomNavigation({
+    Key? key,
+    required this.currentIndex,
+    required this.onTabTapped,
+  }) : super(key: key);
+
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'About',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu, color: Colors.blue[900]),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
-      ),
-      drawer: Sidebar(
-        currentIndex: 1,
-        onItemSelected: (index) {
-          // Handle item selection if needed
-          _navigateToSelectedPage(context, index);
-        },
-      ),
-      body: const Center(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              // Large logo
-              CircleAvatar(
-                radius: 70,
-                backgroundImage: AssetImage('assets/dilg-main.png'),
-              ),
-              SizedBox(height: 16),
-              // Text below the logo
-              AnimatedTextFade(
-                text:
-                    'Department of the Interior and Local Government Bohol Province',
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-              SizedBox(height: 16),
-              // Additional text
-              AnimatedTextFade(
-                text:
-                    'The DILG Bohol Issuances App is designed to house various issuances from the DILG Bohol Province, including the Latest Issuances, Joint Circulars, Memo Circulars, Presidential Directives, Draft Issuances, Republic Acts, and Legal Opinions. The primary objective of this app is to offer a comprehensive resource for accessing and staying updated on official documents and legal materials relevant to the province.',
-                fontSize: 16,
-              ),
-              SizedBox(height: 16),
-              AnimatedTextFade(
-                text: '© DILG-Bohol Province 2024',
-                fontSize: 12,
-                color: Colors.grey,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _navigateToSelectedPage(BuildContext context, int index) {
-    // Handle navigation if needed
-  }
+  State<BottomNavigation> createState() => _BottomNavigationState();
 }
 
-class AnimatedTextFade extends StatelessWidget {
-  final String text;
-  final double fontSize;
-  final FontWeight fontWeight;
-  final Color color;
-
-  const AnimatedTextFade({super.key, 
-    required this.text,
-    this.fontSize = 16,
-    this.fontWeight = FontWeight.normal,
-    this.color = Colors.black,
-  });
-
+class _BottomNavigationState extends State<BottomNavigation> {
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: Tween<double>(
-        begin: 0.0,
-        end: 1.0,
-      ).animate(
-        CurvedAnimation(
-          parent: ModalRoute.of(context)!.animation!,
-          curve: Curves.easeOut,
+    return BottomNavigationBar(
+      key: UniqueKey(),
+      type: BottomNavigationBarType.fixed,
+      selectedItemColor: Colors.white,
+      unselectedItemColor: Colors.grey,
+      currentIndex: widget.currentIndex,
+      onTap: (index) {
+        // Call the onTabTapped function provided by the parent widget
+        widget.onTabTapped(index);
+      },
+      items: [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: 'Home',
         ),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: fontSize,
-          fontWeight: fontWeight,
-          color: color,
+        BottomNavigationBarItem(
+          icon: Icon(Icons.search),
+          label: 'Search',
         ),
-        textAlign: TextAlign.justify,
-      ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.library_books),
+          label: 'Library',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.settings),
+          label: 'Settings',
+        ),
+      ],
+      backgroundColor: Colors.blue[900],
     );
   }
 }

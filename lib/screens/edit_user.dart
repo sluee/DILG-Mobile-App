@@ -1,3 +1,4 @@
+import 'package:DILGDOCS/utils/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -199,15 +200,14 @@ class _EditUserState extends State<EditUser> {
                     ),
                     SizedBox(height: 16),
                     ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        Navigator.pushReplacementNamed(context, '/settings');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue[300],
-                      ),
-                      child: Text('OK'),
+                    onPressed: () {
+                      Navigator.pop(context); // Close the EditUser screen
+                      Navigator.pushNamedAndRemoveUntil(
+                          context, Routes.home, (route) => false); // Navigate to the Settings screen
+                    },
+                    child: Text('OK'),
                     ),
+
                   ],
                 ),
               ),

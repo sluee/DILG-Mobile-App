@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'sidebar.dart';
 
 class Developers extends StatelessWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -13,26 +12,14 @@ class Developers extends StatelessWidget {
           'Developers',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+             color: Colors.white,
           ),
         ),
-
-        iconTheme: IconThemeData(
+          iconTheme: IconThemeData(
           color: Colors.white,
         ),
         backgroundColor: Colors.blue[900],
-        // leading: IconButton(
-        //   icon: Icon(Icons.menu, color: Colors.blue[900]),
-        //   onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-        // ),
-      ),
-      // drawer: Sidebar(
-      //   currentIndex: 9,
-      //   onItemSelected: (index) {
-      //     // Handle item selection if needed
-      //     _navigateToSelectedPage(context, index);
-      //   },
-      // ),
+       ),
       body: SingleChildScrollView(
         child: Center(
           child: Padding(

@@ -60,6 +60,7 @@ class Routes {
       editUser: (context) => EditUser(),
       changePassword: (context) => ChangePasswordScreen(),
       setting: (context) => SettingsScreen(),
+      
     };
   }
 

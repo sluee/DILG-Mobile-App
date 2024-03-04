@@ -1,7 +1,6 @@
-// import 'dart:convert';
+import 'dart:convert';
 import 'dart:io';
 
-// import 'package:DILGDOCS/screens/bottom_navigation.dart';
 import 'package:DILGDOCS/screens/bottom_navigation.dart';
 import 'package:DILGDOCS/screens/sidebar.dart';
 import 'package:flutter/material.dart';
@@ -9,8 +8,8 @@ import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:path_provider/path_provider.dart';
 
 class LibraryScreen extends StatefulWidget {
-   final Function(String, String)? onFileOpened;
-   final Function(String)? onFileDeleted;
+  final Function(String, String)? onFileOpened;
+  final Function(String)? onFileDeleted;
 
   LibraryScreen({
     this.onFileOpened,
@@ -26,15 +25,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
   List<String> downloadedFiles = [];
   List<String> filteredFiles = [];
   bool isSearching = false;
-  Map<String, DateTime> downloadedFilesWithTime = {};
-  
-   int _currentIndex = 2;
-  List<String> _drawerMenuItems = [
-    'Home',
-    'Search',
-    'Library',
-    'Settings',
-  ];
+  String _selectedSortOption = 'Date';
+  List<String> _sortOptions = ['Date', 'Name'];
 
   @override
   void initState() {
@@ -66,41 +58,55 @@ class _LibraryScreenState extends State<LibraryScreen> {
         await loadDownloadedFiles(entity);
       } else if (entity is File && entity.path.toLowerCase().endsWith('.pdf')) {
         downloadedFiles.add(entity.path);
-        // Store the last modified timestamp for sorting
-        downloadedFilesWithTime[entity.path] = entity.lastModifiedSync();
       }
     }
 
-    // Sort files by last modified timestamp in descending order
-    downloadedFiles.sort((a, b) =>
-        downloadedFilesWithTime[b]!.compareTo(downloadedFilesWithTime[a]!));
-
-    // Update filteredFiles list to reflect the changes
-    _filterFiles(_searchController.text);
+    downloadedFiles.sort();
   }
 
-
- @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // appBar: AppBar(
+      //   title: Text(
+      //     'Library',
+      //     style: TextStyle(
+      //       fontWeight: FontWeight.bold,
+      //       color: Colors.white,
+      //     ),
+      //   ),
+      //   leading: Builder(
+      //     builder: (context) => IconButton(
+      //       icon: Icon(Icons.menu, color: Colors.white),
+      //       onPressed: () => Scaffold.of(context).openDrawer(),
+      //     ),
+      //   ),
+      //   backgroundColor: Colors.blue[900],
+      // ),
       drawer: Sidebar(
         currentIndex: 0,
         onItemSelected: (index) {
           _navigateToSelectedPage(context, index);
         },
       ),
+      // bottomNavigationBar: BottomNavigation(
+      //   currentIndex: 2,
+      //   onTabTapped: (index) {
+      //     // Handle bottom navigation item taps if needed
+      //   },
+      // ),
       body: SingleChildScrollView(
-      child: Container(
-        margin: EdgeInsets.only(top: 16.0), 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildSearchAndFilterRow(),
-            _buildPdf(context),
-          ],
+        child: Container(
+          margin: EdgeInsets.only(top: 16.0), // Add margin top here
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildSearchAndFilterRow(),
+              _buildPdf(context),
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
 
@@ -150,7 +156,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
     );
   }
 
-
   Widget _buildSearchAndFilterRow() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -160,178 +165,117 @@ class _LibraryScreenState extends State<LibraryScreen> {
           Row(
             children: [
               _buildSearchBar(),
-              SizedBox(width: 10), 
+              SizedBox(
+                width: 10,
+              ), // Add spacing between search bar and other widgets
+              // Add other widgets here
             ],
           ),
-         
+          // Add other rows or widgets as needed
         ],
       ),
     );
   }
 
-Widget _buildPdf(BuildContext context) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      SizedBox(height: 16),
-      if (filteredFiles.isEmpty)
-        Center(
-          child: Text(
-            'No downloaded issuances',
-            style: TextStyle(
-              fontSize: 18,
+  Widget _buildPdf(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(height: 16),
+        if (filteredFiles.isEmpty)
+          Center(
+            child: Text(
+              'No downloaded issuances',
+              style: TextStyle(
+                fontSize: 18,
+              ),
             ),
           ),
-        ),
-      if (filteredFiles.isNotEmpty)
-        Column(
-          children: [
-            SizedBox(height: 10),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: filteredFiles.length,
-              itemBuilder: (BuildContext context, int index) {
-                final String file = filteredFiles[index];
-                final fileName = file.split('/').last; // Extract file name
-                return Dismissible(
-                  key: Key(file),
-                  direction: DismissDirection.endToStart,
-                  background: Container(
-                    alignment: Alignment.centerRight,
-                    padding: EdgeInsets.only(right: 20.0),
-                    color: Colors.red,
-                    child: Icon(
-                      Icons.delete,
-                      color: Colors.white,
+        if (filteredFiles.isNotEmpty)
+          Column(
+            children: [
+              SizedBox(height: 10),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: filteredFiles.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final String file = filteredFiles[index];
+                  return Dismissible(
+                    key: Key(file),
+                    direction: DismissDirection.endToStart,
+                    background: Container(
+                      alignment: Alignment.centerRight,
+                      padding: EdgeInsets.only(right: 20.0),
+                      color: Colors.red,
+                      child: Icon(
+                        Icons.delete,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                  confirmDismiss: (direction) async {
-                    return await _showDeleteConfirmationDialog(context, file);
-                  },
-                  onDismissed: (direction) {},
-                  child: ListTile(
-                    title: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.picture_as_pdf,
-                              color: Colors.blue,
-                            ),
-                            SizedBox(width: 8),
-                            Expanded(
-                              child: _buildHighlightedTitle(fileName), // Use fileName instead of file
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 4),
-                        Container(
-                          height: 0.5, // Adjust thickness here
-                          color: Colors.black,
-                        ),
-                      ],
-                    ),
-                    onTap: () {
-                      openPdfViewer(
-                        context,
-                        file,
-                      );
-                      // Invoke the callback function when a PDF is opened
-                      if (widget.onFileOpened != null) {
-                        String fileName = file.split('/').last;
-                        widget.onFileOpened!(fileName, file);
-                      }
+                    confirmDismiss: (direction) async {
+                      return await _showDeleteConfirmationDialog(context, file);
                     },
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-    ],
-  );
-}
-
-
-Widget _buildHighlightedTitle(String title) {
-  final RegExp regex = RegExp(_searchController.text, caseSensitive: false);
-  final Iterable<Match> matches = regex.allMatches(title);
-
-  // If no matches found, return the title as regular text
-  if (matches.isEmpty) {
-    return Text(
-      title,
-      style: TextStyle(
-        fontSize: 16,
-        color: Colors.black, // Set the default color to black
-      ),
-    );
-  }
-
-  // Create a list of TextSpans to highlight the matches
-  final List<TextSpan> children = [];
-  int start = 0;
-  for (Match match in matches) {
-    if (match.start != start) {
-      children.add(
-        TextSpan(
-          text: title.substring(start, match.start),
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.black, // Set the default color to black
+                    onDismissed: (direction) {},
+                    child: ListTile(
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.picture_as_pdf,
+                                color: Colors.blue,
+                              ),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  file.split('/').last,
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 2,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 4),
+                          Container(
+                            height: 0.5, // Adjust thickness here
+                            color: Colors.black,
+                          ),
+                        ],
+                      ),
+                      onTap: () {
+                        openPdfViewer(
+                          context,
+                          file,
+                          widget.onFileOpened ??
+                              (String fileName, String filePath) {},
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
-        ),
-      );
-    }
-    children.add(
-      TextSpan(
-        text: title.substring(match.start, match.end),
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold, // Highlight style
-          color: Colors.blue, // Highlight color
-        ),
-      ),
-    );
-    start = match.end;
-  }
-
-  // Add the remaining part of the title
-  if (start != title.length) {
-    children.add(
-      TextSpan(
-        text: title.substring(start),
-        style: TextStyle(
-          fontSize: 16,
-          color: Colors.black, // Set the default color to black
-        ),
-      ),
+      ],
     );
   }
 
-  return RichText(
-    text: TextSpan(
-      children: children,
-    ),
-  );
-}
-
-
-
- void _sortFiles(String option) {
-  setState(() {
-    if (option == 'Date') {
-      downloadedFiles.sort((a, b) =>
-          File(a).lastModifiedSync().compareTo(File(b).lastModifiedSync()));
-    } else if (option == 'Name') {
-      downloadedFiles.sort((a, b) => a.compareTo(b));
-    }
-    _filterFiles(_searchController.text); // Update filteredFiles after sorting
-  });
-}
-
+  void _sortFiles(String option) {
+    setState(() {
+      if (option == 'Date') {
+        downloadedFiles.sort((a, b) =>
+            File(a).lastModifiedSync().compareTo(File(b).lastModifiedSync()));
+      } else if (option == 'Name') {
+        downloadedFiles.sort((a, b) => a.compareTo(b));
+      }
+      _filterFiles(_searchController.text);
+    });
+  }
 
   void _filterFiles(String query) {
     setState(() {
@@ -340,7 +284,6 @@ Widget _buildHighlightedTitle(String title) {
           .toList();
     });
   }
-
 
   Future<bool> _showDeleteConfirmationDialog(
       BuildContext context, String filePath) async {
@@ -378,8 +321,7 @@ Widget _buildHighlightedTitle(String title) {
       filteredFiles.remove(filePath);
 
       // Call the callback function provided by HomeScreen
-      String fileName = filePath.split('/').last;
-      widget.onFileDeleted!(fileName);
+      widget.onFileDeleted?.call(filePath.split('/').last);
 
       // Show a confirmation dialog
       showDialog(
@@ -425,31 +367,28 @@ Widget _buildHighlightedTitle(String title) {
       );
     }
   }
- void _navigateToSelectedPage(BuildContext context, int index) {
+
+  void _navigateToSelectedPage(BuildContext context, int index) {
     // Handle navigation to selected page
   }
-  Future<void> openPdfViewer(BuildContext context, String filePath) async {
-  await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => PDFView(
-        filePath: filePath,
-        enableSwipe: true,
-        swipeHorizontal: true,
-        autoSpacing: true,
-        pageSnap: true,
-        onViewCreated: (PDFViewController controller) {},
-      ),
-    ),
-  );
 
-  if (widget.onFileOpened != null) {
+  Future<void> openPdfViewer(BuildContext context, String filePath,
+      Function(String, String) onFileOpened) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PDFView(
+          filePath: filePath,
+          enableSwipe: true,
+          swipeHorizontal: true,
+          autoSpacing: true,
+          pageSnap: true,
+          onViewCreated: (PDFViewController controller) {},
+        ),
+      ),
+    );
+
     String fileName = filePath.split('/').last;
-    widget.onFileOpened!(fileName, filePath);
+    onFileOpened(fileName, filePath);
   }
 }
- 
-}
-
-  
-// 
