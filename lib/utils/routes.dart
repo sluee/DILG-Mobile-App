@@ -1,4 +1,4 @@
-import 'package:DILGDOCS/screens/change_password_modal.dart';
+import '../screens/change_password_screen.dart';
 import 'package:DILGDOCS/screens/edit_user.dart';
 import 'package:DILGDOCS/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
@@ -58,7 +58,7 @@ class Routes {
             title: 'login',
           ),
       editUser: (context) => EditUser(),
-      changePassword: (context) => ChangePasswordModal(),
+      changePassword: (context) => ChangePasswordScreen(),
       setting: (context) => SettingsScreen(),
     };
   }

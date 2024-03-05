@@ -1,16 +1,17 @@
 import 'package:DILGDOCS/Services/auth_services.dart';
 import 'package:DILGDOCS/Services/globals.dart';
-import 'package:DILGDOCS/screens/change_password_modal.dart';
-
+import 'change_password_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'edit_user.dart';
 import 'about_screen.dart';
 import 'developers_screen.dart';
-import 'package:http/http.dart' as http;
 
 class SettingsScreen extends StatefulWidget {
+  final String? avatarPath;
+
+  const SettingsScreen({Key? key, this.avatarPath}) : super(key: key);
   @override
   _SettingsScreenState createState() => _SettingsScreenState();
 }
@@ -19,38 +20,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool isAuthenticated = false;
   String userName = '';
   String email = '';
-  String userAvatar = '';
-  String? userAvatarUrl;
-  String? avatarUrl;
-  late Image avatarImage;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  String? _selectedAvatarPath;
 
-  Future<void> fetchUserDetails() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? avatarFileName = prefs.getString('userAvatar');
-    var userId = await AuthServices.getUserId();
+  // Future<void> fetchUserDetails() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   String? avatarFileName = prefs.getString('userAvatar');
+  //   var userId = await AuthServices.getUserId();
 
-    String? selectedAvatarPath = prefs.getString('selectedAvatarPath');
+  //   if (avatarFileName != null && avatarFileName.isNotEmpty) {
+  //     setState(() {
+  //       // Construct the complete URL for fetching the avatar image
+  //       userAvatarUrl = '$baseURL/$avatarFileName';
+  //     });
 
-    if (avatarFileName != null && avatarFileName.isNotEmpty) {
-      setState(() {
-        userAvatarUrl = '$baseURL/$avatarFileName';
-      });
-    } else if (selectedAvatarPath != null) {
-      // If userAvatarUrl is not available, use the selectedAvatarPath
-      setState(() {
-        userAvatarUrl = selectedAvatarPath;
-      });
-    } else {
-      print('Avatar file name is null or empty');
-    }
-  }
+  //     // Print statements for debugging
+  //     print('Image URL: $userAvatarUrl');
+
+  //     // Display the image using NetworkImage within an Image widget
+  //     setState(() {
+  //       avatarImage = Image.network(userAvatarUrl!);
+  //     });
+  //   } else {
+  //     // Handle case where avatarFileName is null or empty
+  //     print('Avatar file name is null or empty');
+  //   }
+  // }
 
   @override
   void initState() {
     super.initState();
     _getUserInfo();
-    fetchUserDetails();
+    // fetchUserDetails();
+    _getSelectedAvatarPath();
   }
 
   Future<void> _getUserInfo() async {
@@ -65,10 +66,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
   }
 
+  Future<void> _getSelectedAvatarPath() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? selectedAvatarPath = prefs.getString('selectedAvatarPath');
+    setState(() {
+      _selectedAvatarPath = selectedAvatarPath ?? '';
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
+      appBar: null, // No app bar in settings screen
+      bottomNavigationBar: null,
       body: _buildBody(),
     );
   }
@@ -88,10 +98,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CircleAvatar(
-                  backgroundImage: userAvatarUrl != null
-                      ? NetworkImage(userAvatarUrl!)
-                      : AssetImage('assets/default.png')
-                          as ImageProvider<Object>,
+                  backgroundImage: _selectedAvatarPath != null
+                      ? AssetImage(_selectedAvatarPath!)
+                      : AssetImage('assets/default.png'),
                   radius: 50,
                 ),
                 SizedBox(width: 10.0),
@@ -168,7 +177,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => ChangePasswordModal()),
+                      builder: (context) => ChangePasswordScreen()),
                 );
               },
               child: Container(
@@ -210,7 +219,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // FAQs Button
             InkWell(
               onTap: () {
-                _launchURL();
+                _launchURL('https://dilgbohol.com/faqs');
               },
               child: Container(
                 padding: EdgeInsets.all(16.0),
@@ -426,13 +435,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await prefs.remove('authToken');
   }
 
-  void _launchURL() async {
-    const url =
-        'https://dilgbohol.com/faqs'; // Replace this URL with your desired destination URL
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      throw 'Could not launch $url';
+  Future<void> _launchURL(String url) async {
+    try {
+      if (await canLaunch(url)) {
+        await launch(url);
+      } else {
+        throw 'Could not launch $url';
+      }
+    } catch (e) {
+      print('Error launching URL: $e');
     }
   }
 }

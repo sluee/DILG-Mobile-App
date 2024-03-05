@@ -1,10 +1,9 @@
-import 'package:DILGDOCS/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'search_screen.dart';
 import 'library_screen.dart';
+import 'settings_screen.dart';
 import 'sidebar.dart';
-import 'edit_user.dart';
 import 'bottom_navigation.dart';
 import 'issuance_pdf_screen.dart';
 import 'package:url_launcher/url_launcher.dart'; // Import url_launcher package
@@ -28,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
     'Home',
     'Search',
     'Library',
-    'Settings',
+    'Setting',
   ];
 
   DateTime? currentBackPressTime;
@@ -76,11 +75,11 @@ class _HomeScreenState extends State<HomeScreen> {
           return false;
         } else if (currentBackPressTime == null ||
             DateTime.now().difference(currentBackPressTime!) >
-                Duration(seconds: 1)) {
+                Duration(seconds: 2)) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Press back again to exit'),
-              duration: Duration(seconds: 1),
+              duration: Duration(seconds: 2),
             ),
           );
           currentBackPressTime = DateTime.now();
@@ -174,20 +173,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
                 const SizedBox(height: 30.0),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'News and Updates:',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                _buildWideButton('NEWS & UPDATE', 'https://dilgbohol.com/'),
                 _buildWideButton(
-                    'THE PROVINCIAL DIRECTOR', 'https://dilgbohol.com'),
-                _buildWideButton('VISION AND MISSION', 'https://dilgbohol.com'),
+                    'NEWS AND UPDATES', 'https://dilgbohol.com/news_update'),
+                _buildWideButton('THE PROVINCIAL DIRECTOR',
+                    'https://dilgbohol.com/provincial_director'),
+                _buildWideButton(
+                    'VISION AND MISSION', 'https://dilgbohol.com/about_us'),
                 Container(
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
@@ -214,11 +205,13 @@ class _HomeScreenState extends State<HomeScreen> {
       case 2:
         return LibraryScreen(
           onFileOpened: (title, subtitle) {
+            // Add the opened file to recently opened issuances
             setState(() {
               _recentlyOpenedIssuances.insert(0, Issuance(title: title));
             });
           },
           onFileDeleted: (title) {
+            // Remove the deleted issuance from the list of recently opened issuances
             setState(() {
               _recentlyOpenedIssuances
                   .removeWhere((issuance) => issuance.title == title);
@@ -282,12 +275,28 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(
                 'Recently Opened Issuances',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              // See More Button
-              seeMoreButton,
+              GestureDetector(
+                onTap: () {
+                  // Add your clear list logic here
+                  // For example, you can clear the list by setting _recentlyOpenedIssuances to an empty list
+                  setState(() {
+                    _recentlyOpenedIssuances.clear();
+                  });
+                },
+                child: Container(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text(
+                    'Clear List',
+                    style: TextStyle(
+                      color: Colors.red,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -311,48 +320,38 @@ class _HomeScreenState extends State<HomeScreen> {
             } else {
               // Otherwise, add it to seen titles and display it
               seenTitles[issuance.title] = issuance;
-              return Column(
-                children: [
-                  ListTile(
-                    title: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          issuance.title.length > 15
-                              ? '${issuance.title.substring(0, 15)}...'
-                              : issuance.title,
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Remove the current issuance from the list
-                            setState(() {
-                              _recentlyOpenedIssuances.remove(issuance);
-                            });
-                            // Add the current issuance to the top of the list
-                            setState(() {
-                              _recentlyOpenedIssuances.insert(0, issuance);
-                            });
-                            // Navigate to the PDF screen when the button is pressed
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => IssuancePDFScreen(
-                                  title: issuance.title,
-                                ),
-                              ),
-                            );
-                          },
-                          child: Text('View'),
-                        ),
-                      ],
-                    ),
+              return Card(
+                elevation: 2.0,
+                margin: EdgeInsets.symmetric(vertical: 8.0),
+                child: ListTile(
+                  title: Text(
+                    issuance.title.length > 30
+                        ? '${issuance.title.substring(0, 30)}...'
+                        : issuance.title,
                   ),
-                  const Divider(),
-                ],
+                  onTap: () {
+                    // Remove the current issuance from the list
+                    setState(() {
+                      _recentlyOpenedIssuances.remove(issuance);
+                    });
+                    // Add the current issuance to the top of the list
+                    setState(() {
+                      _recentlyOpenedIssuances.insert(0, issuance);
+                    });
+                    // Navigate to the PDF screen when the item is tapped
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => IssuancePDFScreen(
+                          title: issuance.title,
+                        ),
+                      ),
+                    );
+                  },
+                ),
               );
             }
           }).toList(),
-          clearListButton,
         ],
       ],
     );
