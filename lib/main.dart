@@ -1,10 +1,8 @@
-import 'package:DILGDOCS/Services/auth_services.dart';
 import 'package:flutter/material.dart';
 import '../utils/routes.dart';
-
+import '../Services/auth_services.dart';
 import '../screens/login_screen.dart';
 import '../screens/home_screen.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +24,19 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
         useMaterial3: true,
+        textTheme: TextTheme(
+          bodyText2: TextStyle(
+            fontFamily: 'Poppins', // Replace with your font family name
+          ),
+        ),
+        appBarTheme: AppBarTheme(
+          titleTextStyle: TextStyle(
+            fontFamily: 'Poppins', // Replace with your font family name
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+            fontSize: 22,
+          ),
+        ),
       ),
       // Remove the home property and use AuthenticationWrapper directly in the home
       home: AuthenticationWrapper(isAuthenticated: isAuthenticated),

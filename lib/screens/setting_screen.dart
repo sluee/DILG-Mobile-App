@@ -1,5 +1,4 @@
 import 'package:DILGDOCS/Services/auth_services.dart';
-import 'package:DILGDOCS/Services/globals.dart';
 import 'package:DILGDOCS/screens/change_password_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,6 +8,9 @@ import 'about_screen.dart';
 import 'developers_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
+  final String? avatarPath;
+
+  const SettingsScreen({Key? key, this.avatarPath}) : super(key: key);
   @override
   _SettingsScreenState createState() => _SettingsScreenState();
 }
@@ -17,40 +19,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool isAuthenticated = false;
   String userName = '';
   String email = '';
-  String userAvatar = '';
-  String? userAvatarUrl;
-  String? avatarUrl;
-  late Image avatarImage;
+  String? _selectedAvatarPath;
 
-  Future<void> fetchUserDetails() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? avatarFileName = prefs.getString('userAvatar');
-    var userId = await AuthServices.getUserId();
-
-    if (avatarFileName != null && avatarFileName.isNotEmpty) {
-      setState(() {
-        // Construct the complete URL for fetching the avatar image
-        userAvatarUrl = '$baseURL/$avatarFileName';
-      });
-
-      // Print statements for debugging
-      print('Image URL: $userAvatarUrl');
-
-      // Display the image using NetworkImage within an Image widget
-      setState(() {
-        avatarImage = Image.network(userAvatarUrl!);
-      });
-    } else {
-      // Handle case where avatarFileName is null or empty
-      print('Avatar file name is null or empty');
-    }
-  }
 
   @override
   void initState() {
     super.initState();
     _getUserInfo();
-    fetchUserDetails();
+    // fetchUserDetails();
+    // _getSelectedAvatarPath();
   }
 
   Future<void> _getUserInfo() async {
@@ -62,12 +39,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
       isAuthenticated = loggedIn;
       userName = name ?? '';
       email = userEmail ?? '';
+      _getSelectedAvatarPath();
     });
   }
+  Future<void> _getSelectedAvatarPath() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? selectedAvatarPath = prefs.getString('selectedAvatarPath');
+    setState(() {
+      _selectedAvatarPath = selectedAvatarPath ?? '';
+    });
+  }
+
+  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: null, // No app bar in settings screen
+      bottomNavigationBar: null,
       body: _buildBody(),
     );
   }
@@ -87,12 +76,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CircleAvatar(
-                  backgroundImage: userAvatarUrl != null
-                      ? NetworkImage(userAvatarUrl!) as ImageProvider<
-                          Object>? // Cast to ImageProvider<Object>?
-                      : AssetImage('assets/eula.png'),
+                  backgroundImage: _selectedAvatarPath != null
+                      ? AssetImage(_selectedAvatarPath!)
+                      : AssetImage('assets/default.png'),
                   radius: 50,
                 ),
+
                 SizedBox(width: 10.0),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

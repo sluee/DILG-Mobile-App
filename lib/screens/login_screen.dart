@@ -51,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (isValidToken) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          MaterialPageRoute(builder: (context) =>  HomeScreen()),
         );
       } else {
         clearAuthToken();
@@ -83,7 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
+            MaterialPageRoute(builder: (context) =>  HomeScreen()),
           );
         } else {
           setState(() {

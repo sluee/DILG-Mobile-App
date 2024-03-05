@@ -29,7 +29,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             TextButton(
              onPressed: () {
                 Navigator.pop(context); // Close the EditUser screen
-                Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false); // Navigate to the home screen
+                // Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false); // Navigate to the home screen4
+                Navigator.pop(context); 
               },
 
               child: Text('OK'),
@@ -43,22 +44,37 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+       appBar: AppBar(
+        title: Text(
+          'Change Password',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        iconTheme: IconThemeData(
           color: Colors.white,
         ),
         backgroundColor: Colors.blue[900],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
+        child: Center(
+          child: Container(
+            padding: EdgeInsets.fromLTRB(16.0, 40.0, 16.0, 16.0),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(50.0)),
+              color: Colors.white,
+            ),
+            // padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(height: 50.0),
+             Icon(
+                  Icons.lock,
+                  size: 80.0,
+                  color: Colors.blue[900],
+                ),
+            SizedBox(height: 16.0),
             Text(
               'Change Password',
               style: TextStyle(
@@ -161,6 +177,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             ),
           ],
         ),
+          ),
+          ),
+        
       ),
     );
   }
@@ -217,7 +236,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context); // Close the dialog
+                 Navigator.pop(context); // Close the EditUser screen
+                  Navigator.pop(context); 
                 },
                 child: Text('OK'),
               ),

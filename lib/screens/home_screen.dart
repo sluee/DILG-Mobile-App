@@ -173,10 +173,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
                 const SizedBox(height: 30.0),
-                _buildWideButton('NEWS AND UPDATES', 'https://dilgbohol.com/news_update'),
                 _buildWideButton(
-                    'THE PROVINCIAL DIRECTOR', 'https://dilgbohol.com/provincial_director'),
-                _buildWideButton('VISION AND MISSION', 'https://dilgbohol.com/about_us'),
+                    'NEWS AND UPDATES', 'https://dilgbohol.com/news_update'),
+                _buildWideButton('THE PROVINCIAL DIRECTOR',
+                    'https://dilgbohol.com/provincial_director'),
+                _buildWideButton(
+                    'VISION AND MISSION', 'https://dilgbohol.com/about_us'),
                 Container(
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
@@ -216,8 +218,9 @@ class _HomeScreenState extends State<HomeScreen> {
             });
           },
         );
-        case 3:
+      case 3:
         return SettingsScreen();
+
       default:
         return SizedBox(); // Return an empty widget for unsupported index
     }
@@ -272,12 +275,28 @@ class _HomeScreenState extends State<HomeScreen> {
               Text(
                 'Recently Opened Issuances',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              // See More Button
-              seeMoreButton,
+              GestureDetector(
+                onTap: () {
+                  // Add your clear list logic here
+                  // For example, you can clear the list by setting _recentlyOpenedIssuances to an empty list
+                  setState(() {
+                    _recentlyOpenedIssuances.clear();
+                  });
+                },
+                child: Container(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text(
+                    'Clear List',
+                    style: TextStyle(
+                      color: Colors.red,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -301,48 +320,38 @@ class _HomeScreenState extends State<HomeScreen> {
             } else {
               // Otherwise, add it to seen titles and display it
               seenTitles[issuance.title] = issuance;
-              return Column(
-                children: [
-                  ListTile(
-                    title: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          issuance.title.length > 15
-                              ? '${issuance.title.substring(0, 15)}...'
-                              : issuance.title,
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            // Remove the current issuance from the list
-                            setState(() {
-                              _recentlyOpenedIssuances.remove(issuance);
-                            });
-                            // Add the current issuance to the top of the list
-                            setState(() {
-                              _recentlyOpenedIssuances.insert(0, issuance);
-                            });
-                            // Navigate to the PDF screen when the button is pressed
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => IssuancePDFScreen(
-                                  title: issuance.title,
-                                ),
-                              ),
-                            );
-                          },
-                          child: Text('View'),
-                        ),
-                      ],
-                    ),
+              return Card(
+                elevation: 2.0,
+                margin: EdgeInsets.symmetric(vertical: 8.0),
+                child: ListTile(
+                  title: Text(
+                    issuance.title.length > 30
+                        ? '${issuance.title.substring(0, 30)}...'
+                        : issuance.title,
                   ),
-                  const Divider(),
-                ],
+                  onTap: () {
+                    // Remove the current issuance from the list
+                    setState(() {
+                      _recentlyOpenedIssuances.remove(issuance);
+                    });
+                    // Add the current issuance to the top of the list
+                    setState(() {
+                      _recentlyOpenedIssuances.insert(0, issuance);
+                    });
+                    // Navigate to the PDF screen when the item is tapped
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => IssuancePDFScreen(
+                          title: issuance.title,
+                        ),
+                      ),
+                    );
+                  },
+                ),
               );
             }
           }).toList(),
-          clearListButton,
         ],
       ],
     );

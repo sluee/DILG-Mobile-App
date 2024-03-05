@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:DILGDOCS/screens/bottom_navigation.dart';
 import 'package:DILGDOCS/screens/sidebar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_pdfview/flutter_pdfview.dart';
+
 import 'package:path_provider/path_provider.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class LibraryScreen extends StatefulWidget {
   final Function(String, String)? onFileOpened;
@@ -27,6 +27,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
   bool isSearching = false;
   String _selectedSortOption = 'Date';
   List<String> _sortOptions = ['Date', 'Name'];
+  Map<String, DateTime> downloadTimes = {};
 
   @override
   void initState() {
@@ -55,49 +56,32 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
     for (var entity in entities) {
       if (entity is Directory) {
+        // Check if entity is a directory before recursively calling loadDownloadedFiles
         await loadDownloadedFiles(entity);
       } else if (entity is File && entity.path.toLowerCase().endsWith('.pdf')) {
         downloadedFiles.add(entity.path);
+
+        // Store download time
+        downloadTimes[entity.path] = entity.lastModifiedSync();
       }
     }
 
-    downloadedFiles.sort();
+    // Sort files based on download time
+    downloadedFiles.sort((a, b) => downloadTimes[b]!.compareTo(downloadTimes[a]!));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: Text(
-      //     'Library',
-      //     style: TextStyle(
-      //       fontWeight: FontWeight.bold,
-      //       color: Colors.white,
-      //     ),
-      //   ),
-      //   leading: Builder(
-      //     builder: (context) => IconButton(
-      //       icon: Icon(Icons.menu, color: Colors.white),
-      //       onPressed: () => Scaffold.of(context).openDrawer(),
-      //     ),
-      //   ),
-      //   backgroundColor: Colors.blue[900],
-      // ),
       drawer: Sidebar(
         currentIndex: 0,
         onItemSelected: (index) {
           _navigateToSelectedPage(context, index);
         },
       ),
-      // bottomNavigationBar: BottomNavigation(
-      //   currentIndex: 2,
-      //   onTabTapped: (index) {
-      //     // Handle bottom navigation item taps if needed
-      //   },
-      // ),
       body: SingleChildScrollView(
         child: Container(
-          margin: EdgeInsets.only(top: 16.0), // Add margin top here
+          margin: EdgeInsets.only(top: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -122,7 +106,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 color: Colors.grey.withOpacity(0.5),
                 spreadRadius: 2,
                 blurRadius: 5,
-                offset: Offset(0, 3), // changes position of shadow
+                offset: Offset(0, 3),
               ),
             ],
           ),
@@ -165,116 +149,159 @@ class _LibraryScreenState extends State<LibraryScreen> {
           Row(
             children: [
               _buildSearchBar(),
-              SizedBox(
-                width: 10,
-              ), // Add spacing between search bar and other widgets
-              // Add other widgets here
+              SizedBox(width: 10),
             ],
           ),
-          // Add other rows or widgets as needed
         ],
       ),
     );
   }
 
   Widget _buildPdf(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SizedBox(height: 16),
-        if (filteredFiles.isEmpty)
-          Center(
-            child: Text(
-              'No downloaded issuances',
-              style: TextStyle(
-                fontSize: 18,
-              ),
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      SizedBox(height: 16),
+      if (filteredFiles.isEmpty)
+        Center(
+          child: Text(
+            'No downloaded issuances',
+            style: TextStyle(
+              fontSize: 18,
             ),
           ),
-        if (filteredFiles.isNotEmpty)
-          Column(
-            children: [
-              SizedBox(height: 10),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: filteredFiles.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final String file = filteredFiles[index];
-                  return Dismissible(
-                    key: Key(file),
-                    direction: DismissDirection.endToStart,
-                    background: Container(
-                      alignment: Alignment.centerRight,
-                      padding: EdgeInsets.only(right: 20.0),
-                      color: Colors.red,
-                      child: Icon(
-                        Icons.delete,
-                        color: Colors.white,
-                      ),
+        ),
+      if (filteredFiles.isNotEmpty)
+        Column(
+          children: [
+            SizedBox(height: 10),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: filteredFiles.length,
+              itemBuilder: (BuildContext context, int index) {
+                final String file = filteredFiles[index];
+                final fileName = file.split('/').last;
+                return Dismissible(
+                  key: Key(file), // Unique key for each item
+                  direction: DismissDirection.endToStart, // Swipe direction
+                  background: Container(
+                    color: Colors.red, // Background color when swiping
+                    alignment: Alignment.centerRight,
+                    padding: EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Icon(
+                      Icons.delete,
+                      color: Colors.white,
                     ),
-                    confirmDismiss: (direction) async {
-                      return await _showDeleteConfirmationDialog(context, file);
+                  ),
+                  confirmDismiss: (direction) async {
+                    // Show confirmation dialog when swiping
+                    return await _showDeleteConfirmationDialog(context, file);
+                  },
+                  onDismissed: (direction) {
+                    // Delete the item when dismissed
+                    _deleteFile(file);
+                  },
+                  child: ListTile(
+                    title: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.picture_as_pdf,
+                              color: Colors.blue,
+                            ),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: _buildHighlightedTitle(fileName),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 4),
+                        Container(
+                          height: 0.5,
+                          color: Colors.black,
+                        ),
+                      ],
+                    ),
+                    onTap: () {
+                      openPdfViewer(
+                        context,
+                        file,
+                        widget.onFileOpened ??
+                            (String fileName, String filePath) {},
+                      );
                     },
-                    onDismissed: (direction) {},
-                    child: ListTile(
-                      title: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.picture_as_pdf,
-                                color: Colors.blue,
-                              ),
-                              SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  file.split('/').last,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 2,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 4),
-                          Container(
-                            height: 0.5, // Adjust thickness here
-                            color: Colors.black,
-                          ),
-                        ],
-                      ),
-                      onTap: () {
-                        openPdfViewer(
-                          context,
-                          file,
-                          widget.onFileOpened ??
-                              (String fileName, String filePath) {},
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
-            ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+    ],
+  );
+}
+
+
+  Widget _buildHighlightedTitle(String title) {
+    final RegExp regex = RegExp(_searchController.text, caseSensitive: false);
+    final Iterable<Match> matches = regex.allMatches(title);
+
+    final List<TextSpan> children = [];
+    int start = 0;
+    for (Match match in matches) {
+      if (match.start != start) {
+        children.add(
+          TextSpan(
+            text: _truncateFilename(title.substring(start, match.start)),
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.black,
+            ),
           ),
-      ],
+        );
+      }
+      children.add(
+        TextSpan(
+          text: title.substring(match.start, match.end),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.blue,
+          ),
+        ),
+      );
+      start = match.end;
+    }
+
+    if (start != title.length) {
+      children.add(
+        TextSpan(
+          text: _truncateFilename(title.substring(start)),
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.black,
+          ),
+        ),
+      );
+    }
+
+    return RichText(
+      text: TextSpan(
+        children: children,
+      ),
+      overflow: TextOverflow.ellipsis,
+      maxLines: 2,
     );
   }
 
-  void _sortFiles(String option) {
-    setState(() {
-      if (option == 'Date') {
-        downloadedFiles.sort((a, b) =>
-            File(a).lastModifiedSync().compareTo(File(b).lastModifiedSync()));
-      } else if (option == 'Name') {
-        downloadedFiles.sort((a, b) => a.compareTo(b));
-      }
-      _filterFiles(_searchController.text);
-    });
+  String _truncateFilename(String fileName, {int maxLength = 20}) {
+    if (fileName.length <= maxLength) {
+      return fileName;
+    } else {
+      return fileName.substring(0, maxLength - 3) + '...';
+    }
   }
 
   void _filterFiles(String query) {
@@ -314,81 +341,132 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 
   void _deleteFile(String filePath) {
-    try {
-      File file = File(filePath);
-      file.deleteSync();
-      downloadedFiles.remove(filePath);
-      filteredFiles.remove(filePath);
+  try {
+    File file = File(filePath);
+    file.deleteSync();
+    downloadedFiles.remove(filePath);
+    filteredFiles.remove(filePath);
 
-      // Call the callback function provided by HomeScreen
-      widget.onFileDeleted?.call(filePath.split('/').last);
+    // Call the onFileDeleted function provided by HomeScreen
+    widget.onFileDeleted?.call(filePath.split('/').last);
 
-      // Show a confirmation dialog
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Success"),
-            content: Text("The file has been successfully deleted."),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop(); // Dismiss the success dialog
-                  Navigator.of(context)
-                      .pop(); // Dismiss the confirmation dialog
-                },
-                child: Text("OK"),
-              ),
-            ],
-          );
-        },
-      );
+    // Show a confirmation dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Success"),
+          content: Text("The file has been successfully deleted."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Dismiss the success dialog
+                Navigator.of(context)
+                    .pop(); // Dismiss the confirmation dialog
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
 
-      setState(() {});
-    } catch (e) {
-      print("Failed to delete file: $e");
-      // Show an error dialog if deletion fails
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Error"),
-            content: Text("Failed to delete the file."),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text("OK"),
-              ),
-            ],
-          );
-        },
-      );
-    }
+    setState(() {});
+  } catch (e) {
+    print("Failed to delete file: $e");
+    // Show an error dialog if deletion fails
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Error"),
+          content: Text("Failed to delete the file."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
   }
+}
 
   void _navigateToSelectedPage(BuildContext context, int index) {
     // Handle navigation to selected page
   }
 
-  Future<void> openPdfViewer(BuildContext context, String filePath,
+ Future<void> openPdfViewer(BuildContext context, String filePath,
       Function(String, String) onFileOpened) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PDFView(
-          filePath: filePath,
-          enableSwipe: true,
-          swipeHorizontal: true,
-          autoSpacing: true,
-          pageSnap: true,
-          onViewCreated: (PDFViewController controller) {},
-        ),
+  String fileName = filePath.split('/').last; // Move this line above MaterialPageRoute
+  await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => PDFViewerScreen(
+        filePath: filePath,
+        fileName: fileName, // Use the fileName here
+     
+      ),
+    ),
+  );
+  onFileOpened(fileName, filePath);
+}
+
+
+}
+
+class PDFViewerScreen extends StatelessWidget {
+  final String filePath;
+  final String fileName;
+  final Function(String, String)? onFileOpened;
+  final Function(String)? onFileDeleted; // Add onFileDeleted function
+
+  PDFViewerScreen({required this.filePath, required this.fileName, this.onFileOpened, this.onFileDeleted});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(fileName), // Use the truncated filename in the app bar title
+      ),
+      body: FutureBuilder<File>(
+        future: _getFile(filePath),
+        builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
+          if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+            return SfPdfViewer.file(snapshot.data!);
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text('Error: ${snapshot.error}'),
+            );
+          } else {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        },
       ),
     );
-
-    String fileName = filePath.split('/').last;
-    onFileOpened(fileName, filePath);
   }
+
+  Future<File> _getFile(String filePath) async {
+    File file = File(filePath);
+    if (await file.exists()) {
+      return file;
+    } else {
+      throw 'File not found: $filePath';
+    }
+  }
+
+  // @override
+  // void dispose() {
+  //   super.dispose();
+  //   // Call onFileOpened function when disposing the PDFViewerScreen
+  //   if (onFileOpened != null) {
+  //     onFileOpened!(fileName, filePath);
+  //   }
+  // }
 }
+

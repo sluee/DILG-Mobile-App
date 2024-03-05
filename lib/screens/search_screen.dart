@@ -1,14 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
-
 import 'package:DILGDOCS/Services/globals.dart';
 import 'package:DILGDOCS/models/republic_acts.dart';
 import 'package:DILGDOCS/screens/details.dart';
-
 import 'package:DILGDOCS/utils/routes.dart';
 import 'package:flutter/material.dart';
-
 import 'package:http/http.dart' as http;
-
 import '../models/draft_issuances.dart';
 import '../models/joint_circulars.dart';
 import '../models/latest_issuances.dart';
@@ -20,50 +17,46 @@ import 'sidebar.dart';
 
 
 class SearchScreen extends StatefulWidget {
+  
   @override
   _SearchScreenState createState() => _SearchScreenState();
 }
 
 class _SearchScreenState extends State<SearchScreen> {
   TextEditingController _searchController = TextEditingController();
-  String searchInput = ''; // Add this line to declare and initialize searchInput
+  String searchInput = '';
   List<String> _recentSearches = [""];
   List<SearchResult> searchResults = [];
   List<MemoCircular> _memoCirculars = [];
-  List<MemoCircular> get memoCirculars => _memoCirculars;
   List<PresidentialDirective> _presidentialDirectives = [];
-  List<PresidentialDirective> get presidentialDirectives => _presidentialDirectives;
   List<RepublicAct> _republicActs = [];
-  List<RepublicAct> get republicActs => _republicActs;
   List<LegalOpinion> _legalOpinions = [];
-  List<LegalOpinion> get legalOpinions => _legalOpinions;
   List<JointCircular> _jointCirculars = [];
-  List<JointCircular> get jointCirculars => _jointCirculars;
   List<DraftIssuance> _draftIssuances = [];
-  List<DraftIssuance> get draftIssuances => _draftIssuances;
   List<LatestIssuance> _latestIssuances = [];
-  List<LatestIssuance> get latestIssuances => _latestIssuances;
-
 
   @override
   void initState() {
     super.initState();
-    fetchRepublicActs();
-    fetchPresidentialCirculars();
-    fetchLegalOpinions();
-    fetchMemoCirculars();
-    fetchLatestIssuances();
-    fetchJointCirculars();
-    fetchDraftIssuances();
+    _fetchData();
   }
 
-@override
-void dispose() {
-  // Cancel any ongoing asynchronous operations here
-  // For example, canceling network requests, timers, etc.
-  super.dispose();
-  
-}
+  Future<void> _fetchData() async {
+    try {
+      await Future.wait([
+        fetchRepublicActs(),
+        fetchPresidentialCirculars(),
+        fetchLegalOpinions(),
+        fetchMemoCirculars(),
+        fetchLatestIssuances(),
+        fetchJointCirculars(),
+        fetchDraftIssuances(),
+      ]);
+    } catch (e) {
+      // Handle errors
+      print('Error fetching data: $e');
+    }
+  }
 
 Future<void> fetchDraftIssuances() async {
     final response = await http.get(
@@ -231,6 +224,7 @@ Widget build(BuildContext context) {
         _navigateToSelectedPage(context, index);
       },
     ),
+
 
     body: SingleChildScrollView(
       child: Padding(
@@ -473,67 +467,12 @@ Widget _buildSearchResultsContainer() {
 void _handleSearch() {
   String searchInput = _searchController.text.toLowerCase();
 
-  print('Search Input: $searchInput');
-
-  // Check if the search input is empty
-  if (searchInput.isNotEmpty) {
-    // Flatten the list of lists into a single list
-    List<dynamic> allData = [
-      ..._memoCirculars,
-      ..._presidentialDirectives,
-      ..._republicActs,
-      ..._legalOpinions,
-      ..._jointCirculars,
-      ..._draftIssuances,
-      ..._latestIssuances,
-    ];
-
-    // Filter the data based on search input and convert to SearchResult objects
-    List<SearchResult> searchResults = allData.where((data) {
-    
-      if (data is MemoCircular) {
-        return data.issuance.title.toLowerCase().contains(searchInput) || data.issuance.keyword.toLowerCase().contains(searchInput);
-      } else if (data is PresidentialDirective) {
-        return data.issuance.title.toLowerCase().contains(searchInput) || data.issuance.keyword.toLowerCase().contains(searchInput);
-      } else if (data is RepublicAct) {
-        return data.issuance.title.toLowerCase().contains(searchInput) || data.issuance.keyword.toLowerCase().contains(searchInput);
-      } else if (data is LegalOpinion) {
-        return data.issuance.title.toLowerCase().contains(searchInput) || data.issuance.keyword.toLowerCase().contains(searchInput);
-      } else if (data is JointCircular) {
-        return data.issuance.title.toLowerCase().contains(searchInput) || data.issuance.keyword.toLowerCase().contains(searchInput);
-      } else if (data is DraftIssuance) {
-        return data.issuance.title.toLowerCase().contains(searchInput) || data.issuance.keyword.toLowerCase().contains(searchInput);
-      } else if (data is LatestIssuance) {
-        return data.issuance.title.toLowerCase().contains(searchInput) || data.issuance.keyword.toLowerCase().contains(searchInput);
-      }
-      return false;
-    }).map((data) {
-      // Convert filtered data to SearchResult objects
-      if (data is MemoCircular) {
-        return SearchResult(data.issuance.title, data.issuance.urlLink);
-      } else if (data is PresidentialDirective) {
-        return SearchResult(data.issuance.title, data.issuance.urlLink);
-      } else if (data is RepublicAct) {
-        return SearchResult(data.issuance.title, data.issuance.urlLink);
-      } else if (data is LegalOpinion) {
-        return SearchResult(data.issuance.title, data.issuance.urlLink);
-      } else if (data is JointCircular) {
-        return SearchResult(data.issuance.title, data.issuance.urlLink);
-      } else if (data is DraftIssuance) {
-        return SearchResult(data.issuance.title, data.issuance.urlLink);
-      } else if (data is LatestIssuance) {
-        return SearchResult(data.issuance.title,data.issuance.urlLink);
-      }
-      return SearchResult('',''); // Return a default SearchResult in case of null
-    }).where((result) => result.title.isNotEmpty).toList(); // Filter out empty titles
-
-    // Update the search results and search input within the context of a stateful widget
-    setState(() {
-      this.searchResults = searchResults;
-      this.searchInput = searchInput; // Update the search input
-    });
+  // Check if the search input meets the minimum character requirement
+  if (searchInput.length >= 2) {
+    // Perform the search operation
+    _performSearch(searchInput);
   } else {
-    // Clear the search results when the search input is empty
+    // Clear the search results when the search input doesn't meet the minimum character requirement
     setState(() {
       this.searchResults = [];
       this.searchInput = searchInput; // Update the search input
@@ -541,7 +480,41 @@ void _handleSearch() {
   }
 }
 
-  // Method to handle the tapped recent search item
+void _performSearch(String searchInput) {
+  // Flatten the list of lists into a single list
+  List<dynamic> allData = [
+    ..._memoCirculars,
+    ..._presidentialDirectives,
+    ..._republicActs,
+    ..._legalOpinions,
+    ..._jointCirculars,
+    ..._draftIssuances,
+    ..._latestIssuances,
+  ];
+
+  // Filter the data based on search input and convert to SearchResult objects
+  List<SearchResult> searchResults = allData
+      .where((data) =>
+          (data is MemoCircular ||
+              data is PresidentialDirective ||
+              data is RepublicAct ||
+              data is LegalOpinion ||
+              data is JointCircular ||
+              data is DraftIssuance ||
+              data is LatestIssuance) &&
+          (data.issuance.title.toLowerCase().contains(searchInput) ||
+              data.issuance.keyword.toLowerCase().contains(searchInput)))
+      .map((data) => SearchResult(data.issuance.title, data.issuance.urlLink))
+      .where((result) => result.title.isNotEmpty)
+      .toList();
+
+  // Update the search results and search input within the context of a stateful widget
+  setState(() {
+    this.searchResults = searchResults;
+    this.searchInput = searchInput; // Update the search input
+  });
+}
+
 void _handleRecentSearchTap(String value) {
   // Implement the handling of tapped recent search item
   setState(() {
@@ -555,6 +528,10 @@ void _handleRecentSearchTap(String value) {
     Navigator.pushNamed(context, route);
   }
   
+  void navigateToRootWidget(BuildContext context) {
+  Navigator.of(context).popUntil((route) => route.isFirst);
+}
+
   void _navigateToSelectedPage(BuildContext context, int index) {}
 }
 class SearchResult {
