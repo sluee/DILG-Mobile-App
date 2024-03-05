@@ -255,7 +255,8 @@ class _EditUserState extends State<EditUser> {
                     SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/home');
+                        Navigator.pop(context); // Close the dialog
+                        Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue[300],

@@ -37,7 +37,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
           label: 'Search',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.library_books),
+          icon: Icon(Icons.book),
           label: 'Library',
         ),
         BottomNavigationBarItem(

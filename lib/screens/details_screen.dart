@@ -36,7 +36,7 @@ class DetailsScreen extends StatelessWidget {
     required this.content,
     required this.pdfUrl,
     required this.type,
-     // Add this line
+    // Add this line
   });
 
   @override
@@ -59,38 +59,42 @@ class DetailsScreen extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      child: Text(
-                        title,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisAlignment:
+                        MainAxisAlignment.center, // Add this line
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: Text(
+                          title,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: Colors.black,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Divider(
+                        color: Colors.grey,
+                        thickness: 2,
+                        height: 2,
+                      ),
+                      Text(
+                        content,
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                          color: Colors.black,
+                          fontSize: 12,
                         ),
                         textAlign: TextAlign.center,
                       ),
-                    ),
-                    SizedBox(height: 2),
-                    Divider(
-                      color: Colors.grey,
-                      thickness: 2,
-                      height: 2,
-                    ),
-                    Text(
-                      content,
-                      style: TextStyle(
-                        fontSize: 12,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -200,4 +204,3 @@ class DetailsScreen extends StatelessWidget {
     }
   }
 }
-
