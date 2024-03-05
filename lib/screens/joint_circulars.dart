@@ -20,6 +20,8 @@ class _JointCircularsState extends State<JointCirculars> {
   TextEditingController _searchController = TextEditingController();
   List<JointCircular> _jointCirculars = [];
   List<JointCircular> _filteredJointCirculars = [];
+  bool _isLoading = false;
+  bool _hasError = false;
 
   @override
   void initState() {
@@ -28,25 +30,42 @@ class _JointCircularsState extends State<JointCirculars> {
   }
 
   Future<void> fetchJointCirculars() async {
-    final response = await http.get(
-      Uri.parse('$baseURL/joint_circulars'),
-      headers: {
-        'Accept': 'application/json',
-      },
-    );
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body)['joints'];
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
 
+    try {
+      final response = await http.get(
+        Uri.parse('$baseURL/joint_circulars'),
+        headers: {
+          'Accept': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body)['joints'];
+
+        setState(() {
+          _jointCirculars =
+              data.map((item) => JointCircular.fromJson(item)).toList();
+          _filteredJointCirculars = _jointCirculars;
+          _isLoading = false;
+        });
+      } else {
+        print('Failed to load joint circulars');
+        print('Response status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        setState(() {
+          _hasError = true;
+          _isLoading = false;
+        });
+      }
+    } catch (error) {
+      print('Error during HTTP request: $error');
       setState(() {
-        _jointCirculars =
-            data.map((item) => JointCircular.fromJson(item)).toList();
-        _filteredJointCirculars = _jointCirculars;
+        _hasError = true;
+        _isLoading = false;
       });
-    } else {
-      // Handle error
-      print('Failed to load latest issuances');
-      print('Response status code: ${response.statusCode}');
-      print('Response body: ${response.body}');
     }
   }
 
@@ -76,6 +95,31 @@ class _JointCircularsState extends State<JointCirculars> {
   }
 
   Widget _buildBody() {
+    if (_isLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16.0),
+            Text(
+              'Loading...',
+              style: TextStyle(fontSize: 18.0),
+            ),
+          ],
+        ),
+      );
+    } else if (_hasError) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'Failed to load. No Internet Connection.',
+            style: TextStyle(fontSize: 18.0),
+          ),
+        ),
+      );
+    }
     return SingleChildScrollView(
       child: Column(
         children: [

@@ -279,6 +279,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              Divider(
+                color: Colors.grey,
+                thickness: 2,
+                height: 2,
+              ),
               GestureDetector(
                 onTap: () {
                   // Add your clear list logic here

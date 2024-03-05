@@ -18,6 +18,8 @@ class _RepublicActsState extends State<RepublicActs> {
   TextEditingController _searchController = TextEditingController();
   List<RepublicAct> _republicActs = [];
   List<RepublicAct> _filteredRepublicActs = [];
+  bool _isLoading = false;
+  bool _hasError = false;
 
   @override
   void initState() {
@@ -26,24 +28,43 @@ class _RepublicActsState extends State<RepublicActs> {
   }
 
   Future<void> fetchRepublicActs() async {
-    final response = await http.get(
-      Uri.parse('$baseURL/republic_acts'),
-      headers: {
-        'Accept': 'application/json',
-      },
-    );
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body)['republics'];
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
 
+    try {
+      final response = await http.get(
+        Uri.parse('$baseURL/republic_acts'),
+        headers: {
+          'Accept': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body)['republics'];
+
+        setState(() {
+          _republicActs =
+              data.map((item) => RepublicAct.fromJson(item)).toList();
+          _filteredRepublicActs = _republicActs;
+          _isLoading = false;
+        });
+      } else {
+        // Handle error
+        print('Failed to load republic acts');
+        print('Response status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        setState(() {
+          _hasError = true;
+          _isLoading = false;
+        });
+      }
+    } catch (error) {
+      print('Error during HTTP request: $error');
       setState(() {
-        _republicActs = data.map((item) => RepublicAct.fromJson(item)).toList();
-        _filteredRepublicActs = _republicActs;
+        _hasError = true;
+        _isLoading = false;
       });
-    } else {
-      // Handle error
-      print('Failed to load republic acts');
-      print('Response status code: ${response.statusCode}');
-      print('Response body: ${response.body}');
     }
   }
 
@@ -80,6 +101,31 @@ class _RepublicActsState extends State<RepublicActs> {
   }
 
   Widget _buildBody() {
+    if (_isLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16.0),
+            Text(
+              'Loading...',
+              style: TextStyle(fontSize: 18.0),
+            ),
+          ],
+        ),
+      );
+    } else if (_hasError) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'Failed to load. No Internet Connection.',
+            style: TextStyle(fontSize: 18.0),
+          ),
+        ),
+      );
+    }
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -108,90 +154,106 @@ class _RepublicActsState extends State<RepublicActs> {
             ),
           ),
 
-          // Display the filtered presidential directives
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 16.0),
-              for (int index = 0; index < _filteredRepublicActs.length; index++)
-                InkWell(
-                  onTap: () {
-                    _navigateToDetailsPage(
-                        context, _filteredRepublicActs[index]);
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                            color: const Color.fromARGB(255, 203, 201, 201),
-                            width: 1.0),
-                      ),
+          // Display the filtered republic acts or "No republic acts found" message
+          _filteredRepublicActs.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'No republic acts found',
+                      style: TextStyle(fontSize: 18.0),
                     ),
-                    child: Card(
-                      elevation: 0,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          children: [
-                            Icon(Icons.article, color: Colors.blue[900]),
-                            SizedBox(width: 16.0),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                  ),
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 16.0),
+                    for (int index = 0;
+                        index < _filteredRepublicActs.length;
+                        index++)
+                      InkWell(
+                        onTap: () {
+                          _navigateToDetailsPage(
+                              context, _filteredRepublicActs[index]);
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                  color:
+                                      const Color.fromARGB(255, 203, 201, 201),
+                                  width: 1.0),
+                            ),
+                          ),
+                          child: Card(
+                            elevation: 0,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Row(
                                 children: [
-                                  Text.rich(
-                                    highlightMatches(
-                                      _filteredRepublicActs[index]
-                                          .issuance
-                                          .title,
-                                      _searchController.text,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
+                                  Icon(Icons.article, color: Colors.blue[900]),
+                                  SizedBox(width: 16.0),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text.rich(
+                                          highlightMatches(
+                                            _filteredRepublicActs[index]
+                                                .issuance
+                                                .title,
+                                            _searchController.text,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        SizedBox(height: 4.0),
+                                        Text(
+                                          _filteredRepublicActs[index]
+                                                      .responsibleOffice !=
+                                                  'N/A'
+                                              ? 'Responsible Office: ${_filteredRepublicActs[index].responsibleOffice}'
+                                              : '',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  SizedBox(height: 4.0),
+                                  SizedBox(width: 16.0),
                                   Text(
                                     _filteredRepublicActs[index]
-                                                .responsibleOffice !=
+                                                .issuance
+                                                .date !=
                                             'N/A'
-                                        ? 'Responsible Office: ${_filteredRepublicActs[index].responsibleOffice}'
+                                        ? DateFormat('MMMM dd, yyyy').format(
+                                            DateTime.parse(
+                                                _filteredRepublicActs[index]
+                                                    .issuance
+                                                    .date))
                                         : '',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey,
-                                      overflow: TextOverflow.ellipsis,
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            SizedBox(width: 16.0),
-                            Text(
-                              _filteredRepublicActs[index].issuance.date !=
-                                      'N/A'
-                                  ? DateFormat('MMMM dd, yyyy').format(
-                                      DateTime.parse(
-                                          _filteredRepublicActs[index]
-                                              .issuance
-                                              .date))
-                                  : '',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
-                  ),
+                  ],
                 ),
-            ],
-          ),
         ],
       ),
     );

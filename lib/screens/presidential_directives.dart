@@ -20,7 +20,8 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
   TextEditingController _searchController = TextEditingController();
   List<PresidentialDirective> _presidentialDirectives = [];
   List<PresidentialDirective> _filteredPresidentialDirectives = [];
-
+  bool _isLoading = false;
+  bool _hasError = false;
   @override
   void initState() {
     super.initState();
@@ -28,27 +29,41 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
   }
 
   Future<void> fetchPresidentialCirculars() async {
-    final response = await http.get(
-      Uri.parse('$baseURL/presidential_directives'),
-      headers: {
-        'Accept': 'application/json',
-      },
-    );
-    if (response.statusCode == 200) {
-      final List<dynamic>? data = json.decode(response.body)['presidentials'];
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
+    try {
+      final response = await http.get(
+        Uri.parse('$baseURL/presidential_directives'),
+        headers: {
+          'Accept': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic>? data = json.decode(response.body)['presidentials'];
 
-      if (data != null) {
-        setState(() {
-          _presidentialDirectives =
-              data.map((item) => PresidentialDirective.fromJson(item)).toList();
-          _filteredPresidentialDirectives = _presidentialDirectives;
-        });
+        if (data != null) {
+          setState(() {
+            _presidentialDirectives = data
+                .map((item) => PresidentialDirective.fromJson(item))
+                .toList();
+            _filteredPresidentialDirectives = _presidentialDirectives;
+            _isLoading = false;
+          });
+        }
+      } else {
+        // Handle error
+        print('Failed to load latest issuances');
+        print('Response status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
       }
-    } else {
-      // Handle error
-      print('Failed to load latest issuances');
-      print('Response status code: ${response.statusCode}');
-      print('Response body: ${response.body}');
+    } catch (error) {
+      print('Error during HTTP request: $error');
+      setState(() {
+        _hasError = true;
+        _isLoading = false;
+      });
     }
   }
 
@@ -85,6 +100,31 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
   }
 
   Widget _buildBody() {
+    if (_isLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16.0),
+            Text(
+              'Loading...',
+              style: TextStyle(fontSize: 18.0),
+            ),
+          ],
+        ),
+      );
+    } else if (_hasError) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'Failed to load. No Internet Connection.',
+            style: TextStyle(fontSize: 18.0),
+          ),
+        ),
+      );
+    }
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -113,100 +153,114 @@ class _PresidentialDirectivesState extends State<PresidentialDirectives> {
             ),
           ),
 
-          // Display the filtered presidential directives
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 16.0),
-              for (int index = 0;
-                  index < _filteredPresidentialDirectives.length;
-                  index++)
-                InkWell(
-                  onTap: () {
-                    _navigateToDetailsPage(
-                        context, _filteredPresidentialDirectives[index]);
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(
-                            color: const Color.fromARGB(255, 203, 201, 201),
-                            width: 1.0),
-                      ),
+          // Display the filtered presidential directives or "No presidential directives found" message
+          _filteredPresidentialDirectives.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'No presidential directives found',
+                      style: TextStyle(fontSize: 18.0),
                     ),
-                    child: Card(
-                      elevation: 0,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          children: [
-                            Icon(Icons.article, color: Colors.blue[900]),
-                            SizedBox(width: 16.0),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                  ),
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 16.0),
+                    for (int index = 0;
+                        index < _filteredPresidentialDirectives.length;
+                        index++)
+                      InkWell(
+                        onTap: () {
+                          _navigateToDetailsPage(
+                              context, _filteredPresidentialDirectives[index]);
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                  color:
+                                      const Color.fromARGB(255, 203, 201, 201),
+                                  width: 1.0),
+                            ),
+                          ),
+                          child: Card(
+                            elevation: 0,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Row(
                                 children: [
-                                  Text.rich(
-                                    highlightMatches(
-                                        _filteredPresidentialDirectives[index]
-                                            .issuance
-                                            .title,
-                                        _searchController.text),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
+                                  Icon(Icons.article, color: Colors.blue[900]),
+                                  SizedBox(width: 16.0),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text.rich(
+                                          highlightMatches(
+                                              _filteredPresidentialDirectives[
+                                                      index]
+                                                  .issuance
+                                                  .title,
+                                              _searchController.text),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        SizedBox(height: 4.0),
+                                        Text.rich(
+                                          highlightMatches(
+                                              'Ref #: ${_filteredPresidentialDirectives[index].issuance.referenceNo}',
+                                              _searchController.text),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                        Text.rich(
+                                          highlightMatches(
+                                              'Responsible Office: ${_filteredPresidentialDirectives[index].responsible_office}',
+                                              _searchController.text),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  SizedBox(height: 4.0),
-                                  Text.rich(
-                                    highlightMatches(
-                                        'Ref #: ${_filteredPresidentialDirectives[index].issuance.referenceNo}',
-                                        _searchController.text),
+                                  SizedBox(width: 16.0),
+                                  Text(
+                                    _filteredPresidentialDirectives[index]
+                                                .issuance
+                                                .date !=
+                                            'N/A'
+                                        ? DateFormat('MMMM dd, yyyy').format(
+                                            DateTime.parse(
+                                                _filteredPresidentialDirectives[
+                                                        index]
+                                                    .issuance
+                                                    .date))
+                                        : '',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                  Text.rich(
-                                    highlightMatches(
-                                        'Responsible Office: ${_filteredPresidentialDirectives[index].responsible_office}',
-                                        _searchController.text),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
-                                      overflow: TextOverflow.ellipsis,
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            SizedBox(width: 16.0),
-                            Text(
-                              _filteredPresidentialDirectives[index]
-                                          .issuance
-                                          .date !=
-                                      'N/A'
-                                  ? DateFormat('MMMM dd, yyyy').format(
-                                      DateTime.parse(
-                                          _filteredPresidentialDirectives[index]
-                                              .issuance
-                                              .date))
-                                  : '',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
-                  ),
+                  ],
                 ),
-            ],
-          ),
         ],
       ),
     );

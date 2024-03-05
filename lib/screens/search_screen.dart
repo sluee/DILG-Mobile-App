@@ -4,6 +4,9 @@ import 'package:DILGDOCS/Services/globals.dart';
 import 'package:DILGDOCS/models/republic_acts.dart';
 import 'package:DILGDOCS/screens/details.dart';
 
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:permission_handler/permission_handler.dart';
+
 import 'package:DILGDOCS/utils/routes.dart';
 import 'package:flutter/material.dart';
 
@@ -44,9 +47,13 @@ class _SearchScreenState extends State<SearchScreen> {
   List<LatestIssuance> _latestIssuances = [];
   List<LatestIssuance> get latestIssuances => _latestIssuances;
 
+  stt.SpeechToText speech = stt.SpeechToText();
+
   @override
   void initState() {
     super.initState();
+    _checkPermissions();
+    _initializeSpeechToText();
     fetchRepublicActs();
     fetchPresidentialCirculars();
     fetchLegalOpinions();
@@ -56,11 +63,70 @@ class _SearchScreenState extends State<SearchScreen> {
     fetchDraftIssuances();
   }
 
+  void _initializeSpeechToText() async {
+    var status = await Permission.microphone.status;
+    print('Microphone Permission Status: $status');
+
+    if (status.isGranted) {
+      print('Speech recognition available');
+      speech.initialize(
+        onError: (error) => print('Error: $error'),
+      );
+    } else {
+      print('Microphone permission denied');
+    }
+  }
+
+  void _startListening() {
+    print('Start Listening');
+    if (speech.isAvailable) {
+      if (!speech.isListening) {
+        speech.listen(
+          onResult: (result) {
+            if (result.finalResult) {
+              String searchText = result.recognizedWords;
+              _searchController.text = searchText;
+              print('Search Text: $searchText');
+              _handleSearch(); // Call the search method when speech is recognized
+            }
+          },
+        );
+      }
+    } else {
+      print('Speech recognition not available');
+    }
+  }
+
+  void _stopListening() {
+    if (speech.isListening) {
+      speech.stop();
+    }
+  }
+
+  void _checkPermissions() async {
+    var status = await Permission.microphone.status;
+    print('Microphone Permission Status: $status');
+    if (!status.isGranted) {
+      print('Requesting microphone permission...');
+      await Permission.microphone.request();
+      status = await Permission.microphone.status;
+      print('Microphone Permission Result: $status');
+      if (status.isGranted) {
+        print(
+            'Microphone permission granted. Initializing speech recognition...');
+        _initializeSpeechToText();
+      } else {
+        print('Microphone permission denied');
+      }
+    }
+  }
+
   @override
   void dispose() {
     // Cancel any ongoing asynchronous operations here
     // For example, canceling network requests, timers, etc.
     super.dispose();
+    _searchController.dispose();
   }
 
   Future<void> fetchDraftIssuances() async {
@@ -246,8 +312,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(
-                            20), // Adjust the border radius as needed
+                        borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.grey.withOpacity(0.5),
@@ -268,9 +333,16 @@ class _SearchScreenState extends State<SearchScreen> {
                                 decoration: InputDecoration(
                                   hintText: 'Search',
                                   border: InputBorder.none,
+                                  prefixIcon: IconButton(
+                                    icon: Icon(Icons.mic),
+                                    onPressed: () {
+                                      print('Microphone Icon Tapped');
+                                      _startListening();
+                                    },
+                                  ),
                                 ),
                                 onChanged: (value) {
-                                  _handleSearch(); // Call the search function whenever the text changes
+                                  _handleSearch();
                                 },
                               ),
                             ),
@@ -288,7 +360,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 ],
               ),
               SizedBox(height: 20), // Add margin-bottom here
-              _buildSearchResultsContainer(), // Updated to manage search results container
+              _buildSearchResultsContainer(),
             ],
           ),
         ),
@@ -516,6 +588,7 @@ class _SearchScreenState extends State<SearchScreen> {
     String searchInput = _searchController.text.toLowerCase();
 
     print('Search Input: $searchInput');
+    print('Searching: ${_searchController.text}');
 
     // Check if the search input is empty
     if (searchInput.isNotEmpty) {
