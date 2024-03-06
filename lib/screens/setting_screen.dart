@@ -21,6 +21,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String email = '';
   String? _selectedAvatarPath;
 
+  // Future<void> fetchUserDetails() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   String? avatarFileName = prefs.getString('userAvatar');
+  //   var userId = await AuthServices.getUserId();
+
+  //   if (avatarFileName != null && avatarFileName.isNotEmpty) {
+  //     setState(() {
+  //       // Construct the complete URL for fetching the avatar image
+  //       userAvatarUrl = '$baseURL/$avatarFileName';
+  //     });
+
+  //     // Print statements for debugging
+  //     print('Image URL: $userAvatarUrl');
+
+  //     // Display the image using NetworkImage within an Image widget
+  //     setState(() {
+  //       avatarImage = Image.network(userAvatarUrl!);
+  //     });
+  //   } else {
+  //     // Handle case where avatarFileName is null or empty
+  //     print('Avatar file name is null or empty');
+  //   }
+  // }
 
   @override
   void initState() {
@@ -46,7 +69,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? selectedAvatarPath = prefs.getString('selectedAvatarPath');
     setState(() {
-      _selectedAvatarPath = selectedAvatarPath ?? '';
+      _selectedAvatarPath = selectedAvatarPath ?? 'assets/default.png';
     });
   }
 
