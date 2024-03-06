@@ -305,7 +305,7 @@ Widget _buildLoadingWidget() {
                                                   'Outcome Area: ${_filteredLatestIssuances[index].outcome}',
                                                   _searchController.text)
                                               : TextSpan(text: ''),
-                                          style: TextStyle(
+                                            style: TextStyle(
                                             fontSize: 12,
                                             color: Colors.grey,
                                             overflow: TextOverflow.ellipsis,
@@ -400,7 +400,6 @@ Widget buildContent(LatestIssuance issuance) {
     _filteredLatestIssuances = _latestIssuances.where((issuance) {
       final title = issuance.issuance.title.toLowerCase();
       final referenceNo = issuance.issuance.referenceNo.toLowerCase();
-      final outcome = issuance.outcome.toLowerCase();
       return title.contains(query.toLowerCase()) || referenceNo.contains(query.toLowerCase());
     }).toList();
   });

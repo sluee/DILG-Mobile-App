@@ -11,7 +11,6 @@ class EditUser extends StatefulWidget {
 class _EditUserState extends State<EditUser> {
   TextEditingController _nameController = TextEditingController();
   TextEditingController _emailController = TextEditingController();
-  Widget? _userImage;
   bool isAuthenticated = false;
   String? _selectedAvatarPath;
 

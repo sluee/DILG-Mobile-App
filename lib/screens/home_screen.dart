@@ -7,6 +7,7 @@ import 'sidebar.dart';
 import 'bottom_navigation.dart';
 import 'issuance_pdf_screen.dart';
 import 'package:url_launcher/url_launcher.dart'; // Import url_launcher package
+// import 'package:flutter/widgets.dart';
 
 class Issuance {
   final String title;
@@ -21,7 +22,7 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>  with WidgetsBindingObserver  {
   int _currentIndex = 0;
   List<String> _drawerMenuItems = [
     'Home',
@@ -34,12 +35,28 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Issuance> _recentlyOpenedIssuances = [];
 
-  @override
+ @override
   void initState() {
     super.initState();
     _loadRecentIssuances();
+    WidgetsBinding.instance?.addObserver(this);
   }
 
+  @override
+    void didChangeAppLifecycleState(AppLifecycleState state) {
+      if (state == AppLifecycleState.paused ||
+          state == AppLifecycleState.inactive) {
+        _saveRecentIssuances();
+      }
+    }
+  @override
+    void dispose() {
+      _saveRecentIssuances();
+      WidgetsBinding.instance?.removeObserver(this);
+      super.dispose();
+    }
+
+    
   void _loadRecentIssuances() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String>? recentIssuances = prefs.getStringList('recentIssuances');
@@ -58,12 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
     await prefs.setStringList('recentIssuances', titles);
   }
 
-  @override
-  void dispose() {
-    _saveRecentIssuances();
-    super.dispose();
-  }
-
+ 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
