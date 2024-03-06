@@ -166,7 +166,23 @@ Widget _buildLoadingWidget() {
     );
   }
 
-  Widget _buildBody() {
+ Widget _buildBody() {
+    if (_isLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16.0),
+            Text(
+              'Loading...',
+              style: TextStyle(fontSize: 18.0),
+            ),
+          ],
+        ),
+      );
+    
+    }
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -195,84 +211,112 @@ Widget _buildLoadingWidget() {
             ),
           ),
 
-          // Display the filtered draft issuances
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 16.0),
-              for (int index = 0; index < _filteredDraftIssuances.length; index++)
-                InkWell(
-                  onTap: () {
-                    _navigateToDetailsPage(context, _filteredDraftIssuances[index]);
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(color: const Color.fromARGB(255, 203, 201, 201), width: 1.0),
-                      ),
+          // Display the filtered draft issuances or "No draft issuances found" message
+          _filteredDraftIssuances.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'No draft issuances found',
+                      style: TextStyle(fontSize: 18.0),
                     ),
-                    child: Card(
-                      elevation: 0,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          children: [
-                            Icon(Icons.article, color: Colors.blue[900]),
-                            SizedBox(width: 16.0),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                  ),
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 16.0),
+                    for (int index = 0;
+                        index < _filteredDraftIssuances.length;
+                        index++)
+                      InkWell(
+                        onTap: () {
+                          _navigateToDetailsPage(
+                              context, _filteredDraftIssuances[index]);
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                  color:
+                                      const Color.fromARGB(255, 203, 201, 201),
+                                  width: 1.0),
+                            ),
+                          ),
+                          child: Card(
+                            elevation: 0,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Row(
                                 children: [
-                                  Text(
-                                    _filteredDraftIssuances[index].issuance.title,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
+                                  Icon(Icons.article, color: Colors.blue[900]),
+                                  SizedBox(width: 16.0),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text.rich(
+                                          highlightMatches(
+                                              _filteredDraftIssuances[index]
+                                                  .issuance
+                                                  .title,
+                                              _searchController.text),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        SizedBox(height: 4.0),
+                                        Text.rich(
+                                          highlightMatches(
+                                              'Ref #: ${_filteredDraftIssuances[index].issuance.referenceNo}',
+                                              _searchController.text),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                        Text.rich(
+                                          highlightMatches(
+                                              'Responsible Office: ${_filteredDraftIssuances[index].responsible_office}',
+                                              _searchController.text),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  SizedBox(height: 4.0),
+                                  SizedBox(width: 16.0),
                                   Text(
-                                      _filteredDraftIssuances[index].issuance.referenceNo != 'N/A'
-                                    ? 'Ref #: ${_filteredDraftIssuances[index].issuance.referenceNo}'
-                                    : '',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                  Text(
-                                    _filteredDraftIssuances[index].responsible_office != 'N/A'
-                                        ? 'Responsible Office: ${_filteredDraftIssuances[index].responsible_office}'
+                                    _filteredDraftIssuances[index]
+                                                .issuance
+                                                .date !=
+                                            'N/A'
+                                        ? DateFormat('MMMM dd, yyyy').format(
+                                            DateTime.parse(
+                                                _filteredDraftIssuances[index]
+                                                    .issuance
+                                                    .date))
                                         : '',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey,
-                                      overflow: TextOverflow.ellipsis,
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            SizedBox(width: 16.0),
-                             Text(
-                              _filteredDraftIssuances[index].issuance.date != 'N/A' 
-                                ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(_filteredDraftIssuances[index].issuance.date))
-                                : '',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
-                  ),
+                  ],
                 ),
-            ],
-          ),
         ],
       ),
     );
@@ -298,12 +342,55 @@ Widget _buildLoadingWidget() {
       MaterialPageRoute(
         builder: (context) => DetailsScreen(
           title: issuance.issuance.title,
-           content: 'Ref #: ${issuance.issuance.referenceNo != 'N/A' ? issuance.issuance.referenceNo + '\n' : ''}'
-                '${issuance.issuance.date != 'N/A' ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date)) + '\n' : ''}',
+          content:
+              'Ref #: ${issuance.issuance.referenceNo != 'N/A' ? issuance.issuance.referenceNo + '\n' : ''}'
+              '${issuance.issuance.date != 'N/A' ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date)) + '\n' : ''}',
           pdfUrl: issuance.issuance.urlLink,
           type: getTypeForDownload(issuance.issuance.type),
         ),
       ),
     );
   }
+
+  void _navigateToSelectedPage(BuildContext context, int index) {}
+}
+
+TextSpan highlightMatches(String text, String query) {
+  if (query.isEmpty) {
+    return TextSpan(text: text);
+  }
+
+  List<TextSpan> textSpans = [];
+
+  // Create a regular expression pattern with case-insensitive matching
+  RegExp regex = RegExp(query, caseSensitive: false);
+
+  // Find all matches of the query in the text
+  Iterable<Match> matches = regex.allMatches(text);
+
+  // Start index for slicing the text
+  int startIndex = 0;
+
+  // Add text segments with and without highlighting
+  for (Match match in matches) {
+    // Add text segment before the match
+    textSpans.add(TextSpan(text: text.substring(startIndex, match.start)));
+
+    // Add the matching segment with highlighting
+    textSpans.add(TextSpan(
+      text: text.substring(match.start, match.end),
+      style: TextStyle(
+        color: Colors.blue,
+        fontWeight: FontWeight.bold,
+      ),
+    ));
+
+    // Update the start index for the next segment
+    startIndex = match.end;
+  }
+
+  // Add the remaining text segment
+  textSpans.add(TextSpan(text: text.substring(startIndex)));
+
+  return TextSpan(children: textSpans);
 }

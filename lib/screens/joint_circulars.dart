@@ -167,73 +167,100 @@ Future<void> _openWifiSettings() async {
   }
 
 Widget _buildBody() {
-  return SingleChildScrollView(
-    child: Column(
-      children: [
-        Container(
-          margin: EdgeInsets.only(top: 16.0),
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
-          child: TextField(
-            controller: _searchController,
-            decoration: InputDecoration(
-              hintText: 'Search...',
-              prefixIcon: Icon(Icons.search, color: Colors.grey),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(20),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: EdgeInsets.symmetric(vertical: 16.0),
+  if (_isLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16.0),
+            Text(
+              'Loading...',
+              style: TextStyle(fontSize: 18.0),
             ),
-            style: TextStyle(fontSize: 16.0),
-            onChanged: (value) {
-              // Call the function to filter the list based on the search query
-              _filterJointCirculars(value);
-            },
-          ),
-        ), 
-
-        // Display the filtered joint circulars or "No joint circulars found" message
-        _filteredJointCirculars.isEmpty
-            ? Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'No joint circulars found',
-                    style: TextStyle(fontSize: 18.0),
-                  ),
+          ],
+        ),
+      );
+    
+    }
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Container(
+            margin: EdgeInsets.only(top: 16.0),
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search...',
+                prefixIcon: Icon(Icons.search, color: Colors.grey),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: BorderSide.none,
                 ),
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 16.0),
-                  for (int index = 0; index < _filteredJointCirculars.length; index++)
-                    InkWell(
-                      onTap: () {
-                        _navigateToDetailsPage(context, _filteredJointCirculars[index]);
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(color: const Color.fromARGB(255, 203, 201, 201), width: 1.0),
+                contentPadding: EdgeInsets.symmetric(vertical: 16.0),
+              ),
+              style: TextStyle(fontSize: 16.0),
+              onChanged: (value) {
+                // Call the function to filter the list based on the search query
+                _filterJointCirculars(value);
+              },
+            ),
+          ),
+
+          // Display the filtered joint circulars or "No joint circulars found" message
+          _filteredJointCirculars.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'No joint circulars found',
+                      style: TextStyle(fontSize: 18.0),
+                    ),
+                  ),
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 16.0),
+                    for (int index = 0;
+                        index < _filteredJointCirculars.length;
+                        index++)
+                      InkWell(
+                        onTap: () {
+                          _navigateToDetailsPage(
+                              context, _filteredJointCirculars[index]);
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                  color:
+                                      const Color.fromARGB(255, 203, 201, 201),
+                                  width: 1.0),
+                            ),
                           ),
-                        ),
-                        child: Card(
-                          elevation: 0,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Row(
-                              children: [
-                                Icon(Icons.article, color: Colors.blue[900]),
-                                SizedBox(width: 16.0),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                     Text.rich(
-                                          highlightMatches(_filteredJointCirculars[index].issuance.title, _searchController.text),
+                          child: Card(
+                            elevation: 0,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.article, color: Colors.blue[900]),
+                                  SizedBox(width: 16.0),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text.rich(
+                                          highlightMatches(
+                                              _filteredJointCirculars[index]
+                                                  .issuance
+                                                  .title,
+                                              _searchController.text),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
@@ -241,46 +268,57 @@ Widget _buildBody() {
                                             fontSize: 15,
                                           ),
                                         ),
-                                      SizedBox(height: 4.0),
-                                       Text.rich(
-                                        highlightMatches('Ref #: ${_filteredJointCirculars[index].issuance.referenceNo}', _searchController.text),
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey,
+                                        SizedBox(height: 4.0),
+                                        Text.rich(
+                                          highlightMatches(
+                                              'Ref #: ${_filteredJointCirculars[index].issuance.referenceNo}',
+                                              _searchController.text),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey,
+                                          ),
                                         ),
-                                      ),
-                                      Text.rich(
-                                        highlightMatches('Responsible Office: ${_filteredJointCirculars[index].responsible_office}', _searchController.text),
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey,
-                                          overflow: TextOverflow.ellipsis,
+                                        Text.rich(
+                                          highlightMatches(
+                                              'Responsible Office: ${_filteredJointCirculars[index].responsible_office}',
+                                              _searchController.text),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                SizedBox(width: 16.0),
-                                Text(
-                                  _filteredJointCirculars[index].issuance.date != 'N/A' 
-                                    ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(_filteredJointCirculars[index].issuance.date))
-                                    : '',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontStyle: FontStyle.italic,
+                                  SizedBox(width: 16.0),
+                                  Text(
+                                    _filteredJointCirculars[index]
+                                                .issuance
+                                                .date !=
+                                            'N/A'
+                                        ? DateFormat('MMMM dd, yyyy').format(
+                                            DateTime.parse(
+                                                _filteredJointCirculars[index]
+                                                    .issuance
+                                                    .date))
+                                        : '',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontStyle: FontStyle.italic,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                ],
-              ),
-      ],
-    ),
-  );
+                  ],
+                ),
+        ],
+      ),
+    );
 }
 
 
