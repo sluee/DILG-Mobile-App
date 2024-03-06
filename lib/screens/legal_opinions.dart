@@ -188,29 +188,36 @@ Future<void> _openWifiSettings() async {
       child: Column(
         children: [
           // Search Input
-          Container(
-            margin: EdgeInsets.only(top: 16.0),
-            padding: EdgeInsets.symmetric(horizontal: 16.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search...',
-                prefixIcon: Icon(Icons.search, color: Colors.grey),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: EdgeInsets.symmetric(vertical: 16.0),
+            Container(
+          margin: EdgeInsets.only(top: 16.0),
+          padding: EdgeInsets.symmetric(horizontal: 16.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 2,
+                blurRadius: 5,
+                offset: Offset(0, 3), // changes position of shadow
               ),
-              style: TextStyle(fontSize: 16.0),
-              onChanged: (value) {
-                // Call the function to filter the list based on the search query
-                _filterLegalOpinions(value);
-              },
-            ),
+            ],
           ),
+          child: TextField(
+            controller: _searchController,
+            decoration: InputDecoration(
+              hintText: 'Search...',
+              prefixIcon: Icon(Icons.search, color: Colors.grey),
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.symmetric(vertical: 16.0),
+            ),
+            style: TextStyle(fontSize: 16.0),
+            onChanged: (value) {
+              // Call the function to filter the list based on the search query
+              _filterLegalOpinions(value); // Corrected method call
+            },
+          ),
+        ),
 
           // Display the filtered legal opinions or "No legal opinions found" message
           _filteredLegalOpinions.isEmpty
