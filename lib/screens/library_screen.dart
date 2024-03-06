@@ -399,24 +399,21 @@ class _LibraryScreenState extends State<LibraryScreen> {
     // Handle navigation to selected page
   }
 
- Future<void> openPdfViewer(BuildContext context, String filePath,
+  Future<void> openPdfViewer(BuildContext context, String filePath,
       Function(String, String) onFileOpened) async {
-  String fileName = filePath.split('/').last; // Move this line above MaterialPageRoute
-  await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => PDFViewerScreen(
-        filePath: filePath,
-        fileName: fileName, // Use the fileName here
-     
-      ),
-    ),
-  );
-  onFileOpened(fileName, filePath);
-}
-
-
-}
+        String fileName = filePath.split('/').last; 
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PDFViewerScreen(
+              filePath: filePath,
+              fileName: fileName,      
+            ),
+          ),
+        );
+        onFileOpened(fileName, filePath);
+      }
+  }
 
 class PDFViewerScreen extends StatelessWidget {
   final String filePath;

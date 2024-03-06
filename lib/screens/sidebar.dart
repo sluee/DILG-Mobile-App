@@ -1,6 +1,4 @@
-import 'package:DILGDOCS/Services/auth_services.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart';
 import 'latest_issuances.dart';
 import 'joint_circulars.dart';
 import 'memo_circulars.dart';
@@ -9,8 +7,6 @@ import 'draft_issuances.dart';
 import 'republic_acts.dart';
 import 'legal_opinions.dart';
 import 'home_screen.dart';
-import 'about_screen.dart';
-import 'developers_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Sidebar extends StatelessWidget {

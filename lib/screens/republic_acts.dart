@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/republic_acts.dart';
-import '../screens/sidebar.dart';
 import '../screens/details_screen.dart';
 import 'package:http/http.dart' as http;
 import 'file_utils.dart';

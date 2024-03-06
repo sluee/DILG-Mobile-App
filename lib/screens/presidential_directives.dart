@@ -6,8 +6,6 @@ import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/presidential_directives.dart';
-import '../utils/routes.dart';
-import 'sidebar.dart';
 import 'details_screen.dart';
 import 'package:http/http.dart' as http;
 import "file_utils.dart";

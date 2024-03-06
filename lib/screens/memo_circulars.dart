@@ -9,7 +9,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 // Import other necessary files
 import '../models/memo_circulars.dart';
-import 'sidebar.dart';
 import 'details_screen.dart';
 
 class MemoCirculars extends StatefulWidget {
