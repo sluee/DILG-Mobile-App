@@ -286,15 +286,18 @@ Widget _buildBody() {
                                           ),
                                         ),
                                         Text.rich(
-                                          highlightMatches(
-                                              'Responsible Office: ${_filteredJointCirculars[index].responsible_office}',
-                                              _searchController.text),
+                                          _filteredJointCirculars[index].responsible_office != 'N/A'
+                                              ? highlightMatches(
+                                                  'Responsible Office: ${_filteredJointCirculars[index].responsible_office}',
+                                                  _searchController.text)
+                                              : TextSpan(text: ''), // This is where you handle the condition
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Colors.grey,
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
+
                                       ],
                                     ),
                                   ),

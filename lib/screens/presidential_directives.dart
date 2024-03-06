@@ -286,23 +286,25 @@ Future<void> _openWifiSettings() async {
                                         highlightMatches(
                                             'Ref #: ${_filteredPresidentialDirectives[index].issuance.referenceNo}',
                                             _searchController.text),
+                                            
                                         style: TextStyle(
                                           fontSize: 12,
                                           color: Colors.grey,
                                         ),
                                       ),
+                                      if (_filteredPresidentialDirectives[index].responsible_office != 'N/A')
                                       Text.rich(
                                         highlightMatches(
                                             'Responsible Office: ${_filteredPresidentialDirectives[index].responsible_office}',
                                             _searchController.text),
-                                        style: TextStyle(
+                                            style: TextStyle(
                                           fontSize: 12,
                                           color: Colors.grey,
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
-                                    ],
-                                  ),
+                                  ],
+                                ),
                                 ),
                                 SizedBox(width: 16.0),
                                 Text(

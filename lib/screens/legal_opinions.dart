@@ -287,7 +287,7 @@ Future<void> _openWifiSettings() async {
                                             ? highlightMatches(
                                                 'Ref #: ${_filteredLegalOpinions[index].issuance.referenceNo}',
                                                 _searchController.text)
-                                            : TextSpan(text: 'Ref #: N/A'),
+                                            : TextSpan(text: ''),
                                         style: TextStyle(
                                           fontSize: 12,
                                           color: Colors.grey,

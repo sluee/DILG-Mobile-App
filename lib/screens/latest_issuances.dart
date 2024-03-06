@@ -308,6 +308,7 @@ Widget _buildLoadingWidget() {
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: Colors.grey,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                         Text(
