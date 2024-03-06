@@ -1,9 +1,6 @@
-import 'dart:convert';
 import 'dart:io';
-
 import 'package:DILGDOCS/screens/sidebar.dart';
 import 'package:flutter/material.dart';
-
 import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
@@ -25,8 +22,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
   List<String> downloadedFiles = [];
   List<String> filteredFiles = [];
   bool isSearching = false;
-  String _selectedSortOption = 'Date';
-  List<String> _sortOptions = ['Date', 'Name'];
   Map<String, DateTime> downloadTimes = {};
 
   @override
@@ -168,6 +163,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
             'No downloaded issuances',
             style: TextStyle(
               fontSize: 18,
+              fontFamily: 'Poppins', // Apply font family here
             ),
           ),
         ),
@@ -244,6 +240,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
 }
 
 
+
   Widget _buildHighlightedTitle(String title) {
     final RegExp regex = RegExp(_searchController.text, caseSensitive: false);
     final Iterable<Match> matches = regex.allMatches(title);
@@ -258,6 +255,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
             style: TextStyle(
               fontSize: 16,
               color: Colors.black,
+              fontFamily: 'Poppins',
             ),
           ),
         );
@@ -269,6 +267,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
             fontSize: 16,
             fontWeight: FontWeight.bold,
             color: Colors.blue,
+            fontFamily: 'Poppins',
           ),
         ),
       );
@@ -282,6 +281,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
           style: TextStyle(
             fontSize: 16,
             color: Colors.black,
+             fontFamily: 'Poppins',
           ),
         ),
       );
