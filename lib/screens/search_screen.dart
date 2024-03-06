@@ -27,8 +27,7 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   TextEditingController _searchController = TextEditingController();
-  String searchInput =
-      ''; // Add this line to declare and initialize searchInput
+  String searchInput = '';
   List<String> _recentSearches = [""];
   List<SearchResult> searchResults = [];
   List<MemoCircular> _memoCirculars = [];
@@ -48,6 +47,9 @@ class _SearchScreenState extends State<SearchScreen> {
   List<LatestIssuance> get latestIssuances => _latestIssuances;
 
   stt.SpeechToText speech = stt.SpeechToText();
+
+  bool isSearching = false;
+  bool showNoMatchFound = false;
 
   @override
   void initState() {
@@ -202,7 +204,7 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
-//Republic Acts
+// Republic Acts
   Future<void> fetchRepublicActs() async {
     final response = await http.get(
       Uri.parse('$baseURL/republic_acts'),
@@ -224,7 +226,7 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
-//Memo Circularsss
+// Memo Circulars
   Future<void> fetchMemoCirculars() async {
     final response = await http.get(
       Uri.parse('$baseURL/memo_circulars'),
@@ -247,7 +249,7 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
-  //legal Opinions
+  // Legal Opinions
   Future<void> fetchLegalOpinions() async {
     final response =
         await http.get(Uri.parse('$baseURL/legal_opinions'), headers: {
@@ -305,7 +307,7 @@ class _SearchScreenState extends State<SearchScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SizedBox(height: 20), // Add margin-top here
+              SizedBox(height: 20),
               Row(
                 children: [
                   Expanded(
@@ -359,7 +361,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                 ],
               ),
-              SizedBox(height: 20), // Add margin-bottom here
+              SizedBox(height: 20),
               _buildSearchResultsContainer(),
             ],
           ),
@@ -369,26 +371,29 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Widget _buildSearchResultsContainer() {
-    // Check if search results are available
-    if (searchResults.isNotEmpty) {
+    if (isSearching) {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    } else if (showNoMatchFound) {
+      return Center(
+        child: Text('No match found'),
+      );
+    } else if (searchResults.isNotEmpty) {
       return SingleChildScrollView(
         child: Column(
           children: [
             _buildSearchResults(searchResults, searchInput),
-            SizedBox(
-                height:
-                    20), // Add space between search results and recent searches
+            SizedBox(height: 20),
           ],
         ),
       );
     } else {
-      // Return only recent searches container if no search results
       return _buildRecentSearchesContainer();
     }
   }
 
   Widget _buildRecentSearchesContainer() {
-    // Define a list of container names, routes, colors, and icons
     List<Map<String, dynamic>> containerInfo = [
       {
         'name': 'Latest Issuances',
@@ -449,8 +454,8 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
         GridView.count(
           shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(), // Disable GridView scrolling
-          crossAxisCount: 2, // Adjust the cross axis count as needed
+          physics: NeverScrollableScrollPhysics(),
+          crossAxisCount: 2,
           children: List.generate(containerInfo.length, (index) {
             Map<String, dynamic> item = containerInfo[index];
             return Card(
@@ -458,36 +463,34 @@ class _SearchScreenState extends State<SearchScreen> {
               margin: EdgeInsets.all(8),
               child: InkWell(
                 onTap: () {
-                  _handleContainerTap(context,
-                      item['route']); // Pass the route of the tapped container
+                  _handleContainerTap(context, item['route']);
                 },
                 child: AspectRatio(
-                  aspectRatio: 1, // Set the aspect ratio as needed
+                  aspectRatio: 1,
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          item['icon'], // Use the predefined icon
-                          color: Colors.white, // Set icon color to white
+                          item['icon'],
+                          color: Colors.white,
                         ),
                         SizedBox(height: 8),
                         Text(
-                          item['name'], // Use the predefined name
+                          item['name'],
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white, // Set text color to white
+                            color: Colors.white,
                           ),
-                          textAlign: TextAlign
-                              .center, // Center align the text horizontally
+                          textAlign: TextAlign.center,
                         ),
                       ],
                     ),
                   ),
                 ),
               ),
-              color: item['color'], // Use the predefined color
+              color: item['color'],
             );
           }),
         ),
@@ -553,7 +556,6 @@ class _SearchScreenState extends State<SearchScreen> {
   TextSpan highlightTextWithOriginalTitle(String text, String highlight) {
     List<TextSpan> spans = [];
 
-    // Find indices of matches
     List<int> matches = [];
     int index = text.toLowerCase().indexOf(highlight.toLowerCase());
     while (index != -1) {
@@ -561,21 +563,18 @@ class _SearchScreenState extends State<SearchScreen> {
       index = text.toLowerCase().indexOf(highlight.toLowerCase(), index + 1);
     }
 
-    // Create text spans with highlighting
     int prevIndex = 0;
     for (int match in matches) {
       spans.add(TextSpan(
         text: text.substring(prevIndex, match),
         style: TextStyle(color: Colors.black, fontSize: 15),
       ));
-      // Highlight the matching characters
       spans.add(TextSpan(
         text: text.substring(match, match + highlight.length),
         style: TextStyle(color: Colors.blue, fontSize: 15),
       ));
       prevIndex = match + highlight.length;
     }
-    // Add the remaining original text
     spans.add(TextSpan(
       text: text.substring(prevIndex),
       style: TextStyle(color: Colors.black, fontSize: 15),
@@ -590,9 +589,11 @@ class _SearchScreenState extends State<SearchScreen> {
     print('Search Input: $searchInput');
     print('Searching: ${_searchController.text}');
 
-    // Check if the search input is empty
     if (searchInput.isNotEmpty) {
-      // Flatten the list of lists into a single list
+      setState(() {
+        isSearching = true;
+        showNoMatchFound = false;
+      });
       List<dynamic> allData = [
         ..._memoCirculars,
         ..._presidentialDirectives,
@@ -603,66 +604,60 @@ class _SearchScreenState extends State<SearchScreen> {
         ..._latestIssuances,
       ];
 
-      // Filter the data based on search input and convert to SearchResult objects
-      List<SearchResult> searchResults = allData
-          .where((data) {
-            if (data is MemoCircular) {
-              return data.issuance.title.toLowerCase().contains(searchInput) ||
-                  data.issuance.keyword.toLowerCase().contains(searchInput);
-            } else if (data is PresidentialDirective) {
-              return data.issuance.title.toLowerCase().contains(searchInput) ||
-                  data.issuance.keyword.toLowerCase().contains(searchInput);
-            } else if (data is RepublicAct) {
-              return data.issuance.title.toLowerCase().contains(searchInput) ||
-                  data.issuance.keyword.toLowerCase().contains(searchInput);
-            } else if (data is LegalOpinion) {
-              return data.issuance.title.toLowerCase().contains(searchInput) ||
-                  data.issuance.keyword.toLowerCase().contains(searchInput);
-            } else if (data is JointCircular) {
-              return data.issuance.title.toLowerCase().contains(searchInput) ||
-                  data.issuance.keyword.toLowerCase().contains(searchInput);
-            } else if (data is DraftIssuance) {
-              return data.issuance.title.toLowerCase().contains(searchInput) ||
-                  data.issuance.keyword.toLowerCase().contains(searchInput);
-            } else if (data is LatestIssuance) {
-              return data.issuance.title.toLowerCase().contains(searchInput) ||
-                  data.issuance.keyword.toLowerCase().contains(searchInput);
-            }
-            return false;
-          })
-          .map((data) {
-            // Convert filtered data to SearchResult objects
-            if (data is MemoCircular) {
-              return SearchResult(data.issuance.title, data.issuance.urlLink);
-            } else if (data is PresidentialDirective) {
-              return SearchResult(data.issuance.title, data.issuance.urlLink);
-            } else if (data is RepublicAct) {
-              return SearchResult(data.issuance.title, data.issuance.urlLink);
-            } else if (data is LegalOpinion) {
-              return SearchResult(data.issuance.title, data.issuance.urlLink);
-            } else if (data is JointCircular) {
-              return SearchResult(data.issuance.title, data.issuance.urlLink);
-            } else if (data is DraftIssuance) {
-              return SearchResult(data.issuance.title, data.issuance.urlLink);
-            } else if (data is LatestIssuance) {
-              return SearchResult(data.issuance.title, data.issuance.urlLink);
-            }
-            return SearchResult(
-                '', ''); // Return a default SearchResult in case of null
-          })
-          .where((result) => result.title.isNotEmpty)
-          .toList(); // Filter out empty titles
+      List<SearchResult> searchResults = allData.where((data) {
+        if (data is MemoCircular) {
+          return data.issuance.title.toLowerCase().contains(searchInput) ||
+              data.issuance.keyword.toLowerCase().contains(searchInput);
+        } else if (data is PresidentialDirective) {
+          return data.issuance.title.toLowerCase().contains(searchInput) ||
+              data.issuance.keyword.toLowerCase().contains(searchInput);
+        } else if (data is RepublicAct) {
+          return data.issuance.title.toLowerCase().contains(searchInput) ||
+              data.issuance.keyword.toLowerCase().contains(searchInput);
+        } else if (data is LegalOpinion) {
+          return data.issuance.title.toLowerCase().contains(searchInput) ||
+              data.issuance.keyword.toLowerCase().contains(searchInput);
+        } else if (data is JointCircular) {
+          return data.issuance.title.toLowerCase().contains(searchInput) ||
+              data.issuance.keyword.toLowerCase().contains(searchInput);
+        } else if (data is DraftIssuance) {
+          return data.issuance.title.toLowerCase().contains(searchInput) ||
+              data.issuance.keyword.toLowerCase().contains(searchInput);
+        } else if (data is LatestIssuance) {
+          return data.issuance.title.toLowerCase().contains(searchInput) ||
+              data.issuance.keyword.toLowerCase().contains(searchInput);
+        }
+        return false;
+      }).map((data) {
+        if (data is MemoCircular) {
+          return SearchResult(data.issuance.title, data.issuance.urlLink);
+        } else if (data is PresidentialDirective) {
+          return SearchResult(data.issuance.title, data.issuance.urlLink);
+        } else if (data is RepublicAct) {
+          return SearchResult(data.issuance.title, data.issuance.urlLink);
+        } else if (data is LegalOpinion) {
+          return SearchResult(data.issuance.title, data.issuance.urlLink);
+        } else if (data is JointCircular) {
+          return SearchResult(data.issuance.title, data.issuance.urlLink);
+        } else if (data is DraftIssuance) {
+          return SearchResult(data.issuance.title, data.issuance.urlLink);
+        } else if (data is LatestIssuance) {
+          return SearchResult(data.issuance.title, data.issuance.urlLink);
+        }
+        throw ArgumentError('Invalid data type');
+      }).toList();
 
-      // Update the search results and search input within the context of a stateful widget
       setState(() {
         this.searchResults = searchResults;
-        this.searchInput = searchInput; // Update the search input
+        this.searchInput = searchInput;
+        isSearching = false;
+        showNoMatchFound = searchResults.isEmpty;
       });
     } else {
-      // Clear the search results when the search input is empty
       setState(() {
         this.searchResults = [];
-        this.searchInput = searchInput; // Update the search input
+        this.searchInput = '';
+        showNoMatchFound = false;
       });
     }
   }
@@ -676,8 +671,7 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
-  void _handleContainerTap(context, String route) {
-    // Use Navigator to navigate to the desired route
+  void _handleContainerTap(BuildContext context, String route) {
     Navigator.pushNamed(context, route);
   }
 
