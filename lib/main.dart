@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:DILGDOCS/screens/splash_screen.dart'; // Import your splash screen widget here
 import '../utils/routes.dart';
 import '../Services/auth_services.dart';
 import '../screens/login_screen.dart';
@@ -38,13 +39,21 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      // Remove the home property and use AuthenticationWrapper directly in the home
-      home: AuthenticationWrapper(isAuthenticated: isAuthenticated),
-      routes: Routes.getRoutes(context),
+      // Use SplashScreen as the initial route
+      initialRoute: '/',
+      routes: {
+        '/': (context) => SplashScreen(isAuthenticated: isAuthenticated), // Pass isAuthenticated to SplashScreen
+        // Define other routes here
+        ...Routes.getRoutes(context),
+      },
     );
   }
 }
 
+// SplashScreen widget
+
+
+// AuthenticationWrapper widget
 class AuthenticationWrapper extends StatelessWidget {
   const AuthenticationWrapper({Key? key, required this.isAuthenticated})
       : super(key: key);
