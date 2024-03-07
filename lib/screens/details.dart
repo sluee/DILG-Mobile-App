@@ -106,7 +106,7 @@ Widget _buildSearchResults(List<SearchResult> searchResults, String searchInput)
  
 Future<void> downloadAndSavePdf(
     BuildContext context, String url, String title) async {
-  showDialog(
+    showDialog(
     context: context,
     barrierDismissible: false,
     builder: (BuildContext context) {
