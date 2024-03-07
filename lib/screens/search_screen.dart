@@ -6,6 +6,8 @@ import 'package:DILGDOCS/screens/details.dart';
 
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:wave/wave.dart';
+import 'package:wave/config.dart';
 
 import 'package:DILGDOCS/utils/routes.dart';
 import 'package:flutter/material.dart';
@@ -47,6 +49,8 @@ class _SearchScreenState extends State<SearchScreen> {
   List<LatestIssuance> get latestIssuances => _latestIssuances;
 
   stt.SpeechToText speech = stt.SpeechToText();
+  bool isListening = false;
+  bool isModalOpen = false;
 
   bool isSearching = false;
   bool showNoMatchFound = false;
@@ -71,9 +75,15 @@ class _SearchScreenState extends State<SearchScreen> {
 
     if (status.isGranted) {
       print('Speech recognition available');
-      speech.initialize(
-        onError: (error) => print('Error: $error'),
+      bool isAvailable = await speech.initialize(
+        onError: (error) => print('Error during initialization: $error'),
       );
+
+      if (isAvailable) {
+        print('Speech recognition initialized successfully');
+      } else {
+        print('Speech recognition initialization failed');
+      }
     } else {
       print('Microphone permission denied');
     }
@@ -81,6 +91,9 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _startListening() {
     print('Start Listening');
+    setState(() {
+      isModalOpen = true;
+    });
     if (speech.isAvailable) {
       if (!speech.isListening) {
         speech.listen(
@@ -100,19 +113,23 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   void _stopListening() {
-    if (speech.isListening) {
+    if (isListening) {
       speech.stop();
+      setState(() {
+        isListening = false;
+        isModalOpen = false;
+      });
     }
   }
 
   void _checkPermissions() async {
     var status = await Permission.microphone.status;
-    print('Microphone Permission Status: $status');
+
     if (!status.isGranted) {
       print('Requesting microphone permission...');
       await Permission.microphone.request();
       status = await Permission.microphone.status;
-      print('Microphone Permission Result: $status');
+
       if (status.isGranted) {
         print(
             'Microphone permission granted. Initializing speech recognition...');
@@ -129,6 +146,7 @@ class _SearchScreenState extends State<SearchScreen> {
     // For example, canceling network requests, timers, etc.
     super.dispose();
     _searchController.dispose();
+    _stopListening();
   }
 
   Future<void> fetchDraftIssuances() async {
@@ -326,34 +344,63 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                       child: Row(
                         children: [
-                          Expanded(
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              child: TextField(
-                                controller: _searchController,
-                                decoration: InputDecoration(
-                                  hintText: 'Search',
-                                  border: InputBorder.none,
-                                  prefixIcon: IconButton(
-                                    icon: Icon(Icons.mic),
-                                    onPressed: () {
-                                      print('Microphone Icon Tapped');
-                                      _startListening();
-                                    },
-                                  ),
-                                ),
-                                onChanged: (value) {
-                                  _handleSearch();
-                                },
-                              ),
-                            ),
-                          ),
                           IconButton(
                             icon: Icon(Icons.search),
                             onPressed: () {
                               _handleSearch();
                             },
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              child: Stack(
+                                children: [
+                                  TextField(
+                                    controller: _searchController,
+                                    decoration: InputDecoration(
+                                      hintText: 'Search',
+                                      border: InputBorder.none,
+                                    ),
+                                    onChanged: (value) {
+                                      _handleSearch();
+                                    },
+                                  ),
+                                  Positioned(
+                                    right: 0,
+                                    bottom: 0,
+                                    top: 0,
+                                    child: isListening
+                                        ? WaveWidget(
+                                            config: CustomConfig(
+                                              gradients: [
+                                                [Colors.red, Colors.redAccent],
+                                                [Colors.redAccent, Colors.red],
+                                              ],
+                                              durations: [3500, 2000],
+                                              heightPercentages: [0.25, 0.3],
+                                              blur: MaskFilter.blur(
+                                                BlurStyle.solid,
+                                                10,
+                                              ),
+                                              gradientBegin:
+                                                  Alignment.bottomLeft,
+                                              gradientEnd: Alignment.topRight,
+                                            ),
+                                            waveAmplitude: 1,
+                                            size: Size(50, double.infinity),
+                                          )
+                                        : SizedBox(), // Show or hide the WaveWidget based on listening state
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.mic),
+                            color: isListening ? Colors.red : null,
+                            onPressed:
+                                isListening ? _stopListening : _startListening,
                           ),
                         ],
                       ),
@@ -442,6 +489,56 @@ class _SearchScreenState extends State<SearchScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        isListening
+            ? Container(
+                margin: EdgeInsets.all(8),
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    WaveWidget(
+                      config: CustomConfig(
+                        gradients: [
+                          [Colors.red, Colors.redAccent],
+                          [Colors.redAccent, Colors.red],
+                        ],
+                        durations: [3500, 2000],
+                        heightPercentages: [0.25, 0.3],
+                        blur: MaskFilter.blur(
+                          BlurStyle.solid,
+                          10,
+                        ),
+                        gradientBegin: Alignment.bottomLeft,
+                        gradientEnd: Alignment.topRight,
+                      ),
+                      waveAmplitude: 1,
+                      size: Size(50, double.infinity),
+                    ),
+                    SizedBox(width: 16),
+                    Text(
+                      'Listening...',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : SizedBox.shrink(),
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
