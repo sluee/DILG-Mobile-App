@@ -18,7 +18,7 @@ class DetailsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           searchResult.title,
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white,  fontFamily: 'Poppins'),
         ),
          leading: IconButton(
           icon: Icon(Icons.arrow_back),

@@ -193,7 +193,7 @@ Widget _buildLoadingWidget() {
       child: Column(
         children: [
           // Search Input
-           Container(
+          Container(
             margin: EdgeInsets.only(top: 16.0),
             padding: EdgeInsets.symmetric(horizontal: 16.0),
             decoration: BoxDecoration(
@@ -219,138 +219,139 @@ Widget _buildLoadingWidget() {
               style: TextStyle(fontSize: 16.0),
               onChanged: (value) {
                 // Call the function to filter the list based on the search query
-                _filterLatestIssuances(value); // Corrected method call
+                _filterLatestIssuances(value); 
               },
             ),
           ),
           // Display the filtered latest issuances or "No latest issuances found" message
           _filteredLatestIssuances.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      'No latest issuances found',
-                      style: TextStyle(fontSize: 18.0),
-                    ),
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    'No latest issuances found',
+                    style: TextStyle(fontSize: 18.0),
                   ),
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 16.0),
-                    for (int index = 0;
-                        index < _filteredLatestIssuances.length;
-                        index++)
-                      InkWell(
-                        onTap: () {
-                          _navigateToDetailsPage(
-                              context, _filteredLatestIssuances[index]);
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                  color:
-                                      const Color.fromARGB(255, 203, 201, 201),
-                                  width: 1.0),
-                            ),
+                ),
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 16.0),
+                  for (int index = 0;
+                      index < _filteredLatestIssuances.length;
+                      index++)
+                    InkWell(
+                      onTap: () {
+                        _navigateToDetailsPage(
+                            context, _filteredLatestIssuances[index]);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                                color:
+                                    const Color.fromARGB(255, 203, 201, 201),
+                                width: 1.0),
                           ),
-                          child: Card(
-                            elevation: 0,
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.article, color: Colors.blue[900]),
-                                  SizedBox(width: 16.0),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text.rich(
-                                          highlightMatches(
-                                            _filteredLatestIssuances[index]
-                                                .issuance
-                                                .title,
-                                            _searchController.text,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15,
-                                          ),
-                                        ),
-                                        SizedBox(height: 4.0),
-                                        Text.rich(
+                        ),
+                        child: Card(
+                          elevation: 0,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Row(
+                              children: [
+                                Icon(Icons.article, color: Colors.blue[900]),
+                                SizedBox(width: 16.0),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text.rich(
+                                        highlightMatches(
                                           _filteredLatestIssuances[index]
-                                                      .issuance
-                                                      .referenceNo !=
-                                                  'N/A'
-                                              ? highlightMatches(
-                                                  'Ref #: ${_filteredLatestIssuances[index].issuance.referenceNo}',
-                                                  _searchController.text)
-                                              : TextSpan(text: ''),
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey,
-                                          ),
+                                              .issuance
+                                              .title,
+                                          _searchController.text,
                                         ),
-                                        Text.rich(
-                                          _filteredLatestIssuances[index]
-                                                      .outcome !=
-                                                  'N/A'
-                                              ? highlightMatches(
-                                                  'Outcome Area: ${_filteredLatestIssuances[index].outcome}',
-                                                  _searchController.text)
-                                              : TextSpan(text: ''),
-                                            style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
                                         ),
-                                        Text(
-                                          _filteredLatestIssuances[index]
-                                                      .category !=
-                                                  'N/A'
-                                              ? 'Category: ${_filteredLatestIssuances[index].category}'
-                                              : '',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(width: 16.0),
-                                  Text(
-                                    _filteredLatestIssuances[index]
-                                                .issuance
-                                                .date !=
-                                            'N/A'
-                                        ? DateFormat('MMMM dd, yyyy').format(
-                                            DateTime.parse(
-                                                _filteredLatestIssuances[index]
+                                      ),
+                                      SizedBox(height: 4.0),
+                                      Text.rich(
+                                        _filteredLatestIssuances[index]
                                                     .issuance
-                                                    .date))
-                                        : '',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontStyle: FontStyle.italic,
-                                    ),
+                                                    .referenceNo !=
+                                                'N/A'
+                                            ? highlightMatches(
+                                                'Ref #: ${_filteredLatestIssuances[index].issuance.referenceNo}',
+                                                _searchController.text)
+                                            : TextSpan(text: ''),
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                      // Text.rich(
+                                      //   _filteredLatestIssuances[index]
+                                      //               .outcome !=
+                                      //           'N/A'
+                                      //       ? highlightMatches(
+                                      //           'Outcome Area: ${_filteredLatestIssuances[index].outcome}',
+                                      //           _searchController.text)
+                                      //       : TextSpan(text: ''),
+                                      //     style: TextStyle(
+                                      //     fontSize: 12,
+                                      //     color: Colors.grey,
+                                      //     overflow: TextOverflow.ellipsis,
+                                      //   ),
+                                      // ),
+                                      
+                                      Text(
+                                        _filteredLatestIssuances[index]
+                                            .category !=
+                                                'N/A'
+                                            ? 'Category: ${_filteredLatestIssuances[index].category}'
+                                            : '',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
+                                ),
+                                SizedBox(width: 16.0),
+                                Text(
+                                  _filteredLatestIssuances[index]
+                                              .issuance
+                                              .date !=
+                                          'N/A'
+                                      ? DateFormat('MMMM dd, yyyy').format(
+                                          DateTime.parse(
+                                              _filteredLatestIssuances[index]
+                                                  .issuance
+                                                  .date))
+                                      : '',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ),
-                  ],
-                ),
+                    ),
+                ],
+              ),
         ],
       ),
     );

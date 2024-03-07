@@ -356,7 +356,7 @@ Future<void> _openWifiSettings() async {
           title: issuance.issuance.title,
          content: '${issuance.issuance.referenceNo != 'N/A' ? 'Ref #: ${issuance.issuance.referenceNo} \n' : ''}'
                 '${issuance.issuance.date != 'N/A' ? DateFormat('MMMM dd, yyyy').format(DateTime.parse(issuance.issuance.date)) + '\n' : ''}'
-                '${issuance.responsible_office != 'N/A' ? 'Category: ${issuance.responsible_office}\n' : ''}',
+                '${issuance.responsible_office != 'N/A' ? 'Resposible Office: ${issuance.responsible_office}\n' : ''}',
           pdfUrl: issuance.issuance.urlLink,
           type: getTypeForDownload(issuance.issuance.type),
         ),
