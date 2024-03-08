@@ -1,15 +1,15 @@
+import 'dart:async';
 import 'dart:convert';
-
 import 'package:DILGDOCS/Services/globals.dart';
 import 'package:DILGDOCS/models/republic_acts.dart';
 import 'package:DILGDOCS/screens/details.dart';
-
-
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:permission_handler/permission_handler.dart';
+import 'package:wave/wave.dart';
+import 'package:wave/config.dart';
 import 'package:DILGDOCS/utils/routes.dart';
 import 'package:flutter/material.dart';
-
 import 'package:http/http.dart' as http;
-
 import '../models/draft_issuances.dart';
 import '../models/joint_circulars.dart';
 import '../models/latest_issuances.dart';
@@ -31,8 +31,7 @@ class _SearchScreenState extends State<SearchScreen> {
   List<MemoCircular> _memoCirculars = [];
   List<MemoCircular> get memoCirculars => _memoCirculars;
   List<PresidentialDirective> _presidentialDirectives = [];
-  List<PresidentialDirective> get presidentialDirectives =>
-      _presidentialDirectives;
+  List<PresidentialDirective> get presidentialDirectives =>_presidentialDirectives;
   List<RepublicAct> _republicActs = [];
   List<RepublicAct> get republicActs => _republicActs;
   List<LegalOpinion> _legalOpinions = [];
@@ -44,14 +43,19 @@ class _SearchScreenState extends State<SearchScreen> {
   List<LatestIssuance> _latestIssuances = [];
   List<LatestIssuance> get latestIssuances => _latestIssuances;
 
-
+  stt.SpeechToText speech = stt.SpeechToText();
+  bool isListening = false;
+  bool isModalOpen = false;
   bool isSearching = false;
   bool showNoMatchFound = false;
+  Timer? _debounceTimer;
+
 
   @override
   void initState() {
     super.initState();
-  
+    _checkPermissions();
+    _initializeSpeechToText();
     fetchRepublicActs();
     fetchPresidentialCirculars();
     fetchLegalOpinions();
@@ -61,8 +65,118 @@ class _SearchScreenState extends State<SearchScreen> {
     fetchDraftIssuances();
   }
 
+  void _initializeSpeechToText() async {
+    var status = await Permission.microphone.status;
+    print('Microphone Permission Status: $status');
 
- 
+    if (status.isGranted) {
+      print('Speech recognition available');
+      bool isAvailable = await speech.initialize(
+        onError: (error) => print('Error during initialization: $error'),
+      );
+
+      if (isAvailable) {
+        print('Speech recognition initialized successfully');
+      } else {
+        print('Speech recognition initialization failed');
+      }
+    } else {
+      print('Microphone permission denied');
+    }
+  }
+void _startListening() {
+  print('Start Listening');
+  setState(() {
+    isModalOpen = true;
+  });
+  if (speech.isAvailable) {
+    if (!speech.isListening) {
+      _showListeningDialog(context); // Show listening dialog
+      speech.listen(
+        onResult: (result) {
+          if (result.finalResult) {
+            String searchText = result.recognizedWords;
+            _searchController.text = searchText;
+            print('Search Text: $searchText');
+            _handleSearch(); // Call the search method when speech is recognized
+            Navigator.pop(context); // Dismiss the dialog when speech is recognized
+          }
+        },
+      );
+    }
+  } else {
+    print('Speech recognition not available');
+  }
+}
+
+void _stopListening() {
+  if (isListening) {
+    speech.stop();
+    setState(() {
+      isListening = false;
+      isModalOpen = false;
+    });
+    Navigator.pop(context); // Dismiss the dialog when listening stops
+  }
+}
+
+
+  void _showListeningDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text("Listening..."),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              WaveWidget(
+                config: CustomConfig(
+                  gradients: [
+                    [Colors.blue, Colors.blueAccent],
+                    [Colors.blueAccent, Colors.blue],
+                  ],
+                  durations: [1500, 1000],
+                  heightPercentages: [0.25, 0.3],
+                  blur: MaskFilter.blur(
+                    BlurStyle.solid,
+                    10,
+                  ),
+                  gradientBegin: Alignment.bottomLeft,
+                  gradientEnd: Alignment.topRight,
+                ),
+                waveAmplitude: 1,
+                size: Size(300, 100), 
+              ),
+              SizedBox(height: 16),
+              // Text("Please speak your search query."),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+
+
+  void _checkPermissions() async {
+    var status = await Permission.microphone.status;
+
+    if (!status.isGranted) {
+      print('Requesting microphone permission...');
+      await Permission.microphone.request();
+      status = await Permission.microphone.status;
+
+      if (status.isGranted) {
+        print(
+            'Microphone permission granted. Initializing speech recognition...');
+        _initializeSpeechToText();
+      } else {
+        print('Microphone permission denied');
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -70,6 +184,7 @@ class _SearchScreenState extends State<SearchScreen> {
     // For example, canceling network requests, timers, etc.
     super.dispose();
     _searchController.dispose();
+    _stopListening();
   }
 
   Future<void> fetchDraftIssuances() async {
@@ -267,34 +382,67 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                       child: Row(
                         children: [
-                          Expanded(
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              child: TextField(
-                                controller: _searchController,
-                                decoration: InputDecoration(
-                                  hintText: 'Search',
-                                  border: InputBorder.none,
-                                  // prefixIcon: IconButton(
-                                  //   icon: Icon(Icons.mic),
-                                  //   onPressed: () {
-                                  //     print('Microphone Icon Tapped');
-                                  //     _startListening();
-                                  //   },
-                                  // ),
-                                ),
-                                onChanged: (value) {
-                                  _handleSearch();
-                                },
-                              ),
-                            ),
-                          ),
                           IconButton(
                             icon: Icon(Icons.search),
                             onPressed: () {
                               _handleSearch();
                             },
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              child: Stack(
+                                children: [
+                                  TextField(
+                                    controller: _searchController,
+                                    decoration: InputDecoration(
+                                      hintText: 'Search',
+                                      border: InputBorder.none,
+                                    ),
+                                    onChanged: (value) {
+                                      // Call debounce function with 500 milliseconds delay
+                                      _debounce(() {
+                                        _handleSearch();
+                                      }, Duration(milliseconds: 500));
+                                    },
+                                  ),
+
+                                  Positioned(
+                                    right: 0,
+                                    bottom: 0,
+                                    top: 0,
+                                    child: isListening
+                                        ? WaveWidget(
+                                            config: CustomConfig(
+                                              gradients: [
+                                                [Colors.red, Colors.redAccent],
+                                                [Colors.redAccent, Colors.red],
+                                              ],
+                                              durations: [3500, 2000],
+                                              heightPercentages: [0.25, 0.3],
+                                              blur: MaskFilter.blur(
+                                                BlurStyle.solid,
+                                                10,
+                                              ),
+                                              gradientBegin:
+                                                  Alignment.bottomLeft,
+                                              gradientEnd: Alignment.topRight,
+                                            ),
+                                            waveAmplitude: 1,
+                                            size: Size(50, double.infinity),
+                                          )
+                                        : SizedBox(), // Show or hide the WaveWidget based on listening state
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.mic),
+                            color: isListening ? Colors.red : null,
+                            onPressed:
+                                isListening ? _stopListening : _startListening,
                           ),
                         ],
                       ),
@@ -311,28 +459,30 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildSearchResultsContainer() {
-    if (isSearching) {
-      return Center(
-        child: CircularProgressIndicator(),
-      );
-    } else if (showNoMatchFound) {
-      return Center(
-        child: Text('No match found'),
-      );
-    } else if (searchResults.isNotEmpty) {
-      return SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildSearchResults(searchResults, searchInput),
-            SizedBox(height: 20),
-          ],
-        ),
-      );
-    } else {
-      return _buildRecentSearchesContainer();
-    }
+ Widget _buildSearchResultsContainer() {
+  if (isSearching) {
+    // Show a circular progress indicator while searching
+    return Center(
+      child: CircularProgressIndicator(),
+    );
+  } else if (showNoMatchFound) {
+    return Center(
+      child: Text('No match found', style: TextStyle(fontFamily: 'Poppins')),
+    );
+  } else if (searchResults.isNotEmpty) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          _buildSearchResults(searchResults, searchInput),
+          SizedBox(height: 20),
+        ],
+      ),
+    );
+  } else {
+    return _buildRecentSearchesContainer();
   }
+}
+
 
   Widget _buildRecentSearchesContainer() {
     List<Map<String, dynamic>> containerInfo = [
@@ -381,20 +531,71 @@ class _SearchScreenState extends State<SearchScreen> {
     ];
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            'Browse All',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-               fontFamily: 'Poppins'
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      isListening
+          ? Container(
+              margin: EdgeInsets.all(8),
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  WaveWidget(
+                    config: CustomConfig(
+                      gradients: [
+                        [Colors.red, Colors.redAccent],
+                        [Colors.redAccent, Colors.red],
+                      ],
+                      durations: [3500, 2000],
+                      heightPercentages: [0.25, 0.3],
+                      blur: MaskFilter.blur(
+                        BlurStyle.solid,
+                        10,
+                      ),
+                      gradientBegin: Alignment.bottomLeft,
+                      gradientEnd: Alignment.topRight,
+                    ),
+                    waveAmplitude: 1,
+                    size: Size(50, double.infinity),
+                  ),
+                  SizedBox(width: 16),
+                  Text(
+                    'Listening...',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red,
+                      fontFamily: 'Poppins'
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : SizedBox.shrink(),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'Browse All',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Poppins'
+                ),
+              ),
             ),
-          ),
-        ),
-        GridView.count(
+          GridView.count(
           shrinkWrap: true,
           physics: NeverScrollableScrollPhysics(),
           crossAxisCount: 2,
@@ -424,9 +625,10 @@ class _SearchScreenState extends State<SearchScreen> {
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
-                             fontFamily: 'Poppins'
+                            fontFamily: 'Poppins'
                           ),
                           textAlign: TextAlign.center,
+                          
                         ),
                       ],
                     ),
@@ -441,59 +643,58 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildSearchResults(
-      List<SearchResult> searchResults, String searchInput) {
-    if (searchInput.isEmpty) {
-      return SizedBox.shrink();
-    }
-    return searchResults.isNotEmpty
-        ? SingleChildScrollView(
-            child: Column(
-              children: [
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: searchResults.length,
-                  itemBuilder: (context, index) {
-                    final SearchResult result = searchResults[index];
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DetailsScreen(
-                              searchResult: result,
-                            ),
+  Widget _buildSearchResults(List<SearchResult> searchResults, String searchInput) {
+  if (searchInput.isEmpty) {
+    return SizedBox.shrink();
+  }
+  return searchResults.isNotEmpty
+      ? SingleChildScrollView(
+          child: Column(
+            children: [
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: searchResults.length,
+                itemBuilder: (context, index) {
+                  final SearchResult result = searchResults[index];
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DetailsScreen(
+                            searchResult: result,
                           ),
-                        );
-                      },
-                      child: Container(
-                        margin: EdgeInsets.symmetric(vertical: 8),
-                        padding: EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              spreadRadius: 2,
-                              blurRadius: 5,
-                              offset: Offset(0, 3),
-                            ),
-                          ],
                         ),
-                        child: RichText(
-                          text: highlightTextWithOriginalTitle(
-                              result.title, searchInput),
-                        ),
+                      );
+                    },
+                    child: Container(
+                      margin: EdgeInsets.symmetric(vertical: 8),
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.5),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          )
-        : Center(child: Text('No results found'));
+                      child: RichText(
+                        text: highlightTextWithOriginalTitle(
+                            result.title, searchInput),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        )
+      : Center(child: Text('No results found'));
   }
 
   TextSpan highlightTextWithOriginalTitle(String text, String highlight) {
@@ -514,7 +715,7 @@ class _SearchScreenState extends State<SearchScreen> {
       ));
       spans.add(TextSpan(
         text: text.substring(match, match + highlight.length),
-        style: TextStyle(color: Colors.blue, fontSize: 15,  fontFamily: 'Poppins'),
+        style: TextStyle(color: Colors.blue, fontSize: 15, fontFamily: 'Poppins'),
       ));
       prevIndex = match + highlight.length;
     }
@@ -529,61 +730,73 @@ class _SearchScreenState extends State<SearchScreen> {
   void _handleSearch() {
   String searchInput = _searchController.text.toLowerCase();
 
-  // Check if the search input meets the minimum character requirement
-  if (searchInput.length >= 2) {
-    // Perform the search operation
-    _performSearch(searchInput);
-  } else {
-    // Clear the search results when the search input doesn't meet the minimum character requirement
+  print('Search Input: $searchInput');
+  print('Searching: ${_searchController.text}');
+
+ if (searchInput.length < 3) {
+    // Reset search results and show a message to the user to input more characters
     setState(() {
       this.searchResults = [];
-      this.searchInput = searchInput; // Update the search input
+      this.searchInput = '';
+      showNoMatchFound = false;
+    });
+    return; // Exit the method
+  }
+  if (searchInput.isNotEmpty) {
+    setState(() {
+      isSearching = true;
+      showNoMatchFound = false;
+    });
+    List<dynamic> allData = [
+      ..._memoCirculars,
+      ..._presidentialDirectives,
+      ..._republicActs,
+      ..._legalOpinions,
+      ..._jointCirculars,
+      ..._draftIssuances,
+      ..._latestIssuances,
+    ];
+
+    List<SearchResult> searchResults = allData
+        .where((data) =>
+            (data is MemoCircular ||
+                data is PresidentialDirective ||
+                data is RepublicAct ||
+                data is LegalOpinion ||
+                data is JointCircular ||
+                data is DraftIssuance ||
+                data is LatestIssuance) &&
+            (data.issuance.title.toLowerCase().contains(searchInput) ||
+                data.issuance.keyword.toLowerCase().contains(searchInput)))
+        .map((data) => SearchResult(data.issuance.title, data.issuance.urlLink))
+        .where((result) => result.title.isNotEmpty)
+        .toList();
+
+    setState(() {
+      this.searchResults = searchResults;
+      this.searchInput = searchInput;
+      isSearching = false;
+      showNoMatchFound = searchResults.isEmpty;
+    });
+  } else {
+    setState(() {
+      this.searchResults = [];
+      this.searchInput = '';
+      showNoMatchFound = false;
     });
   }
 }
 
-void _performSearch(String searchInput) {
-  // Flatten the list of lists into a single list
-  List<dynamic> allData = [
-    ..._memoCirculars,
-    ..._presidentialDirectives,
-    ..._republicActs,
-    ..._legalOpinions,
-    ..._jointCirculars,
-    ..._draftIssuances,
-    ..._latestIssuances,
-  ];
-
-  // Filter the data based on search input and convert to SearchResult objects
-  List<SearchResult> searchResults = allData
-      .where((data) =>
-          (data is MemoCircular ||
-              data is PresidentialDirective ||
-              data is RepublicAct ||
-              data is LegalOpinion ||
-              data is JointCircular ||
-              data is DraftIssuance ||
-              data is LatestIssuance) &&
-          (data.issuance.title.toLowerCase().contains(searchInput) ||
-              data.issuance.keyword.toLowerCase().contains(searchInput)))
-      .map((data) => SearchResult(data.issuance.title, data.issuance.urlLink))
-      .where((result) => result.title.isNotEmpty)
-      .toList();
-
-  // Update the search results and search input within the context of a stateful widget
- 
-      setState(() {
-    this.searchResults = searchResults;
-    this.searchInput = searchInput;
-    isSearching = false;
-    showNoMatchFound = searchResults.isEmpty;
-  });
-    
+void _debounce(VoidCallback callback, Duration duration) {
+  if (_debounceTimer != null) {
+    _debounceTimer!.cancel();
+  }
+  _debounceTimer = Timer(duration, callback);
 }
+
 
   // Method to handle the tapped recent search item
   void _handleRecentSearchTap(String value) {
-    // Implement the handling of tapped recent search item
     setState(() {
       _recentSearches.remove(value);
       _recentSearches.insert(0, value);

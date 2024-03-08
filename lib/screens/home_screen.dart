@@ -120,13 +120,8 @@ class _HomeScreenState extends State<HomeScreen>  with WidgetsBindingObserver  {
           automaticallyImplyLeading: true,
         ),
         body: _buildBody(),
-        drawer: Sidebar(
-          currentIndex: _currentIndex,
-          onItemSelected: (index) {
-            setState(() {
-              _currentIndex = index.clamp(0, _drawerMenuItems.length - 1);
-            });
-          },
+        drawer: Sidebar(currentIndex: 0, onItemSelected: (int ) {  },
+          
         ),
         bottomNavigationBar: BottomNavigation(
           currentIndex: _currentIndex,
