@@ -26,8 +26,8 @@ class About extends StatelessWidget {
             children: <Widget>[
               // Large logo
               CircleAvatar(
-                radius: 70,
-                backgroundImage: AssetImage('assets/dilg-main.png'),
+                radius: 80,
+                backgroundImage: AssetImage('assets/tngkrw.png'),
               ),
               SizedBox(height: 16),
               // Text below the logo

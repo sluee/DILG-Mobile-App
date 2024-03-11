@@ -114,11 +114,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       style: TextStyle(color: Colors.blue),
                     ),
                     SizedBox(height: 4.0),
-                    Text(
-                      userName,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20.0,
+                    Container(
+                      width: 200.0, // Set a fixed width for the container
+                      child: Text(
+                        userName,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18.0,
+                        ),
                       ),
                     ),
                   ],

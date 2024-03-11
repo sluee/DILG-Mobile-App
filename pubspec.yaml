@@ -95,6 +95,8 @@ flutter:
     - assets/pic 2.png
     - assets/pic 3.png
     - assets/default.png
+    - assets/tngkrw.png
+
 
   fonts:
     - family: Poppins

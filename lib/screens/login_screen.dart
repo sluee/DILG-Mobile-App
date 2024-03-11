@@ -126,9 +126,18 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              CircleAvatar(
-                radius: 34,
-                backgroundImage: AssetImage('assets/dilg-main.png'),
+              Container(
+                width: 68,
+                height: 68,
+                decoration: BoxDecoration(
+                  shape: BoxShape.rectangle,
+                  borderRadius: BorderRadius.circular(
+                      10), // Adjust the border radius as needed
+                  image: DecorationImage(
+                    image: AssetImage('assets/tngkrw.png'),
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
               SizedBox(height: 15),
               Text(

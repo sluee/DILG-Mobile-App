@@ -32,7 +32,7 @@ class Sidebar extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Image.asset(
-                    'assets/dilg-main.png',
+                    'assets/tngkrw.png',
                     width: 70.0,
                     height: 70.0,
                   ),
