@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'search_screen.dart';
 import 'library_screen.dart';
@@ -6,8 +7,6 @@ import 'setting_screen.dart';
 import 'sidebar.dart';
 import 'bottom_navigation.dart';
 import 'issuance_pdf_screen.dart';
-import 'package:url_launcher/url_launcher.dart'; // Import url_launcher package
-// import 'package:flutter/widgets.dart';
 
 class Issuance {
   final String title;
@@ -22,7 +21,8 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>  with WidgetsBindingObserver  {
+class _HomeScreenState extends State<HomeScreen>
+    with WidgetsBindingObserver {
   int _currentIndex = 0;
   List<String> _drawerMenuItems = [
     'Home',
@@ -35,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen>  with WidgetsBindingObserver  {
 
   List<Issuance> _recentlyOpenedIssuances = [];
 
- @override
+  @override
   void initState() {
     super.initState();
     _loadRecentIssuances();
@@ -43,20 +43,20 @@ class _HomeScreenState extends State<HomeScreen>  with WidgetsBindingObserver  {
   }
 
   @override
-    void didChangeAppLifecycleState(AppLifecycleState state) {
-      if (state == AppLifecycleState.paused ||
-          state == AppLifecycleState.inactive) {
-        _saveRecentIssuances();
-      }
-    }
-  @override
-    void dispose() {
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       _saveRecentIssuances();
-      WidgetsBinding.instance?.removeObserver(this);
-      super.dispose();
     }
+  }
 
-    
+  @override
+  void dispose() {
+    _saveRecentIssuances();
+    WidgetsBinding.instance?.removeObserver(this);
+    super.dispose();
+  }
+
   void _loadRecentIssuances() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String>? recentIssuances = prefs.getStringList('recentIssuances');
@@ -75,7 +75,6 @@ class _HomeScreenState extends State<HomeScreen>  with WidgetsBindingObserver  {
     await prefs.setStringList('recentIssuances', titles);
   }
 
- 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -120,8 +119,9 @@ class _HomeScreenState extends State<HomeScreen>  with WidgetsBindingObserver  {
           automaticallyImplyLeading: true,
         ),
         body: _buildBody(),
-        drawer: Sidebar(currentIndex: 0, onItemSelected: (int ) {  },
-          
+        drawer: Sidebar(
+          currentIndex: 0,
+          onItemSelected: (int) {},
         ),
         bottomNavigationBar: BottomNavigation(
           currentIndex: _currentIndex,
@@ -180,12 +180,19 @@ class _HomeScreenState extends State<HomeScreen>  with WidgetsBindingObserver  {
                   ],
                 ),
                 const SizedBox(height: 30.0),
-                _buildWideButton(
-                    'NEWS AND UPDATES', 'https://dilgbohol.com/news_update'),
-                _buildWideButton('THE PROVINCIAL DIRECTOR',
-                    'https://dilgbohol.com/provincial_director'),
-                _buildWideButton(
-                    'VISION AND MISSION', 'https://dilgbohol.com/about_us'),
+                WebViewWideButton(
+                  label: 'NEWS AND UPDATEs',
+                  url: 'https://dilgbohol.com/news_update',
+                ),
+                 WebViewWideButton(
+                  label: 'THE PROVINCIAL DIRECTOR',
+                  url: 'https://dilgbohol.com/provincial_director',
+                ),
+                WebViewWideButton(
+                  label: 'VISSION AND MISSION',
+                  url: 'https://dilgbohol.com/about_us',
+                ),
+               
                 Container(
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
@@ -193,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen>  with WidgetsBindingObserver  {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: SingleChildScrollView(
-                    scrollDirection: Axis.vertical, // Ensure vertical scrolling
+                    scrollDirection: Axis.vertical,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -212,13 +219,11 @@ class _HomeScreenState extends State<HomeScreen>  with WidgetsBindingObserver  {
       case 2:
         return LibraryScreen(
           onFileOpened: (title, subtitle) {
-            // Add the opened file to recently opened issuances
             setState(() {
               _recentlyOpenedIssuances.insert(0, Issuance(title: title));
             });
           },
           onFileDeleted: (title) {
-            // Remove the deleted issuance from the list of recently opened issuances
             setState(() {
               _recentlyOpenedIssuances
                   .removeWhere((issuance) => issuance.title == title);
@@ -227,127 +232,131 @@ class _HomeScreenState extends State<HomeScreen>  with WidgetsBindingObserver  {
         );
       case 3:
         return SettingsScreen();
-
       default:
-        return SizedBox(); // Return an empty widget for unsupported index
+        return SizedBox();
     }
   }
 
   Widget _buildRecentIssuances() {
-    // Map to keep track of seen titles
     Map<String, Issuance> seenTitles = {};
+    List<Issuance> recentIssuances = _recentlyOpenedIssuances.take(5).toList();
 
-    // Get the first 5 recently opened issuances
-    List<Issuance> recentIssuances = _recentlyOpenedIssuances.take(5).toList();  
-
-   return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Recently Opened Issuances',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Poppins',
-              ),
-            ),
-            if (_recentlyOpenedIssuances.length >= 1) // Check if the list has 5 or more items
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _recentlyOpenedIssuances.clear();
-                  });
-                },
-                child: Container(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text(
-                    'Clear List',
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
-                ),
-              ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 14.0),
-          if (_recentlyOpenedIssuances.isEmpty)
-            Center(
-              child: Text(
-                'No recently opened Issuance/s',
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Recently Opened Issuances',
                 style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
                   fontFamily: 'Poppins',
                 ),
               ),
-            ),
-          if (_recentlyOpenedIssuances.isNotEmpty) ...[
-            ...recentIssuances.map((issuance) {
-              // Check if the title has already been seen
-              if (seenTitles.containsKey(issuance.title)) {
-                // If yes, skip displaying this issuance
-                return Container();
-              } else {
-                // Otherwise, add it to seen titles and display it
-                seenTitles[issuance.title] = issuance;
-                return Card(
-                  elevation: 2.0,
-                  margin: EdgeInsets.symmetric(vertical: 8.0),
-                  child: ListTile(
-                    title: Text(
-                      issuance.title.length > 30
-                          ? '${issuance.title.substring(0, 30)}...'
-                          : issuance.title,
+              if (_recentlyOpenedIssuances.length >= 1)
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _recentlyOpenedIssuances.clear();
+                    });
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      'Clear List',
                       style: TextStyle(
+                        color: Colors.red,
                         fontFamily: 'Poppins',
                       ),
                     ),
-                    onTap: () {
-                      // Remove the current issuance from the list
-                      setState(() {
-                        _recentlyOpenedIssuances.remove(issuance);
-                      });
-                      // Add the current issuance to the top of the list
-                      setState(() {
-                        _recentlyOpenedIssuances.insert(0, issuance);
-                      });
-                      // Navigate to the PDF screen when the item is tapped
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => IssuancePDFScreen(
-                            title: issuance.title,
-                          ),
-                        ),
-                      );
-                    },
                   ),
-                );
-              }
-            }).toList(),
-          ],
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14.0),
+        if (_recentlyOpenedIssuances.isEmpty)
+          Center(
+            child: Text(
+              'No recently opened Issuance/s',
+              style: TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
+                fontFamily: 'Poppins',
+              ),
+            ),
+          ),
+        if (_recentlyOpenedIssuances.isNotEmpty) ...[
+          ...recentIssuances.map((issuance) {
+            if (seenTitles.containsKey(issuance.title)) {
+              return Container();
+            } else {
+              seenTitles[issuance.title] = issuance;
+              return Card(
+                elevation: 2.0,
+                margin: EdgeInsets.symmetric(vertical: 8.0),
+                child: ListTile(
+                  title: Text(
+                    issuance.title.length > 30
+                        ? '${issuance.title.substring(0, 30)}...'
+                        : issuance.title,
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                  onTap: () {
+                    setState(() {
+                      _recentlyOpenedIssuances.remove(issuance);
+                    });
+                    setState(() {
+                      _recentlyOpenedIssuances.insert(0, issuance);
+                    });
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => IssuancePDFScreen(
+                          title: issuance.title,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              );
+            }
+          }).toList(),
         ],
-      );
-    }
+      ],
+    );
+  }
+}
 
-  Widget _buildWideButton(String label, String url) {
+class WebViewWideButton extends StatelessWidget {
+  final String label;
+  final String url;
+
+  const WebViewWideButton({Key? key, required this.label, required this.url})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        _launchURL(url);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => WebViewPage(url: url, label: label),
+          ),
+        );
       },
       child: Container(
         width: double.infinity,
         margin: const EdgeInsets.symmetric(vertical: 8.0),
         decoration: BoxDecoration(
-          color: Colors.blue[600], // Adjust the color as needed
+          color: Colors.blue[600],
           borderRadius: BorderRadius.circular(8.0),
         ),
         padding: const EdgeInsets.all(16.0),
@@ -372,17 +381,27 @@ class _HomeScreenState extends State<HomeScreen>  with WidgetsBindingObserver  {
       ),
     );
   }
+}
 
-  // Function to launch URLs
-  void _launchURL(String url) async {
-    try {
-      if (await canLaunch(url)) {
-        await launch(url);
-      } else {
-        throw 'Could not launch $url';
-      }
-    } catch (e) {
-      print('Error launching URL: $e');
-    }
+
+class WebViewPage extends StatelessWidget {
+  final String label;
+  final String url;
+
+  const WebViewPage({Key? key, required this.label, required this.url})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(label), // Use the label as the title
+      ),
+      body: WebView(
+        initialUrl: url,
+        javascriptMode: JavascriptMode.unrestricted,
+      ),
+    );
   }
 }
+

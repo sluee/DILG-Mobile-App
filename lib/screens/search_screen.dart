@@ -729,7 +729,7 @@ void _stopListening() {
 
   void _handleSearch() {
   String searchInput = _searchController.text.toLowerCase();
-
+ 
   print('Search Input: $searchInput');
   print('Searching: ${_searchController.text}');
 

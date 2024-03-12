@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:DILGDOCS/Services/globals.dart';
 import 'package:DILGDOCS/screens/file_utils.dart';
@@ -6,10 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-// Import other necessary files
 import '../models/memo_circulars.dart';
 import 'details_screen.dart';
+
+
 
 class MemoCirculars extends StatefulWidget {
   @override
@@ -17,12 +18,16 @@ class MemoCirculars extends StatefulWidget {
 }
 
 class _MemoCircularsState extends State<MemoCirculars> {
+  Timer? _debounceTimer;
   TextEditingController _searchController = TextEditingController();
   List<MemoCircular> _memoCirculars = [];
   List<MemoCircular> _filteredMemoCirculars = [];
   bool _hasInternetConnection = true;
   bool _isLoading = true;
+  
+  
 
+  
   @override
   void initState() {
     super.initState();
@@ -100,7 +105,7 @@ Future<void> _openWifiSettings() async {
       setState(() {
         _memoCirculars = data.map((item) => MemoCircular.fromJson(item)).toList();
         _filteredMemoCirculars = _memoCirculars; // Initially set the filtered list to all items
-         _isLoading = false; 
+        _isLoading = false; 
       });
     } else {
       // Handle error
@@ -211,142 +216,172 @@ Future<void> _openWifiSettings() async {
             ),
             style: TextStyle(fontSize: 16.0),
             onChanged: (value) {
-              // Call the function to filter the list based on the search query
-              _filterMemoCirculars(value); // Corrected method call
+                // Call debounce function with 500 milliseconds delay
+                _debounce(() {
+                  _handleSearch();
+                }, Duration(milliseconds: 500));
             },
           ),
         ),
           // Display the filtered memo circulars or "No memo circulars found" message
-          _filteredMemoCirculars.isEmpty
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                      'No memo circulars found',
-                      style: TextStyle(fontSize: 18.0),
+        _filteredMemoCirculars.isEmpty
+        ? Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'No memo circulars found',
+                style: TextStyle(fontSize: 18.0),
+              ),
+            ),
+          )
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 16.0),
+              for (int index = 0;
+                  index < _filteredMemoCirculars.length;
+                  index++)
+                InkWell(
+                  onTap: () {
+                    _navigateToDetailsPage(
+                        context, _filteredMemoCirculars[index]);
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                            color:
+                                const Color.fromARGB(255, 203, 201, 201),
+                            width: 1.0),
+                      ),
                     ),
-                  ),
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 16.0),
-                    for (int index = 0;
-                        index < _filteredMemoCirculars.length;
-                        index++)
-                      InkWell(
-                        onTap: () {
-                          _navigateToDetailsPage(
-                              context, _filteredMemoCirculars[index]);
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                  color:
-                                      const Color.fromARGB(255, 203, 201, 201),
-                                  width: 1.0),
-                            ),
-                          ),
-                          child: Card(
-                            elevation: 0,
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Row(
+                    child: Card(
+                      elevation: 0,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          children: [
+                            Icon(Icons.article, color: Colors.blue[900]),
+                            SizedBox(width: 16.0),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
                                 children: [
-                                  Icon(Icons.article, color: Colors.blue[900]),
-                                  SizedBox(width: 16.0),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text.rich(
-                                          highlightMatches(
-                                            _filteredMemoCirculars[index]
-                                                .issuance
-                                                .title,
-                                            _searchController.text,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 15,
-                                          ),
-                                        ),
-                                        SizedBox(height: 4.0),
-                                        Text.rich(
-                                          _filteredMemoCirculars[index].issuance.referenceNo != 'N/A'
-                                            ? highlightMatches(
-                                                'Ref #: ${_filteredMemoCirculars[index].issuance.referenceNo}',
-                                                _searchController.text)
-                                            : TextSpan(text: ''), // Render empty TextSpan when referenceNo is 'N/A'
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-                                        Text.rich(
-                                          _filteredMemoCirculars[index].responsible_office != 'N/A'
-                                            ? highlightMatches(
-                                                'Responsible Office: ${_filteredMemoCirculars[index].responsible_office}',
-                                                _searchController.text)
-                                            : TextSpan(text: ''), // Render empty TextSpan when responsible_office is 'N/A'
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-
-                                      ],
+                                  Text.rich(
+                                    highlightMatches(
+                                      _filteredMemoCirculars[index]
+                                          .issuance
+                                          .title,
+                                      _searchController.text,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
                                     ),
                                   ),
-                                  SizedBox(width: 16.0),
-                                  Text(
-                                    _filteredMemoCirculars[index]
-                                                .issuance
-                                                .date !=
-                                            'N/A'
-                                        ? DateFormat('MMMM dd, yyyy').format(
-                                            DateTime.parse(
-                                                _filteredMemoCirculars[index]
-                                                    .issuance
-                                                    .date))
-                                        : '',
+                                  SizedBox(height: 4.0),
+                                  Text.rich(
+                                    _filteredMemoCirculars[index].issuance.referenceNo != 'N/A'
+                                      ? highlightMatches(
+                                          'Ref #: ${_filteredMemoCirculars[index].issuance.referenceNo}',
+                                          _searchController.text)
+                                      : TextSpan(text: ''), // Render empty TextSpan when referenceNo is 'N/A'
                                     style: TextStyle(
                                       fontSize: 12,
-                                      fontStyle: FontStyle.italic,
+                                      color: Colors.grey,
                                     ),
                                   ),
+                                  Text.rich(
+                                    _filteredMemoCirculars[index].responsible_office != 'N/A'
+                                      ? highlightMatches(
+                                          'Responsible Office: ${_filteredMemoCirculars[index].responsible_office}',
+                                          _searchController.text)
+                                      : TextSpan(text: ''), // Render empty TextSpan when responsible_office is 'N/A'
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+
                                 ],
                               ),
                             ),
-                          ),
+                            SizedBox(width: 16.0),
+                            Text(
+                              _filteredMemoCirculars[index]
+                                          .issuance
+                                          .date !=
+                                      'N/A'
+                                  ? DateFormat('MMMM dd, yyyy').format(
+                                      DateTime.parse(
+                                          _filteredMemoCirculars[index]
+                                              .issuance
+                                              .date))
+                                  : '',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                  ],
+                    ),
+                  ),
                 ),
+            ],
+          ),
         ],
       ),
     );
   }
 
-  void _filterMemoCirculars(String query) {
-    setState(() {
-      // Filter the memo circulars based on the search query
-      _filteredMemoCirculars = _memoCirculars.where((memo) {
-        final title = memo.issuance.title.toLowerCase();
-        final referenceNo = memo.issuance.referenceNo.toLowerCase();
-        final responsibleOffice = memo.responsible_office.toLowerCase();
-        final searchLower = query.toLowerCase();
+  void _handleSearch() {
+  String searchInput = _searchController.text.toLowerCase();
 
-        return title.contains(searchLower) ||
-            referenceNo.contains(searchLower) ||
-            responsibleOffice.contains(searchLower);
-      }).toList();
+  print('Search Input: $searchInput');
+  print('Searching: ${_searchController.text}');
+
+  if (searchInput.length < 3) {
+    // Reset search results and show a message to the user to input more characters
+    setState(() {
+      _filteredMemoCirculars = List.from(_memoCirculars); // Reset filtered list
+    });
+    return; // Exit the method
+  }
+
+  if (searchInput.isNotEmpty) {
+    _debounce(() {
+      setState(() {
+        _filteredMemoCirculars = _memoCirculars.where((memo) {
+          final title = memo.issuance.title.toLowerCase();
+          final referenceNo = memo.issuance.referenceNo.toLowerCase();
+          final responsibleOffice = memo.responsible_office.toLowerCase();
+
+          return title.contains(searchInput) ||
+              referenceNo.contains(searchInput) ||
+              responsibleOffice.contains(searchInput);
+        }).toList();
+      });
+    }, const Duration(milliseconds: 500));
+  } else {
+    // If search input is empty, reset the filtered list to the original list
+    setState(() {
+      _filteredMemoCirculars = List.from(_memoCirculars);
     });
   }
+}
+
+void _debounce(VoidCallback callback, Duration duration) {
+  if (_debounceTimer != null) {
+    _debounceTimer!.cancel();
+  }
+  _debounceTimer = Timer(duration, callback);
+}
+
 
   void _navigateToDetailsPage(BuildContext context, MemoCircular issuance) {
     Navigator.push(
