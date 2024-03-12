@@ -1,5 +1,6 @@
 import 'package:DILGDOCS/Services/auth_services.dart';
 import 'package:DILGDOCS/screens/change_password_modal.dart';
+import 'package:DILGDOCS/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -21,36 +22,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String email = '';
   String? _selectedAvatarPath;
 
-  // Future<void> fetchUserDetails() async {
-  //   SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   String? avatarFileName = prefs.getString('userAvatar');
-  //   var userId = await AuthServices.getUserId();
-
-  //   if (avatarFileName != null && avatarFileName.isNotEmpty) {
-  //     setState(() {
-  //       // Construct the complete URL for fetching the avatar image
-  //       userAvatarUrl = '$baseURL/$avatarFileName';
-  //     });
-
-  //     // Print statements for debugging
-  //     print('Image URL: $userAvatarUrl');
-
-  //     // Display the image using NetworkImage within an Image widget
-  //     setState(() {
-  //       avatarImage = Image.network(userAvatarUrl!);
-  //     });
-  //   } else {
-  //     // Handle case where avatarFileName is null or empty
-  //     print('Avatar file name is null or empty');
-  //   }
-  // }
-
   @override
   void initState() {
     super.initState();
     _getUserInfo();
-    // fetchUserDetails();
-    // _getSelectedAvatarPath();
+    
   }
 
   Future<void> _getUserInfo() async {
@@ -78,8 +54,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: null, // No app bar in settings screen
-      bottomNavigationBar: null,
       body: _buildBody(),
     );
   }
@@ -221,8 +195,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // FAQs Button
             InkWell(
               onTap: () {
-                _launchURL('https://dilgbohol.com/faqs');
-              },
+                  _launchURL(context, 'https://dilgbohol.com/faqs');
+                },
               child: Container(
                 padding: EdgeInsets.all(16.0),
                 child: Row(
@@ -437,15 +411,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await prefs.remove('authToken');
   }
 
-Future<void> _launchURL(String url) async {
-    try {
-      if (await canLaunch(url)) {
-        await launch(url);
-      } else {
-        throw 'Could not launch $url';
-      }
-    } catch (e) {
-      print('Error launching URL: $e');
-    }
+Future<void> _launchURL(BuildContext context, String url) async {
+  try {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WebViewPage(url: url, label: 'FAQs'),
+      ),
+    );
+  } catch (e) {
+    print('Error launching URL: $e');
   }
+}
+
 }
