@@ -80,55 +80,63 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
 
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Notifications'),
+  Widget _buildListTile(dynamic issuance) {
+  return Column(
+    children: [
+      ListTile(
+        title: Row(
+          crossAxisAlignment: CrossAxisAlignment.center, // Align items vertically in the center
+          children: [
+            Icon(
+              Icons.picture_as_pdf, // Icon for PDF
+              color: Colors.blue, // Customize icon color as needed
+            ),
+            SizedBox(width: 10), // Add some spacing between icon and text
+            Text(
+              issuance['type'] ?? '',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        subtitle: Text(issuance['title'] ?? ''),
+        onTap: () {
+          _navigateToDetailsScreen(context, issuance);
+        },
       ),
-      body: ListView(
-        children: [
-          if (newIssuances.isNotEmpty) ...[
-            ListTile(
-              title: Text('New Issuances', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            for (var issuance in newIssuances)
-              ListTile(
-                title: Text(issuance['title'] ?? ''),
-                subtitle: Text(issuance['type'] ?? ''),
-                onTap: () {
-                  _navigateToDetailsScreen(context, issuance);
-                },
-              ),
-          ],
-          if (yesterdayIssuances.isNotEmpty) ...[
-            ListTile(
-              title: Text('Yesterday Issuances', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            for (var issuance in yesterdayIssuances)
-              ListTile(
-                title: Text(issuance['title'] ?? ''),
-                subtitle: Text(issuance['type'] ?? ''),
-                onTap: () {
-                  _navigateToDetailsScreen(context, issuance);
-                },
-              ),
-          ],
-          if (last7DaysIssuances.isNotEmpty) ...[
-            ListTile(
-              title: Text('Last 7 Days Issuances', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            for (var issuance in last7DaysIssuances)
-              ListTile(
-                title: Text(issuance['title'] ?? ''),
-                subtitle: Text(issuance['type'] ?? ''),
-                onTap: () {
-                  _navigateToDetailsScreen(context, issuance);
-                },
-              ),
-          ],
+      Divider(), // Add a divider between list tiles
+    ],
+  );
+}
+
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('Notifications'),
+    ),
+    body: ListView(
+      children: [
+        if (newIssuances.isNotEmpty) ...[
+          ListTile(
+            title: Text('New Issuances', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          for (var issuance in newIssuances) _buildListTile(issuance),
         ],
-      ),
-    );
-  }
+        if (yesterdayIssuances.isNotEmpty) ...[
+          ListTile(
+            title: Text('Yesterday Issuances', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          for (var issuance in yesterdayIssuances) _buildListTile(issuance),
+        ],
+        if (last7DaysIssuances.isNotEmpty) ...[
+          ListTile(
+            title: Text('Last 7 Days Issuances', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          for (var issuance in last7DaysIssuances) _buildListTile(issuance),
+        ],
+      ],
+    ),
+  );
+}
+
 }
