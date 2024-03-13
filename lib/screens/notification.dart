@@ -116,7 +116,7 @@ Widget build(BuildContext context) {
     ),
     body: ListView(
       children: [
-        if (newIssuances.isNotEmpty) ...[
+        if (newIssuances.isNotEmpty)...[
           ListTile(
             title: Text('New Issuances', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
