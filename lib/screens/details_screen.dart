@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:http/http.dart' as http;
@@ -10,6 +8,7 @@ class Issuance {
   final String title;
   final String content;
   final String pdfUrl;
+  
 
   Issuance({
     required this.title,
@@ -25,18 +24,6 @@ class Issuance {
     );
   }
 }
-
-Future<List<Issuance>> fetchIssuances() async {
-  final response = await http
-      .get(Uri.parse('https://issuances.dilgbohol.com/api/latest_issuances'));
-  if (response.statusCode == 200) {
-    List<dynamic> data = jsonDecode(response.body);
-    return data.map((json) => Issuance.fromJson(json)).toList();
-  } else {
-    throw Exception('Failed to load issuances');
-  }
-}
-
 class DetailsScreen extends StatelessWidget {
   final String title;
   final String content;

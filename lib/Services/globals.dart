@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 
-const String baseURL = "https://issuances.dilgbohol.com/api";
+const String baseURL = "http://192.168.0.110:8000/api";
 
 const Map<String, String> headers = {"Content-type" : "application/json"};
 

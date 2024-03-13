@@ -20,6 +20,8 @@ class _LatestIssuancesState extends State<LatestIssuances> {
   TextEditingController _searchController = TextEditingController();
   bool _hasInternetConnection = true;
   bool _isLoading = true;
+ 
+
 
   @override
   void initState() {
@@ -44,7 +46,6 @@ class _LatestIssuancesState extends State<LatestIssuances> {
       setState(() {
         _hasInternetConnection = true;
       });
-      // Load your content here
       fetchLatestIssuances();
     }
   }
@@ -94,7 +95,6 @@ Future<void> _openWifiSettings() async {
   if (await canLaunch(url)) {
     await launch(url);
   } else {
-    // Provide a generic message for both Android and iOS users
     showDialog(
       context: context,
       builder: (BuildContext context) {

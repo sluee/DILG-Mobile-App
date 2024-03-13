@@ -67,13 +67,15 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: Sidebar(
-        currentIndex: 0,
-        onItemSelected: (index) {
-          _navigateToSelectedPage(context, index);
-        },
-      ),
+   return Scaffold(
+  drawer: Sidebar(
+    currentIndex: 0,
+    onItemSelected: (index) {
+      _navigateToSelectedPage(context, index);
+    },
+  ),
+  // Rest of your widget code...
+
       body: SingleChildScrollView(
         child: Container(
           margin: EdgeInsets.only(top: 16.0),

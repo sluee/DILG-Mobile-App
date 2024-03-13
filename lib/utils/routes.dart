@@ -15,6 +15,7 @@ import 'package:DILGDOCS/screens/change_password_modal.dart';
   import '../screens/library_screen.dart';
   // import '../screens/intro_section.dart';
   import '../screens/login_screen.dart';
+  import 'package:DILGDOCS/screens/notification.dart';
   // import 'package:DILGDOCS/screens/library_screen.dart';
 
   class Routes {
@@ -34,13 +35,13 @@ import 'package:DILGDOCS/screens/change_password_modal.dart';
     static const String editUser = '/edit_user';
     static const String changePassword = '/change-password';
     static const String about = '/about';
-
+    static const String notifications = '/notification';
     static Map<String, WidgetBuilder> getRoutes(BuildContext context) {
       return {
         home: (context) =>  HomeScreen(),
         search: (context) => SearchScreen(),
         library: (context) => LibraryScreen(
-              onFileOpened: (fileName, filePath) {
+              onFileOpened: (fileName, filePath) {  
                 // Implement your logic when file is opened
                 print('File opened: $fileName');
               },
@@ -62,7 +63,8 @@ import 'package:DILGDOCS/screens/change_password_modal.dart';
         editUser: (context) => EditUser(),
         changePassword: (context) => ChangePasswordScreen(),
         setting: (context) => SettingsScreen(),
-        about: (context) =>About()
+        about: (context) =>About(),
+        notifications: (context ) => NotificationScreen(),
         
       };
     }
