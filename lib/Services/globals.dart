@@ -1,9 +1,8 @@
-
 import 'package:flutter/material.dart';
 
-const String baseURL = "http://192.168.0.110:8000/api";
+const String baseURL = "https://issuances.dilgbohol.com/api";
 
-const Map<String, String> headers = {"Content-type" : "application/json"};
+const Map<String, String> headers = {"Content-type": "application/json"};
 
 void errorSnackBar(BuildContext context, String text) {
   ScaffoldMessenger.of(context).showSnackBar(
