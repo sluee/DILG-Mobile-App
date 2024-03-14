@@ -1,5 +1,7 @@
+import 'dart:async'; // Import for Timer
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'search_screen.dart';
 import 'library_screen.dart';
@@ -7,7 +9,10 @@ import 'setting_screen.dart';
 import 'sidebar.dart';
 import 'bottom_navigation.dart';
 import 'issuance_pdf_screen.dart';
-import 'notification.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:DILGDOCS/Services/auth_services.dart';
+import 'package:DILGDOCS/Services/globals.dart' as globals;
+import 'notification.dart'; // Import your notification screen here
 
 class Issuance {
   final String title;
@@ -22,8 +27,7 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with WidgetsBindingObserver {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   int _currentIndex = 0;
   int notificationCount = 0;
   List<String> _drawerMenuItems = [
@@ -34,29 +38,84 @@ class _HomeScreenState extends State<HomeScreen>
   ];
 
   DateTime? currentBackPressTime;
-
   List<Issuance> _recentlyOpenedIssuances = [];
+  late Timer _timer; // Timer variable for periodic checking
 
   @override
   void initState() {
     super.initState();
     _loadRecentIssuances();
+    _loadNotificationCount(); // Load notification count when the widget is initialized
     WidgetsBinding.instance?.addObserver(this);
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
-      _saveRecentIssuances();
-    }
+    _startPeriodicCheck(); // Start periodic checking when the widget is initialized
+    // _checkForNewNotifications(); // Initial check for notifications
   }
 
   @override
   void dispose() {
+    _timer.cancel(); // Cancel the timer when the widget is disposed
     _saveRecentIssuances();
     WidgetsBinding.instance?.removeObserver(this);
     super.dispose();
+  }
+
+  void _startPeriodicCheck() {
+    _timer = Timer.periodic(Duration(seconds: 5), (timer) {
+      _checkForNewNotifications();
+    });
+  }
+
+  void _checkForNewNotifications() async {
+    try {
+      // Fetch the token for authentication
+      String? token = await AuthServices.getToken();
+
+      // Make an HTTP GET request to retrieve recent issuances
+      final response = await http.get(
+        Uri.parse('${globals.baseURL}/recent-issuances'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token'
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Parse the JSON response
+        Map<String, dynamic> recentData =
+            json.decode(response.body)['recentIssuances'];
+
+        // Extract new issuances count
+        int newIssuancesCount = recentData['today'].length;
+
+        // Save the new notification count in SharedPreferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        int lastNotificationCount = prefs.getInt('notificationCount') ?? 0;
+
+        if (newIssuancesCount > lastNotificationCount) {
+          setState(() {
+            notificationCount = newIssuancesCount - lastNotificationCount;
+          });
+        } else {
+          notificationCount = 0;
+        }
+
+        await prefs.setInt('notificationCount', newIssuancesCount);
+      } else {
+        // Handle server error if the response is not successful
+        throw Exception('Failed to load recent issuances');
+      }
+    } catch (e) {
+      // Handle any errors that occur during the process
+      print('Error: $e');
+    }
+  }
+
+  void _loadNotificationCount() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    int count = prefs.getInt('notificationCount') ?? 0;
+    setState(() {
+      notificationCount = count;
+    });
   }
 
   void _loadRecentIssuances() async {
@@ -122,15 +181,35 @@ class _HomeScreenState extends State<HomeScreen>
             Stack(
               children: [
                 IconButton(
-                  icon: Icon(Icons.notifications),
-                  onPressed: () {
-                    // Navigate to the screen that displays notifications
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => NotificationScreen()),
-                    );
-                  },
-                ),
+                    icon: Icon(Icons.notifications),
+                    onPressed: () async {
+                      // Navigate to the screen that displays notifications
+                      int result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => NotificationScreen(),
+                        ),
+                      );
+
+                      // Update last check timestamp
+                      SharedPreferences prefs =
+                          await SharedPreferences.getInstance();
+                      int currentTimestamp =
+                          DateTime.now().millisecondsSinceEpoch;
+                      await prefs.setInt(
+                          'lastCheckTimestamp', currentTimestamp);
+
+                      // Reset notification count if notifications were viewed
+                      if (result == 1) {
+                        setState(() {
+                          notificationCount = 0;
+                        });
+                        await prefs.setInt('notificationCount',
+                            0); // Reset count in SharedPreferences
+                      } else {
+                        _checkForNewNotifications(); // Perform a check for new notifications
+                      }
+                    }),
                 if (notificationCount > 0)
                   Positioned(
                     right: 8,
@@ -141,17 +220,17 @@ class _HomeScreenState extends State<HomeScreen>
                         shape: BoxShape.circle,
                         color: Colors.red,
                       ),
-                        child: Text(
-                        '$notificationCount',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                        ),
-                      ),
+                      // child: Text(
+                      //   '$notificationCount',
+                      //   style: TextStyle(
+                      //     color: Colors.white,
+                      //     fontSize: 12,
+                      //   ),
+                      // ),
                     ),
                   ),
               ],
-            ),
+            )
           ],
         ),
         body: _buildBody(),
@@ -220,7 +299,7 @@ class _HomeScreenState extends State<HomeScreen>
                   label: 'NEWS AND UPDATEs',
                   url: 'https://dilgbohol.com/news_update',
                 ),
-                 WebViewWideButton(
+                WebViewWideButton(
                   label: 'THE PROVINCIAL DIRECTOR',
                   url: 'https://dilgbohol.com/provincial_director',
                 ),
@@ -228,7 +307,6 @@ class _HomeScreenState extends State<HomeScreen>
                   label: 'VISSION AND MISSION',
                   url: 'https://dilgbohol.com/about_us',
                 ),
-               
                 Container(
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
@@ -418,7 +496,6 @@ class WebViewWideButton extends StatelessWidget {
     );
   }
 }
-
 
 class WebViewPage extends StatelessWidget {
   final String label;

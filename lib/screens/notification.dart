@@ -1,3 +1,4 @@
+// Import necessary packages
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -7,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
 import 'package:DILGDOCS/screens/details_screen.dart'; // Import DetailsScreen
 
+// Define Issuance class with viewed status
 class Issuance {
   final String type;
   final String title;
@@ -25,6 +27,7 @@ class Issuance {
   });
 }
 
+// NotificationScreen class
 class NotificationScreen extends StatefulWidget {
   @override
   _NotificationScreenState createState() => _NotificationScreenState();
@@ -41,6 +44,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     fetchRecentIssuances();
   }
 
+  // Fetch recent issuances
   Future<void> fetchRecentIssuances() async {
     try {
       String? token = await AuthServices.getToken();
@@ -101,6 +105,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     }
   }
 
+  // Navigate to DetailsScreen and update viewed status
   void _navigateToDetailsScreen(BuildContext context, Issuance issuance) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String content = '';
@@ -128,11 +133,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
       ),
     );
 
+    // Update viewed status and persist in SharedPreferences
     setState(() {
-      issuance.viewed =
-          true; // Update the viewed flag when returning from DetailsScreen
-      prefs.setBool(
-          issuance.title, true); // Persist viewed status in SharedPreferences
+      issuance.viewed = true;
+      prefs.setBool(issuance.title, true);
     });
   }
 
@@ -144,6 +148,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
       ),
       body: ListView(
         children: [
+          // Display new issuances
           if (newIssuances.isNotEmpty) ...[
             ListTile(
               title: Text('New Issuances',
@@ -194,11 +199,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(
-                      height: 4), // Add a smaller SizedBox instead of Divider
+                  SizedBox(height: 4),
                 ],
               ),
           ],
+          // Display yesterday's issuances
           if (yesterdayIssuances.isNotEmpty) ...[
             ListTile(
               title: Text('Yesterday Issuances',
@@ -249,11 +254,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(
-                      height: 4), // Add a smaller SizedBox instead of Divider
+                  SizedBox(height: 4),
                 ],
               ),
           ],
+          // Display last 7 days' issuances
           if (last7DaysIssuances.isNotEmpty) ...[
             ListTile(
               title: Text('Last 7 Days Issuances',
@@ -304,8 +309,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(
-                      height: 4), // Add a smaller SizedBox instead of Divider
+                  SizedBox(height: 4),
                 ],
               ),
           ],
