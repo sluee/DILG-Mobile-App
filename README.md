@@ -6,27 +6,12 @@ The DILG Bohol Issuances App is designed to house various issuances from the DIL
 
 Here's a quick glimpse of the features within our DILG Issuances Mobile App:
 
-<div style="display: flex;">
-  <div style="flex: 50%; padding: 5px;">
-    <img src="assets/home.jpg" alt="Home Page" style="width: 100%;">
-    <p style="text-align: center;">Home Page: Provides an overview of the app's content and navigation options.</p>
-  </div>
-  <div style="flex: 50%; padding: 5px;">
-    <img src="assets/search.jpg" alt="Search Page" style="width: 100%;">
-    <p style="text-align: center;">Search Page: Allows users to search for specific issuances or documents.</p>
-  </div>
-</div>
-
-<div style="display: flex;">
-  <div style="flex: 50%; padding: 5px;">
-    <img src="assets/developer.jpg" alt="Developers Page" style="width: 100%;">
-    <p style="text-align: center;">Developers Page: Profiles of the development team behind the app.</p>
-  </div>
-  <div style="flex: 50%; padding: 5px;">
-    <img src="assets/settings.jpg" alt="Settings Page" style="width: 100%;">
-    <p style="text-align: center;">Settings Page: Access app settings and customization options.</p>
-  </div>
-</div>
+| Feature                                              | Description                                                            |
+|------------------------------------------------------|------------------------------------------------------------------------|
+| ![Home Page](assets/home-small.jpg)                  | **Home Page:** Provides an overview of the app's content and navigation options. |
+| ![Search Page](assets/search-small.jpg)              | **Search Page:** Allows users to search for specific issuances or documents.   |
+| ![Developers Page](assets/developer-small.jpg)       | **Developers Page:** Profiles of the development team behind the app.          |
+| ![Settings Page](assets/settings-small.jpg)          | **Settings Page:** Access app settings and customization options.             |
 
 ## Developers
 
