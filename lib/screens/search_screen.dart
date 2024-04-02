@@ -683,9 +683,58 @@ void _stopListening() {
                           ),
                         ],
                       ),
-                      child: RichText(
-                        text: highlightTextWithOriginalTitle(
-                            result.title, searchInput),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          RichText(
+                            text: highlightTextWithOriginalTitle(
+                                result.title, searchInput),
+                          ),
+                          if (result.referenceNo.isNotEmpty)
+                            SizedBox(height: 8),
+                          if (result.referenceNo.isNotEmpty)
+                            RichText(
+                              text: TextSpan(
+                                style: TextStyle(
+                                  color: Colors.black, // assuming you want black color for the bold text
+                                  fontWeight: FontWeight.bold, // making the text bold
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: "Reference No: ",
+                                  ),
+                                  TextSpan(
+                                    text: result.referenceNo,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.normal, // making the referenceNo text normal
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          if (result.type.isNotEmpty)
+                            SizedBox(height: 8),
+                          if (result.type.isNotEmpty)
+                            RichText(
+                              text: TextSpan(
+                                style: TextStyle(
+                                  color: Colors.black, // assuming you want black color for the bold text
+                                  fontWeight: FontWeight.bold, // making the text bold
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: "Type: ",
+                                  ),
+                                  TextSpan(
+                                    text: result.type,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.normal, // making the type text normal
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   );
@@ -695,7 +744,9 @@ void _stopListening() {
           ),
         )
       : Center(child: Text('No results found'));
-  }
+}
+
+
 
   TextSpan highlightTextWithOriginalTitle(String text, String highlight) {
     List<TextSpan> spans = [];
@@ -767,8 +818,8 @@ void _stopListening() {
                 data is DraftIssuance ||
                 data is LatestIssuance) &&
             (data.issuance.title.toLowerCase().contains(searchInput) ||
-                data.issuance.keyword.toLowerCase().contains(searchInput)))
-        .map((data) => SearchResult(data.issuance.title, data.issuance.urlLink))
+                data.issuance.keyword.toLowerCase().contains(searchInput) || data.issuance.referenceNo.toLowerCase().contains(searchInput)  || data.issuance.type.toLowerCase().contains(searchInput)))
+        .map((data) => SearchResult(data.issuance.title, data.issuance.urlLink, data.issuance.referenceNo, data.issuance.type))
         .where((result) => result.title.isNotEmpty)
         .toList();
 
@@ -812,7 +863,9 @@ void _debounce(VoidCallback callback, Duration duration) {
 
 class SearchResult {
   final String title;
+  final String referenceNo;
   final String pdfUrl;
+  final String type;
 
-  SearchResult(this.title, this.pdfUrl);
+  SearchResult(this.title, this.pdfUrl, this.referenceNo, this.type);
 }

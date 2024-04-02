@@ -1,5 +1,8 @@
+import 'dart:async'; // Import for Timer
+import 'package:DILGDOCS/Services/globals.dart';
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'search_screen.dart';
 import 'library_screen.dart';
@@ -7,7 +10,10 @@ import 'setting_screen.dart';
 import 'sidebar.dart';
 import 'bottom_navigation.dart';
 import 'issuance_pdf_screen.dart';
-import 'notification.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:DILGDOCS/Services/auth_services.dart';
+import 'package:DILGDOCS/Services/globals.dart' as globals;
+import 'notification.dart'; // Import your notification screen here
 
 class Issuance {
   final String title;
@@ -22,10 +28,10 @@ class HomeScreen extends StatefulWidget {
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with WidgetsBindingObserver {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   int _currentIndex = 0;
   int notificationCount = 0;
+  bool notificationsViewed = false;
   List<String> _drawerMenuItems = [
     'Home',
     'Search',
@@ -34,30 +40,107 @@ class _HomeScreenState extends State<HomeScreen>
   ];
 
   DateTime? currentBackPressTime;
-
   List<Issuance> _recentlyOpenedIssuances = [];
+  late Timer _timer; // Timer variable for periodic checking
 
   @override
   void initState() {
     super.initState();
     _loadRecentIssuances();
     WidgetsBinding.instance?.addObserver(this);
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.inactive) {
-      _saveRecentIssuances();
-    }
+    _fetchNotificationsDataAndStartPeriodicCheck();
   }
 
   @override
   void dispose() {
+    _timer.cancel();
     _saveRecentIssuances();
     WidgetsBinding.instance?.removeObserver(this);
     super.dispose();
   }
+void _fetchNotificationsDataAndStartPeriodicCheck() async {
+    try {
+      // Fetch notifications data
+      List<dynamic> notificationsData = await _fetchNotificationsData();
+
+      // Start periodic check with the fetched data
+      _startPeriodicCheck(notificationsData);
+    } catch (e) {
+      print('Error fetching notifications data: $e');
+    }
+  }
+
+  Future<List<dynamic>> _fetchNotificationsData() async {
+    // Fetch the token for authentication
+    String? token = await AuthServices.getToken();
+
+    // Make an HTTP GET request to retrieve notifications
+    final response = await http.get(
+      Uri.parse('${baseURL}/notifications'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
+    );
+
+    // Check if the server response is successful
+    if (response.statusCode == 200) {
+      // Parse the JSON response and return notifications data
+      return json.decode(response.body)['latests'];
+    } else {
+      // Handle server error if the response is not successful
+      throw Exception('Failed to load recent notifications');
+    }
+  }
+
+  void _startPeriodicCheck(List<dynamic> notificationsData) {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      markNotificationsAsRead(notificationsData);
+    });
+  }
+
+Future<void> markNotificationsAsRead(List<dynamic> notificationsData) async {
+  try {
+    // Fetch the token for authentication
+    String? token = await AuthServices.getToken();
+
+    // Filter out notifications that are not read yet
+    List<int> unreadNotificationIds = notificationsData
+        .where((notification) => notification['read_at'] == null)
+        .map<int>((notification) => notification['id'])
+        .toList();
+
+    // Construct the request body
+    final requestBody = {
+      'notification_ids': unreadNotificationIds,
+      'read_at': DateTime.now().toIso8601String(),
+    };
+
+    // Make an HTTP POST request to mark notifications as read
+    final response = await http.post(
+      Uri.parse('${baseURL}/notifications/mark-as-read'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
+      body: json.encode(requestBody),
+    );
+
+    // Check if the server response is successful
+    if (response.statusCode == 200) {
+      // Notifications marked as read successfully
+    } else {
+      // Handle server error if the response is not successful
+      throw Exception('Failed to mark notifications as read');
+    }
+  } catch (e) {
+    // Handle any errors that occur during the process
+    print('Error: $e');
+  }
+}
+
+
+
 
   void _loadRecentIssuances() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -89,11 +172,11 @@ class _HomeScreenState extends State<HomeScreen>
         } else if (currentBackPressTime == null ||
             DateTime.now().difference(currentBackPressTime!) >
                 Duration(seconds: 2)) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Press back again to exit'),
-              duration: Duration(seconds: 2),
-            ),
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Press back again to exit'),
+                duration: Duration(seconds: 2),
+              ),
           );
           currentBackPressTime = DateTime.now();
           return false;
@@ -121,17 +204,31 @@ class _HomeScreenState extends State<HomeScreen>
           actions: [
             Stack(
               children: [
-                IconButton(
-                  icon: Icon(Icons.notifications),
-                  onPressed: () {
-                    // Navigate to the screen that displays notifications
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => NotificationScreen()),
-                    );
-                  },
-                ),
-                if (notificationCount > 0)
+               Stack(
+              children: [
+               IconButton(
+                icon: Icon(Icons.notifications, size: 30),
+                onPressed: () async {
+                  // Navigate to the notification screen
+                  List<String>? viewedNotifications = await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => NotificationScreen()),
+                  );
+
+                  // Call the function to mark notifications as read
+                  if (viewedNotifications != null && viewedNotifications.isNotEmpty) {
+                    markNotificationsAsRead(viewedNotifications);
+                  }
+
+                  // Reset the notification count to 0
+                  setState(() {
+                    notificationCount = 0;
+                  });
+                },
+              ),
+
+
+                if (notificationCount > 0 && !notificationsViewed) // Check visibility condition
                   Positioned(
                     right: 8,
                     top: 8,
@@ -141,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen>
                         shape: BoxShape.circle,
                         color: Colors.red,
                       ),
-                        child: Text(
+                      child: Text(
                         '$notificationCount',
                         style: TextStyle(
                           color: Colors.white,
@@ -152,6 +249,28 @@ class _HomeScreenState extends State<HomeScreen>
                   ),
               ],
             ),
+
+                if (notificationCount > 0 && !notificationsViewed)
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Container(
+                      padding: EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.red,
+                      ),
+                      child: Text(
+                        '$notificationCount',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            )
           ],
         ),
         body: _buildBody(),
@@ -163,7 +282,8 @@ class _HomeScreenState extends State<HomeScreen>
           currentIndex: _currentIndex,
           onTabTapped: (index) {
             setState(() {
-              _currentIndex = index.clamp(0, _drawerMenuItems.length - 1);
+              _currentIndex =
+                  index.clamp(0, _drawerMenuItems.length - 1);
             });
           },
         ),
@@ -220,7 +340,7 @@ class _HomeScreenState extends State<HomeScreen>
                   label: 'NEWS AND UPDATEs',
                   url: 'https://dilgbohol.com/news_update',
                 ),
-                 WebViewWideButton(
+                WebViewWideButton(
                   label: 'THE PROVINCIAL DIRECTOR',
                   url: 'https://dilgbohol.com/provincial_director',
                 ),
@@ -228,7 +348,6 @@ class _HomeScreenState extends State<HomeScreen>
                   label: 'VISSION AND MISSION',
                   url: 'https://dilgbohol.com/about_us',
                 ),
-               
                 Container(
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
@@ -261,8 +380,8 @@ class _HomeScreenState extends State<HomeScreen>
           },
           onFileDeleted: (title) {
             setState(() {
-              _recentlyOpenedIssuances
-                  .removeWhere((issuance) => issuance.title == title);
+              _recentlyOpenedIssuances.removeWhere(
+                  (issuance) => issuance.title == title);
             });
           },
         );
@@ -275,7 +394,8 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _buildRecentIssuances() {
     Map<String, Issuance> seenTitles = {};
-    List<Issuance> recentIssuances = _recentlyOpenedIssuances.take(5).toList();
+    List<Issuance> recentIssuances =
+        _recentlyOpenedIssuances.take(5).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -354,9 +474,8 @@ class _HomeScreenState extends State<HomeScreen>
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => IssuancePDFScreen(
-                          title: issuance.title,
-                        ),
+                        builder: (context) =>
+                            IssuancePDFScreen(title: issuance.title),
                       ),
                     );
                   },
@@ -419,7 +538,6 @@ class WebViewWideButton extends StatelessWidget {
   }
 }
 
-
 class WebViewPage extends StatelessWidget {
   final String label;
   final String url;
@@ -438,5 +556,32 @@ class WebViewPage extends StatelessWidget {
         javascriptMode: JavascriptMode.unrestricted,
       ),
     );
+  }
+}
+
+Future<void> markNotificationsAsRead() async {
+  try {
+    // Fetch the token for authentication
+    String? token = await AuthServices.getToken();
+
+    // Make an HTTP POST request to mark notifications as read
+    final response = await http.post(
+      Uri.parse('${baseURL}/notifications/mark-as-read'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
+    );
+
+    // Check if the server response is successful
+    if (response.statusCode == 200) {
+      // Notifications marked as read successfully
+    } else {
+      // Handle server error if the response is not successful
+      throw Exception('Failed to mark notifications as read');
+    }
+  } catch (e) {
+    // Handle any errors that occur during the process
+    print('Error: $e');
   }
 }
