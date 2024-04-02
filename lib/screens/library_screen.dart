@@ -241,62 +241,57 @@ class _LibraryScreenState extends State<LibraryScreen> {
   );
 }
 
-
-
-  Widget _buildHighlightedTitle(String title) {
-    final RegExp regex = RegExp(_searchController.text, caseSensitive: false);
-    final Iterable<Match> matches = regex.allMatches(title);
-
-    final List<TextSpan> children = [];
-    int start = 0;
-    for (Match match in matches) {
-      if (match.start != start) {
-        children.add(
-          TextSpan(
-            text: _truncateFilename(title.substring(start, match.start)),
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.black,
-              fontFamily: 'Poppins',
-            ),
-          ),
-        );
-      }
-      children.add(
-        TextSpan(
-          text: title.substring(match.start, match.end),
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.blue,
-            fontFamily: 'Poppins',
-          ),
-        ),
-      );
-      start = match.end;
-    }
-
-    if (start != title.length) {
-      children.add(
-        TextSpan(
-          text: _truncateFilename(title.substring(start)),
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.black,
-             fontFamily: 'Poppins',
-          ),
-        ),
-      );
-    }
-
-    return RichText(
-      text: TextSpan(
-        children: children,
-      ),
-      overflow: TextOverflow.ellipsis,
-      maxLines: 2,
-    );
+Widget _buildHighlightedTitle(String title) {
+  return RichText(
+    text: highlightMatches(title, _searchController.text),
+  );
+}TextSpan highlightMatches(String text, String query) {
+  if (query.isEmpty) {
+    return TextSpan(text: text, style: TextStyle(color: Colors.black, fontSize: 16));
   }
+
+  List<TextSpan> textSpans = [];
+
+  // Create a regular expression pattern with case-insensitive matching
+  RegExp regex = RegExp(query, caseSensitive: false);
+
+  // Find all matches of the query in the text
+  Iterable<Match> matches = regex.allMatches(text);
+
+  // Start index for slicing the text
+  int startIndex = 0;
+
+  // Add text segments with and without highlighting
+  for (Match match in matches) {
+    // Add text segment before the match
+    if (match.start > startIndex) {
+      textSpans.add(TextSpan(text: text.substring(startIndex, match.start), style: TextStyle(color: Colors.black, fontSize: 16)));
+    }
+
+    // Add the matching segment with highlighting
+    textSpans.add(TextSpan(
+      text: text.substring(match.start, match.end),
+      style: TextStyle(
+        color: Colors.blue, // Customize highlight color here
+        fontWeight: FontWeight.bold, // Customize highlight style here
+        fontSize: 15,
+      ),
+    ));
+
+    // Update the start index for the next segment
+    startIndex = match.end;
+  }
+
+  // Add the remaining text segment
+  if (startIndex < text.length) {
+    textSpans.add(TextSpan(text: text.substring(startIndex), style: TextStyle(color: Colors.black, fontSize: 16)));
+  }
+
+  return TextSpan(children: textSpans);
+}
+
+
+
 
   String _truncateFilename(String fileName, {int maxLength = 20}) {
     if (fileName.length <= maxLength) {
@@ -458,14 +453,5 @@ class PDFViewerScreen extends StatelessWidget {
       throw 'File not found: $filePath';
     }
   }
-
-  // @override
-  // void dispose() {
-  //   super.dispose();
-  //   // Call onFileOpened function when disposing the PDFViewerScreen
-  //   if (onFileOpened != null) {
-  //     onFileOpened!(fileName, filePath);
-  //   }
-  // }
 }
 
