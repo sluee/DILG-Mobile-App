@@ -8,10 +8,10 @@ Here's a quick glimpse of the features within our DILG Issuances Mobile App:
 
 | Feature                                              | Description                                                            |
 |------------------------------------------------------|------------------------------------------------------------------------|
-| ![Home Page](assets/home.jpg)                  | **Home Page:** Provides an overview of the app's content and navigation options. |
-| ![Search Page](assets/search.jpg)              | **Search Page:** Allows users to search for specific issuances or documents.   |
-| ![Developers Page](assets/developer.jpg)       | **Developers Page:** Profiles of the development team behind the app.          |
-| ![Settings Page](assets/settings.jpg)          | **Settings Page:** Access app settings and customization options.             |
+| ![Home Page](assets/home-small.jpg){ width=150 height=150 }     | **Home Page:** Provides an overview of the app's content and navigation options. |
+| ![Search Page](assets/search-small.jpg){ width=150 height=150 } | **Search Page:** Allows users to search for specific issuances or documents.   |
+| ![Developers Page](assets/developer-small.jpg){ width=150 height=150 } | **Developers Page:** Profiles of the development team behind the app.          |
+| ![Settings Page](assets/settings-small.jpg){ width=150 height=150 }   | **Settings Page:** Access app settings and customization options.             |
 
 ## Developers
 
