@@ -1,26 +1,23 @@
 # DILG Issuances Mobile App
 
-A new Flutter project.
+The DILG Bohol Issuances App is designed to house various issuances from the DILG Bohol Province, including the Latest Issuances, Joint Circulars, Memo Circulars, Presidential Directives, Draft Issuances, Republic Acts, and Legal Opinions. The primary objective of this app is to offer a comprehensive resource for accessing and staying updated on official documents and legal materials relevant to the province.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+Here's a quick glimpse of the features within our DILG Issuances Mobile App:
 
-A few resources to get you started if this is your first Flutter project:
+- **Home Page:** [View](assets/home.jpg) - Provides an overview of the app's content and navigation options.
+- **Search Page:** [View](assets/search.jpg) - Allows users to search for specific issuances or documents.
+- **Developers Page:** [View](assets/developer.jpg) - Profiles of the development team behind the app.
+- **Settings Page:** [View](assets/settings.jpg) - Access app settings and customization options.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Developers
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-
-
---Developers:
-Team Leader:
-    Eunizel Gabas
-Members:
-    Eula Gabas
-    Angela Cecelia Lenteria
-    Bruce Unabia
-    John Lyod Catalan
+- **Team Leader:**
+  - Eunizel Gabas
+  
+- **Members:**
+  - Eula Gabas
+  - Angela Cecelia Lenteria
+  - Bruce Unabia
+  - John Lyod Catalan

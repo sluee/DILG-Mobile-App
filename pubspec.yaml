@@ -95,6 +95,11 @@ flutter:
     - assets/girl 1.png
     - assets/girl 2.png
     - assets/girl 3.png
+    - assets/home.jpg
+    - assets/settings.jpg
+    - assets/search.jpg
+    - assets/developer.jpg
+
 
 
     
