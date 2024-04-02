@@ -6,10 +6,21 @@ The DILG Bohol Issuances App is designed to house various issuances from the DIL
 
 Here's a quick glimpse of the features within our DILG Issuances Mobile App:
 
-- **Home Page:** [View](assets/home.jpg) - Provides an overview of the app's content and navigation options.
-- **Search Page:** [View](assets/search.jpg) - Allows users to search for specific issuances or documents.
-- **Developers Page:** [View](assets/developer.jpg) - Profiles of the development team behind the app.
-- **Settings Page:** [View](assets/settings.jpg) - Access app settings and customization options.
+- **Home Page:**
+  ![Home Page](assets/home.jpg)
+  Provides an overview of the app's content and navigation options.
+  
+- **Search Page:**
+  ![Search Page](assets/search.jpg)
+  Allows users to search for specific issuances or documents.
+  
+- **Developers Page:**
+  ![Developers Page](assets/developer.jpg)
+  Profiles of the development team behind the app.
+  
+- **Settings Page:**
+  ![Settings Page](assets/settings.jpg)
+  Access app settings and customization options.
 
 ## Developers
 
