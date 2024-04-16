@@ -69,18 +69,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             SizedBox(height: 20.0),
             // Profile Section
             Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(
-                  backgroundImage: _selectedAvatarPath != null
-                      ? AssetImage(_selectedAvatarPath!)
-                      : AssetImage('assets/default.png'),
-                  radius: 50,
-                ),
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                backgroundImage: _selectedAvatarPath != null
+                    ? AssetImage(_selectedAvatarPath!)
+                    : AssetImage('assets/default.png'),
+                radius: 50,
+              ),
 
-                SizedBox(width: 10.0),
-                Column(
+              SizedBox(width: 10.0),
+              Expanded( // Wrap the Column with Expanded
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(height: 25.0),
@@ -93,13 +94,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       userName,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 20.0,
+                        fontSize: 18.0,
                       ),
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
             SizedBox(height: 20.0),
             // User Profile Button
             InkWell(

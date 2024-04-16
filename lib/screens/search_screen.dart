@@ -696,8 +696,8 @@ void _stopListening() {
                             RichText(
                               text: TextSpan(
                                 style: TextStyle(
-                                  color: Colors.black, // assuming you want black color for the bold text
-                                  fontWeight: FontWeight.bold, // making the text bold
+                                  color: Colors.black, 
+                                  fontWeight: FontWeight.bold, 
                                 ),
                                 children: [
                                   TextSpan(
@@ -706,7 +706,7 @@ void _stopListening() {
                                   TextSpan(
                                     text: result.referenceNo,
                                     style: TextStyle(
-                                      fontWeight: FontWeight.normal, // making the referenceNo text normal
+                                      fontWeight: FontWeight.normal, 
                                     ),
                                   ),
                                 ],
@@ -718,8 +718,8 @@ void _stopListening() {
                             RichText(
                               text: TextSpan(
                                 style: TextStyle(
-                                  color: Colors.black, // assuming you want black color for the bold text
-                                  fontWeight: FontWeight.bold, // making the text bold
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold, 
                                 ),
                                 children: [
                                   TextSpan(
@@ -728,7 +728,7 @@ void _stopListening() {
                                   TextSpan(
                                     text: result.type,
                                     style: TextStyle(
-                                      fontWeight: FontWeight.normal, // making the type text normal
+                                      fontWeight: FontWeight.normal, 
                                     ),
                                   ),
                                 ],
@@ -744,7 +744,7 @@ void _stopListening() {
           ),
         )
       : Center(child: Text('No results found'));
-}
+    }
 
 
 

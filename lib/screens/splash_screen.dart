@@ -25,33 +25,34 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 100,
-              backgroundImage: AssetImage('assets/dilg-main.png'),
+Widget build(BuildContext context) {
+  return Scaffold(
+    body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image(
+            width: 130.0,
+            height: 140.0,
+            image: AssetImage('assets/Tngkrw.png'),
+            fit: BoxFit.cover,
+          ),
+          SizedBox(height: 16),
+          Text(
+            'TANGKARAW DILG-Bohol',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Poppins',
+              color: Colors.blue[900]
             ),
-            SizedBox(height: 16),
-            Text(
-              'Department of the Interior and Local Government Bohol Province',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Poppins'
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 16),
-            CircularProgressIndicator(),
-          ],
-        ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 16),
+          // CircularProgressIndicator(), // Place the CircularProgressIndicator here
+        ],
       ),
-    );
-  }
+    ),
+  );
 }
-
-
+}

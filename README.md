@@ -14,7 +14,7 @@ Here's a quick glimpse of the features within our DILG Issuances Mobile App:
 
 ## Developers
 
-- **Team Leader:**
+- **Team Leader:**   
   - Eunizel Gabas
   
 - **Members:**

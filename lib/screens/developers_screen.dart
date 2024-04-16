@@ -161,7 +161,7 @@ class DeveloperModal extends StatelessWidget {
             ),
             SizedBox(height: 16),
             // Developer Name and Position in modal
-            Text(
+            Text( 
               name,
               style: TextStyle(
                 fontSize: 18,
@@ -175,9 +175,10 @@ class DeveloperModal extends StatelessWidget {
                 color: Colors.grey,
               ),
             ),
-          ],
+          ]     
         ),
       ),
     );
   }
 }
+  
