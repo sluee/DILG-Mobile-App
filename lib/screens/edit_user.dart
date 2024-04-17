@@ -163,50 +163,7 @@ class _EditUserState extends State<EditUser> {
                   String newName = _nameController.text;
                   String newEmail = _emailController.text;
                   _updateNameAndEmail(newName, newEmail);
-                  // showDialog(
-                  //   context: context,
-                  //   builder: (BuildContext context) {
-                  //     return Dialog(
-                  //       shape: RoundedRectangleBorder(
-                  //         borderRadius: BorderRadius.circular(10),
-                  //       ),
-                  //       child: Container(
-                  //         padding: EdgeInsets.all(16),
-                  //         child: Column(
-                  //           mainAxisSize: MainAxisSize.min,
-                  //           children: [
-                  //             Icon(
-                  //               Icons.check_circle,
-                  //               color: Colors.green[300],
-                  //               size: 40,
-                  //             ),
-                  //             SizedBox(height: 16),
-                  //             Text(
-                  //               'Profile Updated',
-                  //               style: TextStyle(
-                  //                 fontSize: 18,
-                  //                 fontWeight: FontWeight.bold,
-                  //               ),
-                  //             ),
-                  //             SizedBox(height: 16),
-                  //             ElevatedButton(
-                  //               onPressed: () {
-                  //                Navigator.pushReplacement(
-                  //                 context,
-                  //                 MaterialPageRoute(builder: (context) => SettingsScreen()),
-                  //               );
-                  //               },
-                  //               style: ElevatedButton.styleFrom(
-                  //                 backgroundColor: Colors.blue[300],
-                  //               ),
-                  //               child: Text('OK'),
-                  //             ),
-                  //           ],
-                  //         ),
-                  //       ),
-                  //     );
-                  //   },
-                  // );
+                  
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue[900],

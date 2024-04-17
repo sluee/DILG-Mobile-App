@@ -3,39 +3,59 @@ import 'package:flutter/material.dart';
 class About extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'About',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-         iconTheme: IconThemeData(
+  return Scaffold(
+    appBar: AppBar(
+      title: Text(
+        'About',
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
           color: Colors.white,
         ),
-        backgroundColor: Colors.blue[900],
       ),
-    
-      body: Center(
+      iconTheme: IconThemeData(
+        color: Colors.white,
+      ),
+      backgroundColor: Colors.blue[900],
+    ),
+    body: SingleChildScrollView(
+      child: Center(
         child: Padding(
           padding: EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              // Large logo
-              CircleAvatar(
-                radius: 70,
-                backgroundImage: AssetImage('assets/dilg-main.png'),
+             
+              Padding(
+                padding: EdgeInsets.only(top: 50.0), // Adding margin-top
+                child: Container(
+                  width:130.0,
+                  height: 140.0,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.rectangle, // You can change this to BoxShape.rectangle for a non-circle shape
+                    image: DecorationImage(
+                      image: AssetImage('assets/Tngkrw.png'),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
               ),
               SizedBox(height: 16),
               // Text below the logo
-              AnimatedTextFade(
-                text:
-                    'Department of the Interior and Local Government Bohol Province',
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+              const Text(
+                'TANGKARAW',
+                style: TextStyle(
+                  color: Color.fromARGB(255, 34, 55, 160),
+                  fontSize: 25.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4.0), // Adding some space between the texts
+              const Text(
+                'DILG- Bohol Province',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 15.0, // Adjust the font size as needed
+                ),
               ),
               SizedBox(height: 16),
               // Additional text
@@ -46,7 +66,7 @@ class About extends StatelessWidget {
               ),
               SizedBox(height: 16),
               AnimatedTextFade(
-                text: '© DILG-Bohol Province 2024',
+                text: '© TANGKARAW DILG-Bohol Province 2024',
                 fontSize: 12,
                 color: Colors.grey,
               ),
@@ -54,8 +74,10 @@ class About extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   void _navigateToSelectedPage(BuildContext context, int index) {
     // Handle navigation if needed

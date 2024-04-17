@@ -69,7 +69,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             SizedBox(height: 20.0),
             // Profile Section
             Row(
-            mainAxisAlignment: MainAxisAlignment.start,
+ mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CircleAvatar(
