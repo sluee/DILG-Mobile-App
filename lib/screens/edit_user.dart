@@ -279,3 +279,4 @@ class _EditUserState extends State<EditUser> {
     prefs.setString('userAvatar', newAvatarUrl);
   }
 }
+
